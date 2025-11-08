@@ -21,9 +21,14 @@ export default async function ServiceManagementPage() {
                         Voltar ao Painel
                     </Link>
                 </Button>
-                <ServiceManagementClient initialServices={data.services} />
+                <ServiceManagementClient 
+                    initialServices={data.services} 
+                    categories={data.categories}
+                />
             </div>
         </main>
     </>
   );
 }
+
+    

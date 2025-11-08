@@ -58,6 +58,10 @@
           "type": "string",
           "description": "The name of the service (e.g., OIL CHANGE)."
         },
+        "categoryId": {
+          "type": "string",
+          "description": "The ID of the category this service belongs to."
+        },
         "defaultMonths": {
           "type": "number",
           "description": "The default periodicity of the service in months."
@@ -74,9 +78,9 @@
       "required": [
         "id",
         "name",
+        "categoryId",
         "defaultMonths",
-        "defaultKm",
-        "defaultSupplier"
+        "defaultKm"
       ]
     },
     "VehicleService": {
@@ -469,3 +473,4 @@
     "reasoning": "The Firestore structure is designed to prioritize authorization independence, clarity, and scalability. It leverages denormalization to avoid hierarchical authorization dependencies and structural segregation to ensure homogeneous security postures within collections.\n\n*   **/users/{userId}**: Stores user profiles, using the Firebase Auth UID as the document ID, enabling path-based ownership for user-specific data.\n*   **/vehicles/{vehicleId}**: Stores vehicle information. All users with read access can list the vehicles.\n*   **/services/{serviceId}**: Stores predefined service types.  Only admins have write access.\n*   **/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}**: Represents specific instances of services performed on vehicles. The `vehicleId` is denormalized into this collection. The `responsible` field tracks which user performed this service. This enforces clear ownership and avoids the need for complex `get()` calls in security rules.\n*   **/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/attachments/{attachmentId}**: Stores attachments related to vehicle services. Authorization is simplified because it is nested under vehicleServices.\n*   **/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/events/{vehicleServiceEventId}**: Stores the event history of the vehicle service.\n*   **/settings/{settingsId}**: Stores application-wide settings, with a single document (e.g., `settingsId = 'config'`).\n*   **/roles_admin/{userId}**:  Documents in this collection indicate admin privileges. The existence of a document determines admin status. This allows us to implement QAPs.\n\n**Authorization Independence:**\n\n*   The `vehicleServices` subcollection denormalizes the `vehicleId`, avoiding the need to fetch the vehicle to authorize operations on vehicle services.\n\n**QAPs Support:**\n\n*   The segregation of admin roles into the `roles_admin` collection and user data into `/users/{userId}` enables efficient and secure list operations based on role or user ID.\n*   By nesting `vehicleServices` as a subcollection of `vehicles`, listing vehicle services is naturally scoped to a particular vehicle, preventing broad, unfiltered queries."
   }
 }
+    

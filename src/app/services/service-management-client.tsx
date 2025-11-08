@@ -11,12 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
-import type { Service } from '@/lib/types';
+import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, 'O nome do serviço deve ter pelo menos 2 caracteres.'),
+  categoryId: z.string({ required_error: 'Selecione uma categoria.'}),
   defaultKm: z.coerce.number().min(0).optional(),
   defaultMonths: z.coerce.number().min(0).optional(),
   defaultSupplier: z.string().optional(),
@@ -26,9 +28,10 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface ServiceManagementClientProps {
   initialServices: Service[];
+  categories: Category[];
 }
 
-export function ServiceManagementClient({ initialServices }: ServiceManagementClientProps) {
+export function ServiceManagementClient({ initialServices, categories }: ServiceManagementClientProps) {
   const [services, setServices] = useState<Service[]>(initialServices);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -38,11 +41,16 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      categoryId: '',
       defaultKm: 0,
       defaultMonths: 0,
       defaultSupplier: '',
     },
   });
+
+  const getCategoryName = (categoryId: CategoryID) => {
+    return categories.find(c => c.id === categoryId)?.name || 'Desconhecida';
+  }
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
@@ -54,7 +62,7 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
     
     if (editingService) {
         // Update existing service
-        setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id } : s));
+        setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID } : s));
         toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado com sucesso.` });
 
     } else {
@@ -62,6 +70,7 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
         const newService: Service = {
             id: `s${Date.now()}`,
             ...values,
+            categoryId: values.categoryId as CategoryID,
             defaultKm: values.defaultKm || 0,
             defaultMonths: values.defaultMonths || 0,
             defaultSupplier: values.defaultSupplier || '',
@@ -79,6 +88,7 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
     form.reset({
         id: service.id,
         name: service.name,
+        categoryId: service.categoryId,
         defaultKm: service.defaultKm,
         defaultMonths: service.defaultMonths,
         defaultSupplier: service.defaultSupplier,
@@ -87,7 +97,7 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
 
   const handleCancelEdit = () => {
     setEditingService(null);
-    form.reset({ name: '', defaultKm: 0, defaultMonths: 0, defaultSupplier: '' });
+    form.reset({ name: '', categoryId: '', defaultKm: 0, defaultMonths: 0, defaultSupplier: '' });
   }
 
   const handleDelete = (serviceId: string) => {
@@ -109,6 +119,28 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a categoria do veículo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map(cat => (
+                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="name"
@@ -181,6 +213,7 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
                     <TableHeader>
                         <TableRow>
                             <TableHead>Nome</TableHead>
+                            <TableHead>Categoria</TableHead>
                             <TableHead>Frequência (KM)</TableHead>
                             <TableHead>Frequência (Meses)</TableHead>
                             <TableHead>Fornecedor Padrão</TableHead>
@@ -191,6 +224,7 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
                         {services.map(service => (
                             <TableRow key={service.id}>
                                 <TableCell className="font-medium">{service.name}</TableCell>
+                                <TableCell>{getCategoryName(service.categoryId)}</TableCell>
                                 <TableCell>{service.defaultKm > 0 ? service.defaultKm.toLocaleString('pt-BR') : 'N/A'}</TableCell>
                                 <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
                                 <TableCell>{service.defaultSupplier || 'N/A'}</TableCell>
@@ -214,3 +248,5 @@ export function ServiceManagementClient({ initialServices }: ServiceManagementCl
     </div>
   );
 }
+
+    

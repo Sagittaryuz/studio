@@ -13,6 +13,7 @@ export interface Vehicle {
 export interface Service {
   id: string;
   name: string;
+  categoryId: CategoryID;
   defaultMonths: number;
   defaultKm: number;
   defaultSupplier: string;
@@ -59,3 +60,5 @@ export interface DashboardData {
   categories: CategoryWithStatus[];
   userRole: UserRole;
 }
+
+    
