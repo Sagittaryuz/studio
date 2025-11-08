@@ -52,7 +52,8 @@ function Calendar({
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         ...classNames,
-        day_weekend: "text-red-500",
+        day_sunday: "text-red-500",
+        day_saturday: "text-blue-500",
       }}
       components={{
         IconLeft: ({ className, ...props }) => (
@@ -63,10 +64,12 @@ function Calendar({
         ),
       }}
       modifiers={{
-        weekend: { dayOfWeek: [0, 6] },
+        saturday: { dayOfWeek: [6] },
+        sunday: { dayOfWeek: [0] },
       }}
       modifiersClassNames={{
-        weekend: 'day-weekend'
+        saturday: 'day-saturday',
+        sunday: 'day-sunday'
       }}
       {...props}
     />
