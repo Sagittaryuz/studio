@@ -26,6 +26,7 @@ const addServiceSchema = z.object({
     supplier: z.string(),
     responsible: z.string(),
     notes: z.string().optional(),
+    attachments: z.array(z.string()).optional(),
 });
 
 const addVehicleSchema = z.object({
@@ -66,6 +67,7 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
     await mockDbAddVehicleService(data);
 
     revalidatePath('/');
+    revalidatePath(`/history/${data.vehicleId}/${data.serviceId}`);
 }
 
 /**

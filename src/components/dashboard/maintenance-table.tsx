@@ -10,6 +10,7 @@ import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
 import { AiSuggestionModal } from '@/components/vehicle/ai-suggestion-modal';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +34,12 @@ const statusBadgeClasses: Record<string, string> = {
 export function MaintenanceTable({ vehicle, services, allServices, userRole }: MaintenanceTableProps) {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isAiModalOpen, setAiModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<VehicleService | null>(null);
+
+  const handleOpenSheet = (service: VehicleService) => {
+    setSelectedService(service);
+    setSheetOpen(true);
+  };
   
   const canEdit = userRole === 'admin' || userRole === 'operator';
 
@@ -51,7 +58,7 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
   return (
     <>
       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between">
           <div>
              <div className="flex items-center gap-3">
               <Monitor className="h-8 w-8 text-primary" />
@@ -59,7 +66,9 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
                 Detalhes do Veículo: <span className="font-bold text-primary">{vehicle.plate}</span>
               </CardTitle>
             </div>
-            <CardDescription>Histórico e agendamentos de serviços do veículo.</CardDescription>
+            <CardDescription>
+                KM Atual: {vehicle.currentKm.toLocaleString('pt-BR')} km. Histórico e agendamentos de serviços.
+            </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <UpdateKmForm vehicle={vehicle} disabled={!canEdit} />
@@ -99,7 +108,7 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       {canEdit && (
-                          <Button onClick={() => setSheetOpen(true)} size="sm">
+                          <Button onClick={() => handleOpenSheet(service)} size="sm">
                               <PlusCircle className="mr-2 h-4 w-4" /> Registrar
                           </Button>
                       )}
@@ -110,7 +119,11 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/history/${vehicle.id}/${service.id}`}>
+                                Ver Detalhes
+                            </Link>
+                          </DropdownMenuItem>
                           {canEdit && <DropdownMenuItem>Reagendar</DropdownMenuItem>}
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -128,11 +141,12 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
           </Table>
         </CardContent>
       </Card>
-      {canEdit && (
+      {canEdit && selectedService && (
           <AddMaintenanceSheet 
             isOpen={isSheetOpen}
             setIsOpen={setSheetOpen}
             vehicle={vehicle}
+            service={selectedService}
             allServices={allServices}
           />
       )}

@@ -18,9 +18,8 @@ import {
 } from '@/components/ui/sheet';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Vehicle, Service } from '@/lib/types';
+import type { Vehicle, Service, VehicleService } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CalendarIcon } from 'lucide-react';
@@ -29,12 +28,12 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 const formSchema = z.object({
-  serviceId: z.string().min(1, 'Selecione um serviço.'),
   lastKm: z.coerce.number().min(0, 'Quilometragem inválida.'),
   lastDate: z.date({ required_error: 'Selecione a data.' }),
   supplier: z.string().min(1, 'Fornecedor é obrigatório.'),
   responsible: z.string().min(1, 'Responsável é obrigatório.'),
   notes: z.string().optional(),
+  attachments: z.custom<FileList>().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -43,10 +42,11 @@ interface AddMaintenanceSheetProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   vehicle: Vehicle;
+  service: VehicleService;
   allServices: Service[];
 }
 
-export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, allServices }: AddMaintenanceSheetProps) {
+export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allServices }: AddMaintenanceSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -54,16 +54,31 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, allServices }:
     resolver: zodResolver(formSchema),
     defaultValues: {
       lastKm: vehicle.currentKm,
-      supplier: '',
+      supplier: service.supplier || '',
       responsible: '',
       notes: '',
     },
   });
 
+  const getServiceName = (serviceId: string) => {
+    return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
+  };
+
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
     try {
-        await addVehicleService({ ...values, vehicleId: vehicle.id });
+        // Here you would handle the file upload to Firebase Storage
+        // and get the download URLs. For now, we'll just log it.
+        if (values.attachments) {
+            console.log('Files to upload:', values.attachments);
+        }
+
+        await addVehicleService({ 
+            ...values, 
+            vehicleId: vehicle.id,
+            serviceId: service.serviceId,
+            attachments: [], // Replace with actual URLs after upload
+        });
         toast({
             title: 'Sucesso!',
             description: 'Novo registro de manutenção adicionado.',
@@ -71,6 +86,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, allServices }:
         setIsOpen(false);
         form.reset();
     } catch (error) {
+        console.error(error);
         toast({
             variant: 'destructive',
             title: 'Erro',
@@ -85,37 +101,14 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, allServices }:
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent className="sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Registrar Manutenção - {vehicle.plate}</SheetTitle>
+          <SheetTitle>Registrar: {getServiceName(service.serviceId)} - {vehicle.plate}</SheetTitle>
           <SheetDescription>
             Adicione um novo registro de serviço realizado para este veículo.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="serviceId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Serviço Realizado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo de serviço" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {allServices.map(service => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -206,6 +199,19 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, allServices }:
                   <FormLabel>Observações</FormLabel>
                   <FormControl>
                     <Textarea {...field} placeholder="Detalhes do serviço, peças trocadas, etc." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="attachments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Anexos (NF, Imagens)</FormLabel>
+                  <FormControl>
+                    <Input type="file" multiple {...form.register('attachments')} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

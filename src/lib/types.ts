@@ -32,6 +32,7 @@ export interface VehicleService {
   nextKm: number;
   status: ServiceStatus;
   notes?: string;
+  attachments?: string[];
 }
 
 export type CategoryID = 'LOGISTICO' | 'EMPILHADEIRAS' | 'PASSEIO' | 'MOTOS' | 'GERADORES';
