@@ -11,12 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { JCIcon } from '@/components/icons';
 import { LogOut, Settings, User } from 'lucide-react';
-import { SidebarTrigger } from '../ui/sidebar';
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-       <SidebarTrigger className="md:hidden" />
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <div className="flex items-center gap-2">
         <JCIcon className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl">

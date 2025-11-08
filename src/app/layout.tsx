@@ -28,7 +28,9 @@ export default function RootLayout({
           'min-h-screen bg-background font-body antialiased'
         )}
       >
-        {children}
+        <div className="flex min-h-screen w-full flex-col">
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>

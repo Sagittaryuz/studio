@@ -7,8 +7,6 @@ export default async function DashboardPage() {
   const initialData = await getDashboardData('admin');
 
   return (
-    <div className="flex h-screen w-full flex-col">
       <DashboardClient initialData={initialData} />
-    </div>
   );
 }
