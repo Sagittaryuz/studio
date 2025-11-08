@@ -1,3 +1,4 @@
+
 import {
   Car,
   Cog,
@@ -29,15 +30,15 @@ const CATEGORIES: Category[] = [
 ];
 
 const VEHICLES: Vehicle[] = [
-  { id: 'v1', plate: 'ONC 9390', category: 'LOGISTICO', currentKm: 404714, active: false, photoUrl: 'https://picsum.photos/seed/truck1/600/400' },
-  { id: 'v2', plate: 'PQT 1H75', category: 'LOGISTICO', currentKm: 343000, active: false, photoUrl: 'https://picsum.photos/seed/truck2/600/400' },
-  { id: 'v3', plate: 'RBU 9C38', category: 'LOGISTICO', currentKm: 178315, active: false, photoUrl: 'https://picsum.photos/seed/truck3/600/400' },
-  { id: 'v4', plate: 'RCB 0E98', category: 'LOGISTICO', currentKm: 184786, active: false, photoUrl: 'https://picsum.photos/seed/truck4/600/400' },
+  { id: 'v1', plate: 'ONC 9390', category: 'LOGISTICO', currentKm: 404714, active: true, photoUrl: 'https://picsum.photos/seed/truck1/600/400' },
+  { id: 'v2', plate: 'PQT 1H75', category: 'LOGISTICO', currentKm: 343000, active: true, photoUrl: 'https://picsum.photos/seed/truck2/600/400' },
+  { id: 'v3', plate: 'RBU 9C38', category: 'LOGISTICO', currentKm: 178315, active: true, photoUrl: 'https://picsum.photos/seed/truck3/600/400' },
+  { id: 'v4', plate: 'RCB 0E98', category: 'LOGISTICO', currentKm: 184786, active: true, photoUrl: 'https://picsum.photos/seed/truck4/600/400' },
   { id: 'v5', plate: 'SCX 0J04', category: 'LOGISTICO', currentKm: 116000, active: true, photoUrl: 'https://picsum.photos/seed/truck5/600/400' },
-  { id: 'v6', plate: 'SCP 5J36', category: 'LOGISTICO', currentKm: 108000, active: false, photoUrl: 'https://picsum.photos/seed/truck6/600/400' },
+  { id: 'v6', plate: 'SCP 5J36', category: 'LOGISTICO', currentKm: 108000, active: true, photoUrl: 'https://picsum.photos/seed/truck6/600/400' },
   { id: 'v7', plate: 'OGS 8583', category: 'LOGISTICO', currentKm: 225000, active: true, photoUrl: 'https://picsum.photos/seed/truck7/600/400' },
-  { id: 'v8', plate: 'RBS 5E06', category: 'LOGISTICO', currentKm: 72255, active: false, photoUrl: 'https://picsum.photos/seed/truck8/600/400' },
-  { id: 'v9', plate: 'NWO 8655', category: 'LOGISTICO', currentKm: 3, active: false, photoUrl: 'https://picsum.photos/seed/truck9/600/400' },
+  { id: 'v8', plate: 'RBS 5E06', category: 'LOGISTICO', currentKm: 72255, active: true, photoUrl: 'https://picsum.photos/seed/truck8/600/400' },
+  { id: 'v9', plate: 'NWO 8655', category: 'LOGISTICO', currentKm: 3, active: true, photoUrl: 'https://picsum.photos/seed/truck9/600/400' },
   { id: 'v10', plate: 'OGS 8G13', category: 'LOGISTICO', currentKm: 193000, active: true, photoUrl: 'https://picsum.photos/seed/truck10/600/400' },
   { id: 'v11', plate: 'PQH 4780', category: 'LOGISTICO', currentKm: 113000, active: true, photoUrl: 'https://picsum.photos/seed/truck11/600/400' },
   { id: 'v12', plate: 'SCY 3I97', category: 'LOGISTICO', currentKm: 40350, active: true, photoUrl: 'https://picsum.photos/seed/truck12/600/400' },
@@ -53,7 +54,7 @@ const VEHICLES: Vehicle[] = [
   { id: 'v21', plate: 'TLC30 DIESEL - 179', category: 'EMPILHADEIRAS', currentKm: 1300, active: true, photoUrl: 'https://picsum.photos/seed/forklift6/600/400' },
   { id: 'v22', plate: 'STILL FMX17 - 153', category: 'EMPILHADEIRAS', currentKm: 2000, active: true, photoUrl: 'https://picsum.photos/seed/forklift7/600/400' },
   { id: 'v23', plate: 'STILL FMX17 - 154', category: 'EMPILHADEIRAS', currentKm: 1850, active: true, photoUrl: 'https://picsum.photos/seed/forklift8/600/400' },
-  { id: 'v24', plate: 'CLARK C30 - 108', category: 'EMPILHADEIRAS', currentKm: 8150, active: false, photoUrl: 'https://picsum.photos/seed/forklift9/600/400' },
+  { id: 'v24', plate: 'CLARK C30 - 108', category: 'EMPILHADEIRAS', currentKm: 8150, active: true, photoUrl: 'https://picsum.photos/seed/forklift9/600/400' },
   { id: 'v25', plate: 'STILL EGV16 - 161', category: 'EMPILHADEIRAS', currentKm: 1000, active: true, photoUrl: 'https://picsum.photos/seed/forklift10/600/400' },
   { id: 'v26', plate: 'HYSTER 60XT - 181', category: 'EMPILHADEIRAS', currentKm: 2350, active: true, photoUrl: 'https://picsum.photos/seed/forklift11/600/400' },
   { id: 'v27', plate: 'CLARK C30 - 122', category: 'EMPILHADEIRAS', currentKm: 7700, active: true, photoUrl: 'https://picsum.photos/seed/forklift12/600/400' },
@@ -62,7 +63,7 @@ const VEHICLES: Vehicle[] = [
   { id: 'v29', plate: 'PQR 3H80', category: 'PASSEIO', currentKm: 250000, active: true, photoUrl: 'https://picsum.photos/seed/car1/600/400' },
   { id: 'v30', plate: 'RBO 1C73', category: 'PASSEIO', currentKm: 44000, active: true, photoUrl: 'https://picsum.photos/seed/car2/600/400' },
   { id: 'v31', plate: 'RBO 1C93', category: 'PASSEIO', currentKm: 28650, active: true, photoUrl: 'https://picsum.photos/seed/car3/600/400' },
-  { id: 'v32', plate: 'SCN 5C62', category: 'PASSEIO', currentKm: 37500, active: false, photoUrl: 'https://picsum.photos/seed/car4/600/400' },
+  { id: 'v32', plate: 'SCN 5C62', category: 'PASSEIO', currentKm: 37500, active: true, photoUrl: 'https://picsum.photos/seed/car4/600/400' },
   { id: 'v33', plate: 'SCH 3I62', category: 'PASSEIO', currentKm: 67865, active: true, photoUrl: 'https://picsum.photos/seed/car5/600/400' },
   { id: 'v34', plate: 'PQE 9370', category: 'PASSEIO', currentKm: 106200, active: true, photoUrl: 'https://picsum.photos/seed/car6/600/400' },
   { id: 'v35', plate: 'SDC 3A35', category: 'PASSEIO', currentKm: 51000, active: true, photoUrl: 'https://picsum.photos/seed/car7/600/400' },
