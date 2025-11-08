@@ -63,11 +63,6 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
           </div>
           <div className="flex items-center gap-2">
             <UpdateKmForm vehicle={vehicle} disabled={!canEdit} />
-            {canEdit && (
-                <Button onClick={() => setSheetOpen(true)}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Registrar Serviço
-                </Button>
-            )}
              <Button variant="outline" onClick={() => setAiModalOpen(true)}>
                 Sugerir com IA
             </Button>
@@ -99,20 +94,27 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
                     {service.nextDate < new Date('2999-01-01') ? service.nextDate.toLocaleDateString('pt-BR') : ''}
                   </TableCell>
                   <TableCell>
-                    {service.lastKm.toLocaleString('pt-BR')} km / {service.lastDate.toLocaleDateString('pt-BR')}
+                    {service.lastDate.getFullYear() > 2000 ? `${service.lastKm.toLocaleString('pt-BR')} km / ${service.lastDate.toLocaleDateString('pt-BR')}` : 'Nunca realizado'}
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
-                        {canEdit && <DropdownMenuItem>Reagendar</DropdownMenuItem>}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center justify-end gap-2">
+                      {canEdit && (
+                          <Button onClick={() => setSheetOpen(true)} size="sm">
+                              <PlusCircle className="mr-2 h-4 w-4" /> Registrar
+                          </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                          {canEdit && <DropdownMenuItem>Reagendar</DropdownMenuItem>}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               )) : (

@@ -30,7 +30,7 @@ import { format } from 'date-fns';
 
 const formSchema = z.object({
   serviceId: z.string().min(1, 'Selecione um serviço.'),
-  lastKm: z.number().min(0, 'Quilometragem inválida.'),
+  lastKm: z.coerce.number().min(0, 'Quilometragem inválida.'),
   lastDate: z.date({ required_error: 'Selecione a data.' }),
   supplier: z.string().min(1, 'Fornecedor é obrigatório.'),
   responsible: z.string().min(1, 'Responsável é obrigatório.'),
