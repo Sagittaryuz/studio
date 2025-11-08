@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, PlusCircle } from 'lucide-react';
+import { MoreVertical, PlusCircle, Monitor } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
 import { AiSuggestionModal } from '@/components/vehicle/ai-suggestion-modal';
@@ -53,7 +53,12 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
       <Card className="mt-6">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-2xl">Manutenções - {vehicle.plate}</CardTitle>
+             <div className="flex items-center gap-3">
+              <Monitor className="h-8 w-8 text-primary" />
+              <CardTitle className="text-2xl">
+                Detalhes do Veículo: <span className="font-bold text-primary">{vehicle.plate}</span>
+              </CardTitle>
+            </div>
             <CardDescription>Histórico e agendamentos de serviços do veículo.</CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -89,7 +94,9 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {service.nextKm.toLocaleString('pt-BR')} km / {service.nextDate.toLocaleDateString('pt-BR')}
+                    {service.nextKm > 0 && Number.isFinite(service.nextKm) ? `${service.nextKm.toLocaleString('pt-BR')} km` : ''}
+                    {service.nextKm > 0 && Number.isFinite(service.nextKm) && service.nextDate < new Date('2999-01-01') ? ' / ' : ''}
+                    {service.nextDate < new Date('2999-01-01') ? service.nextDate.toLocaleDateString('pt-BR') : ''}
                   </TableCell>
                   <TableCell>
                     {service.lastKm.toLocaleString('pt-BR')} km / {service.lastDate.toLocaleDateString('pt-BR')}

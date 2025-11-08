@@ -78,12 +78,12 @@ const VEHICLES: Vehicle[] = [
   { id: 'v43', plate: 'ONQ 5462', category: 'MOTOS', currentKm: 71175, active: true, photoUrl: 'https://picsum.photos/seed/bike5/600/400' },
   { id: 'v44', plate: 'NGL8763', category: 'MOTOS', currentKm: 53100, active: true, photoUrl: 'https://picsum.photos/seed/bike6/600/400' },
 
-  { id: 'v45', plate: '86 - MATRIZ', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator1/600/400' },
-  { id: 'v46', plate: '111 - CD', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator2/600/400' },
-  { id: 'v47', plate: '87 - CATEDRAL', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator3/600/400' },
-  { id: 'v48', plate: '112 - MINEIROS', category: 'GERADORES', currentKm: 0, active: true, photoUrl: 'https://picsum.photos/seed/generator4/600/400' },
-  { id: 'v49', plate: '148 - RHARO', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator5/600/400' },
-  { id: 'v50', plate: '162 - SAID ABDALLA', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator6/600/400' },
+  { id: 'v45', plate: '86 - MATRIZ', category: 'GERADORES', currentKm: 393, active: true, photoUrl: 'https://picsum.photos/seed/generator1/600/400' },
+  { id: 'v46', plate: '111 - CD', category: 'GERADORES', currentKm: 0, active: true, photoUrl: 'https://picsum.photos/seed/generator2/600/400' },
+  { id: 'v47', plate: '87 - CATEDRAL', category: 'GERADORES', currentKm: 393, active: true, photoUrl: 'https://picsum.photos/seed/generator3/600/400' },
+  { id: 'v48', plate: '112 - MINEIROS', category: 'GERADORES', currentKm: 187, active: true, photoUrl: 'https://picsum.photos/seed/generator4/600/400' },
+  { id: 'v49', plate: '148 - RHARO', category: 'GERADORES', currentKm: 0, active: true, photoUrl: 'https://picsum.photos/seed/generator5/600/400' },
+  { id: 'v50', plate: '162 - SAID ABDALLA', category: 'GERADORES', currentKm: 0, active: true, photoUrl: 'https://picsum.photos/seed/generator6/600/400' },
   { id: 'v51', plate: '98 - RIO VERDE', category: 'GERADORES', currentKm: 13, active: true, photoUrl: 'https://picsum.photos/seed/generator7/600/400' },
 ];
 
@@ -97,187 +97,159 @@ const SERVICES: Service[] = [
   { id: 's6', name: 'Óleo do diferencial', defaultMonths: 18, defaultKm: 60000, defaultSupplier: 'DANIEL' },
   { id: 's7', name: 'Revisão do sistema de arla', defaultMonths: 72, defaultKm: 180000, defaultSupplier: 'CHIP TRUCK' },
   { id: 's8', name: 'Rodizio de baterias', defaultMonths: 3, defaultKm: 0, defaultSupplier: 'Casa das Baterias' },
-  { id: 's9', name: 'Lubrificação', defaultMonths: 1, defaultKm: 2500, defaultSupplier: 'DC SANTOS' },
+  { id: 's9', name: 'Lubrificação', defaultMonths: 1, defaultKm: 2500, defaultSupplier: 'DANIEL' },
   { id: 's10', name: 'Extintor', defaultMonths: 58, defaultKm: 0, defaultSupplier: 'JATAI EXTINTORES' },
   { id: 's11', name: 'Revisão da suspensão, cubos, rodas e freios', defaultMonths: 14, defaultKm: 0, defaultSupplier: 'DANIEL' },
-  { id: 's12', name: 'Radiador, interculer e bloco do motor', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'MINOL' },
-  { id: 's13', name: 'Tacógrafo', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'AUTO ELETRICA SUCAL' },
+  { id: 's12', name: 'Radiador, intercooler e bloco do motor', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'MINOL' },
+  { id: 's13', name: 'Tacógrafo', defaultMonths: 24, defaultKm: 0, defaultSupplier: '' },
   { id: 's14', name: 'Alinhamento', defaultMonths: 6, defaultKm: 15000, defaultSupplier: 'DANIEL' },
-  { id: 's15', name: 'Regulagem de valvulas', defaultMonths: 0, defaultKm: 0, defaultSupplier: '' },
+  { id: 's15', name: 'Regulagem de válvulas', defaultMonths: 24, defaultKm: 0, defaultSupplier: '' },
+  { id: 's16', name: 'Óleo do motor e filtros', defaultMonths: 12, defaultKm: 10000, defaultSupplier: 'URCA' },
+  { id: 's17', name: 'Óleo da transmissão', defaultMonths: 24, defaultKm: 30000, defaultSupplier: 'URCA' },
+  { id: 's18', name: 'Óleo do motor PSI', defaultMonths: 6, defaultKm: 250, defaultSupplier: 'DALMI' },
+  { id: 's19', name: 'Óleo hidraulico', defaultMonths: 18, defaultKm: 1500, defaultSupplier: 'Elevar' },
+  { id: 's20', name: 'Correia dentada', defaultMonths: 0, defaultKm: 2000, defaultSupplier: '' },
+  { id: 's21', name: 'Pneus traseiros', defaultMonths: 0, defaultKm: 0, defaultSupplier: 'SOLUÇÃO' },
+  { id: 's22', name: 'Bateria', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'Casa das Baterias' },
+  { id: 's23', name: 'Revisão periódica', defaultMonths: 12, defaultKm: 10000, defaultSupplier: '' },
+  { id: 's24', name: 'Revisão', defaultMonths: 12, defaultKm: 10000, defaultSupplier: '' },
 ];
 
 
-const parseDate = (dateString: string): Date => {
-  return parse(dateString, 'dd/MM/yyyy', new Date());
-};
-
-const VEHICLE_SERVICES_HISTORY: Omit<VehicleService, 'nextDate' | 'nextKm' | 'status'>[] = [
-  // ONC 9390
-  { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: parseDate('03/06/2025'), lastKm: 392365, supplier: '', responsible: '' },
-  { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: parseDate('03/06/2025'), lastKm: 392365, supplier: '', responsible: '' },
-  { id: 'vs3', vehicleId: 'v1', serviceId: 's3', lastDate: parseDate('03/06/2025'), lastKm: 392365, supplier: '', responsible: '' },
-  { id: 'vs4', vehicleId: 'v1', serviceId: 's4', lastDate: parseDate('09/09/2025'), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: '' },
-  { id: 'vs5', vehicleId: 'v1', serviceId: 's5', lastDate: parseDate('20/08/2024'), lastKm: 392365, supplier: 'DANIEL', responsible: '' },
-  { id: 'vs6', vehicleId: 'v1', serviceId: 's6', lastDate: parseDate('20/08/2024'), lastKm: 392365, supplier: 'DANIEL', responsible: '' },
-  { id: 'vs7', vehicleId: 'v1', serviceId: 's7', lastDate: parseDate('19/09/2025'), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: '' },
-  { id: 'vs8', vehicleId: 'v1', serviceId: 's8', lastDate: parseDate('26/08/2025'), lastKm: 404714, supplier: 'Casa das Baterias', responsible: '' },
-  { id: 'vs9', vehicleId: 'v1', serviceId: 's10', lastDate: parseDate('10/06/2025'), lastKm: 404714, supplier: 'JATAI EXTINTORES', responsible: '' },
-  { id: 'vs10', vehicleId: 'v1', serviceId: 's11', lastDate: parseDate('20/08/2024'), lastKm: 392365, supplier: 'DANIEL', responsible: '' },
-  { id: 'vs11', vehicleId: 'v1', serviceId: 's12', lastDate: parseDate('24/10/2025'), lastKm: 404714, supplier: 'MINOL', responsible: '' },
-  { id: 'vs12', vehicleId: 'v1', serviceId: 's13', lastDate: parseDate('01/07/2024'), lastKm: 392365, supplier: '', responsible: '' },
-
-  // PQT 1H75
-  { id: 'vs13', vehicleId: 'v2', serviceId: 's1', lastDate: parseDate('16/05/2025'), lastKm: 327147, supplier: '', responsible: '' },
-  { id: 'vs14', vehicleId: 'v2', serviceId: 's4', lastDate: parseDate('11/08/2025'), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: '' },
-  { id: 'vs15', vehicleId: 'v2', serviceId: 's5', lastDate: parseDate('09/07/2024'), lastKm: 327147, supplier: 'FERNANDO', responsible: '' },
-  { id: 'vs16', vehicleId: 'v2', serviceId: 's6', lastDate: parseDate('09/07/2024'), lastKm: 327147, supplier: 'FERNANDO', responsible: '' },
-  { id: 'vs17', vehicleId: 'v2', serviceId: 's7', lastDate: parseDate('11/08/2025'), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: '' },
-  { id: 'vs18', vehicleId: 'v2', serviceId: 's9', lastDate: parseDate('11/09/2025'), lastKm: 342078, supplier: 'DANIEL', responsible: '' },
-  { id: 'vs19', vehicleId: 'v2', serviceId: 's12', lastDate: parseDate('30/10/2025'), lastKm: 343000, supplier: 'MINOL NF 15849', responsible: '' },
-  { id: 'vs20', vehicleId: 'v2', serviceId: 's13', lastDate: parseDate('01/07/2024'), lastKm: 327147, supplier: '', responsible: '' },
-  { id: 'vs21', vehicleId: 'v2', serviceId: 's14', lastDate: parseDate('11/09/2025'), lastKm: 342078, supplier: 'DANIEL', responsible: '' },
-
-  // RBU 9C38
-  { id: 'vs22', vehicleId: 'v3', serviceId: 's1', lastDate: parseDate('06/05/2025'), lastKm: 166121, supplier: '', responsible: '' },
-  { id: 'vs23', vehicleId: 'v3', serviceId: 's4', lastDate: parseDate('13/06/2025'), lastKm: 169000, supplier: '', responsible: '' },
-  { id: 'vs24', vehicleId: 'v3', serviceId: 's5', lastDate: parseDate('16/07/2024'), lastKm: 166121, supplier: '', responsible: '' },
-  { id: 'vs25', vehicleId: 'v3', serviceId: 's7', lastDate: parseDate('13/06/2025'), lastKm: 169000, supplier: 'CHIP TRUCK NF 499', responsible: '' },
-  { id: 'vs26', vehicleId: 'v3', serviceId: 's8', lastDate: parseDate('21/10/2025'), lastKm: 178315, supplier: 'CASA DAS BATERIAS', responsible: '' },
-  { id: 'vs27', vehicleId: 'v3', serviceId: 's11', lastDate: parseDate('16/07/2024'), lastKm: 166121, supplier: '', responsible: '' },
-  { id: 'vs28', vehicleId: 'v3', serviceId: 's12', lastDate: parseDate('24/10/2025'), lastKm: 178315, supplier: 'MINOL', responsible: '' },
-  { id: 'vs29', vehicleId: 'v3', serviceId: 's13', lastDate: parseDate('01/05/2025'), lastKm: 166121, supplier: '', responsible: '' },
+const VEHICLE_SERVICES: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>[] = [
+    // ONC 9390
+    { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
+    { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
+    { id: 'vs3', vehicleId: 'v1', serviceId: 's3', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
+    { id: 'vs4', vehicleId: 'v1', serviceId: 's4', lastDate: parse('09/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: 'Admin' },
+    { id: 'vs5', vehicleId: 'v1', serviceId: 's5', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin' },
+    { id: 'vs6', vehicleId: 'v1', serviceId: 's6', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin' },
+    { id: 'vs7', vehicleId: 'v1', serviceId: 's7', lastDate: parse('19/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: 'Admin' },
+    { id: 'vs8', vehicleId: 'v1', serviceId: 's8', lastDate: parse('26/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 400000, supplier: 'Casa das Baterias', responsible: 'Admin' },
+    { id: 'vs9', vehicleId: 'v1', serviceId: 's10', lastDate: parse('10/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 395000, supplier: 'JATAI EXTINTORES', responsible: 'Admin' },
+    { id: 'vs10', vehicleId: 'v1', serviceId: 's11', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin' },
+    { id: 'vs11', vehicleId: 'v1', serviceId: 's12', lastDate: parse('24/10/2025', 'dd/MM/yyyy', new Date()), lastKm: 410000, supplier: 'MINOL', responsible: 'Admin' },
+    { id: 'vs12', vehicleId: 'v1', serviceId: 's13', lastDate: parse('01/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 370000, supplier: 'Interno', responsible: 'Admin' },
+    // PQT 1H75
+    { id: 'vs13', vehicleId: 'v2', serviceId: 's1', lastDate: parse('16/05/2025', 'dd/MM/yyyy', new Date()), lastKm: 327147, supplier: 'Interno', responsible: 'Admin' },
+    { id: 'vs14', vehicleId: 'v2', serviceId: 's4', lastDate: parse('11/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: 'Admin' },
+    { id: 'vs15', vehicleId: 'v2', serviceId: 's5', lastDate: parse('09/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'FERNANDO', responsible: 'Admin' },
+    { id: 'vs16', vehicleId: 'v2', serviceId: 's6', lastDate: parse('09/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'FERNANDO', responsible: 'Admin' },
+    { id: 'vs17', vehicleId: 'v2', serviceId: 's7', lastDate: parse('11/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: 'Admin' },
+    { id: 'vs18', vehicleId: 'v2', serviceId: 's9', lastDate: parse('11/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 342078, supplier: 'DANIEL', responsible: 'Admin' },
+    { id: 'vs19', vehicleId: 'v2', serviceId: 's12', lastDate: parse('30/10/2025', 'dd/MM/yyyy', new Date()), lastKm: 345000, supplier: 'MINOL NF 15849', responsible: 'Admin' },
+    { id: 'vs20', vehicleId: 'v2', serviceId: 's13', lastDate: parse('01/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'Interno', responsible: 'Admin' },
+    { id: 'vs21', vehicleId: 'v2', serviceId: 's14', lastDate: parse('11/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 342078, supplier: 'DANIEL', responsible: 'Admin' },
 ];
 
 
-// --- BUSINESS LOGIC ---
-
-// Configurable thresholds for ALERTA status
-const ALERT_DAYS_THRESHOLD = 30;
-const ALERT_KM_THRESHOLD = 1000;
+// --- DATA PROCESSING LOGIC ---
 
 /**
- * Calculates the status of a single maintenance service.
+ * Calculates the status of a single service for a vehicle.
  */
 function getServiceStatus(
-  vs: Pick<VehicleService, 'nextDate' | 'nextKm'>,
-  currentKm: number
-): ServiceStatus {
-  const today = new Date();
-  
-  // VENCIDO check
-  if (vs.nextDate < today || (vs.nextKm > 0 && vs.nextKm <= currentKm)) {
-    return 'VENCIDO';
+  vehicle: Vehicle,
+  service: VehicleService,
+  serviceInfo: Service
+): { status: ServiceStatus; nextDate: Date; nextKm: number } {
+  const { lastDate, lastKm } = service;
+  const { defaultMonths, defaultKm } = serviceInfo;
+  const { currentKm } = vehicle;
+
+  const nextDate = defaultMonths > 0 ? addMonths(lastDate, defaultMonths) : new Date('2999-12-31');
+  const nextKm = defaultKm > 0 ? lastKm + defaultKm : Infinity;
+
+  const daysUntilNextDate = differenceInDays(nextDate, new Date());
+  const kmUntilNextService = nextKm - currentKm;
+
+  let status: ServiceStatus = 'OK';
+  const isKmAlert = defaultKm > 0 && kmUntilNextService <= defaultKm * 0.1; // 10% threshold
+  const isDateAlert = defaultMonths > 0 && daysUntilNextDate <= 30; // 30 days threshold
+
+  if ((defaultKm > 0 && currentKm >= nextKm) || (defaultMonths > 0 && new Date() >= nextDate)) {
+    status = 'VENCIDO';
+  } else if (isKmAlert || isDateAlert) {
+    status = 'ALERTA';
   }
 
-  // ALERTA check
-  const daysUntilNext = differenceInDays(vs.nextDate, today);
-  const kmUntilNext = vs.nextKm - currentKm;
-
-  if (daysUntilNext <= ALERT_DAYS_THRESHOLD || (kmUntilNext > 0 && kmUntilNext <= ALERT_KM_THRESHOLD)) {
-    return 'ALERTA';
-  }
-
-  // OK
-  return 'OK';
+  return { status, nextDate, nextKm };
 }
 
+
 /**
- * Processes the raw data to calculate statuses and next service info.
+ * Processes raw data to add status and next service info.
  */
-async function processData(userRole: UserRole): Promise<DashboardData> {
-  const vehicles = VEHICLES;
-  const services = SERVICES;
-
-  const vehicleServices: VehicleService[] = VEHICLE_SERVICES_HISTORY.map(vsHistory => {
-    const service = services.find(s => s.id === vsHistory.serviceId);
-    const vehicle = vehicles.find(v => v.id === vsHistory.vehicleId);
-
-    if (!service || !vehicle) {
-        // Return a default/error structure if service or vehicle not found
-        return {
-            ...vsHistory,
-            nextDate: new Date(),
-            nextKm: 0,
-            status: 'OK',
-        };
+export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
+  const processedVehicleServices = VEHICLE_SERVICES.map((vs) => {
+    const vehicle = VEHICLES.find(v => v.id === vs.vehicleId);
+    const serviceInfo = SERVICES.find(s => s.id === vs.serviceId);
+    if (!vehicle || !serviceInfo) {
+      // This should not happen in a real app with foreign keys
+      return {
+        ...vs,
+        status: 'OK',
+        nextDate: new Date('2999-12-31'),
+        nextKm: Infinity,
+      } as VehicleService;
     }
-
-    const nextDate = service.defaultMonths > 0 ? addMonths(vsHistory.lastDate, service.defaultMonths) : new Date('2999-12-31');
-    const nextKm = service.defaultKm > 0 ? vsHistory.lastKm + service.defaultKm : 0;
-
-    const status = getServiceStatus({ nextDate, nextKm }, vehicle.currentKm);
-
-    return {
-      ...vsHistory,
-      nextDate,
-      nextKm,
-      status,
-    };
-  });
-  
-  const statusOrder: Record<ServiceStatus, number> = { 'VENCIDO': 3, 'ALERTA': 2, 'OK': 1 };
-
-  const vehiclesWithStatus: VehicleWithStatus[] = vehicles.map(vehicle => {
-    const servicesForVehicle = vehicleServices.filter(vs => vs.vehicleId === vehicle.id);
-    
-    if (servicesForVehicle.length === 0) {
-      return { ...vehicle, status: 'OK', nextServiceSummary: 'Nenhum serviço registrado' };
-    }
-
-    // Find the "worst" status among all services for this vehicle
-    const overallStatus = servicesForVehicle.reduce((worst, current) => {
-        return statusOrder[current.status] > statusOrder[worst] ? current.status : worst;
-    }, 'OK' as ServiceStatus);
-    
-    // Find the next upcoming service to display in summary
-    const nextService = servicesForVehicle.sort((a, b) => a.nextDate.getTime() - b.nextDate.getTime())[0];
-    const serviceInfo = services.find(s => s.id === nextService.serviceId)!;
-
-    const nextServiceSummary = `${serviceInfo.name} em ${nextService.nextKm.toLocaleString('pt-BR')} km ou ${nextService.nextDate.toLocaleDateString('pt-BR')}`;
-    
-    return {
-      ...vehicle,
-      status: overallStatus,
-      nextServiceSummary
-    };
+    const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs as VehicleService, serviceInfo);
+    return { ...vs, status, nextDate, nextKm };
   });
 
-  const categoriesWithStatus: CategoryWithStatus[] = CATEGORIES.map(category => {
-    const vehiclesInCategory = vehiclesWithStatus.filter(v => v.category === category.id && v.active);
-    if(vehiclesInCategory.length === 0) {
-        return { ...category, status: 'OK', pendingCount: 0 };
+  const vehiclesWithStatus: VehicleWithStatus[] = VEHICLES.filter(v => v.active).map((v) => {
+    const servicesForVehicle = processedVehicleServices.filter(vs => vs.vehicleId === v.id);
+    let overallStatus: ServiceStatus = 'OK';
+    let nextServiceSummary = 'Nenhum serviço pendente';
+
+    if (servicesForVehicle.some(s => s.status === 'VENCIDO')) {
+      overallStatus = 'VENCIDO';
+    } else if (servicesForVehicle.some(s => s.status === 'ALERTA')) {
+      overallStatus = 'ALERTA';
     }
     
-    const overallStatus = vehiclesInCategory.reduce((worst, current) => {
-        return statusOrder[current.status] > statusOrder[worst] ? current.status : worst;
-    }, 'OK' as ServiceStatus);
+    const nextDueService = servicesForVehicle
+      .filter(s => s.status !== 'OK')
+      .sort((a, b) => {
+        const aDays = differenceInDays(a.nextDate, new Date());
+        const bDays = differenceInDays(b.nextDate, new Date());
+        return aDays - bDays;
+      })[0];
 
-    const pendingCount = vehiclesInCategory.filter(v => v.status === 'VENCIDO' || v.status === 'ALERTA').length;
+    if (nextDueService) {
+        const serviceInfo = SERVICES.find(s => s.id === nextDueService.serviceId);
+        const byKm = nextDueService.nextKm !== Infinity ? `${nextDueService.nextKm.toLocaleString('pt-BR')} km` : '';
+        const byDate = nextDueService.nextDate < new Date('2999-01-01') ? `${nextDueService.nextDate.toLocaleDateString('pt-BR')}` : '';
+        const separator = byKm && byDate ? ' ou ' : '';
+        nextServiceSummary = `${serviceInfo?.name || 'Serviço'} em ${byKm}${separator}${byDate}`;
+    }
 
-    return { ...category, status: overallStatus, pendingCount };
+
+    return { ...v, status: overallStatus, nextServiceSummary };
   });
+
+  const categoriesWithStatus: CategoryWithStatus[] = CATEGORIES.map(cat => {
+    const vehiclesInCategory = vehiclesWithStatus.filter(v => v.category === cat.id);
+    let categoryStatus: ServiceStatus = 'OK';
+    let pendingCount = 0;
+
+    if (vehiclesInCategory.some(v => v.status === 'VENCIDO')) {
+        categoryStatus = 'VENCIDO';
+    } else if (vehiclesInCategory.some(v => v.status === 'ALERTA')) {
+        categoryStatus = 'ALERTA';
+    }
+
+    pendingCount = vehiclesInCategory.filter(v => v.status === 'VENCIDO' || v.status === 'ALERTA').length;
+
+    return { ...cat, status: categoryStatus, pendingCount };
+  });
+
 
   return {
     vehicles: vehiclesWithStatus,
-    services,
-    vehicleServices,
+    services: SERVICES,
+    vehicleServices: processedVehicleServices as VehicleService[],
     categories: categoriesWithStatus,
     userRole,
   };
-}
-
-/**
- * Simulates fetching and processing data from a database.
- */
-export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
-  // In a real app, this would involve async calls to Firestore
-  return processData(userRole);
-}
-
-// In a real app, these would be in their own files and talk to Firestore
-export async function getVehicleDetails(vehicleId: string) {
-    const data = await processData('admin');
-    const vehicle = data.vehicles.find(v => v.id === vehicleId);
-    const servicesForVehicle = data.vehicleServices.filter(vs => vs.vehicleId === vehicleId);
-    return { vehicle, services: servicesForVehicle, allServices: data.services };
 }
