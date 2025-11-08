@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Cog } from 'lucide-react';
+import Link from 'next/link';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -53,6 +54,14 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
     <>
       <AppHeader />
       <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <div className="flex justify-end mb-4">
+            <Button asChild variant="outline">
+                <Link href="/services">
+                    <Cog className="mr-2 h-4 w-4" />
+                    Gerenciar Serviços
+                </Link>
+            </Button>
+        </div>
         <Tabs value={selectedCategory} onValueChange={handleSelectCategory} className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
             {initialData.categories.map((category: CategoryWithStatus) => (
