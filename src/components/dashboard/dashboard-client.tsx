@@ -74,6 +74,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
                           vehicles={vehiclesByCategory[category.id] || []}
                           selectedVehicleId={selectedVehicle?.id}
                           onSelectVehicle={handleSelectVehicle}
+                          categoryId={category.id}
                       />
                   ) : (
                       <div className="flex items-center justify-center rounded-lg border-2 border-dashed p-8 text-center text-muted-foreground">

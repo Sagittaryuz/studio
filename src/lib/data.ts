@@ -17,6 +17,7 @@ import type {
   ServiceStatus,
   UserRole,
   CategoryWithStatus,
+  CategoryID,
 } from './types';
 
 // --- MOCK DATABASE ---
@@ -29,7 +30,7 @@ const CATEGORIES: Category[] = [
   { id: 'GERADORES', name: 'Geradores' },
 ];
 
-const VEHICLES: Vehicle[] = [
+let VEHICLES: Vehicle[] = [
   { id: 'v1', plate: 'ONC 9390', category: 'LOGISTICO', currentKm: 404714, active: true, photoUrl: 'https://picsum.photos/seed/truck1/600/400' },
   { id: 'v2', plate: 'PQT 1H75', category: 'LOGISTICO', currentKm: 343000, active: true, photoUrl: 'https://picsum.photos/seed/truck2/600/400' },
   { id: 'v3', plate: 'RBU 9C38', category: 'LOGISTICO', currentKm: 178315, active: true, photoUrl: 'https://picsum.photos/seed/truck3/600/400' },
@@ -88,7 +89,7 @@ const VEHICLES: Vehicle[] = [
 ];
 
 
-const SERVICES: Service[] = [
+let SERVICES: Service[] = [
   { id: 's1', name: 'Óleo do motor', defaultMonths: 12, defaultKm: 20000, defaultSupplier: '' },
   { id: 's2', name: 'Filtro de diesel', defaultMonths: 6, defaultKm: 10000, defaultSupplier: '' },
   { id: 's3', name: 'Filtro separador de água', defaultMonths: 6, defaultKm: 10000, defaultSupplier: '' },
@@ -116,7 +117,7 @@ const SERVICES: Service[] = [
 ];
 
 
-const VEHICLE_SERVICES: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>[] = [
+let VEHICLE_SERVICES: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>[] = [
     // ONC 9390
     { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
     { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
@@ -143,6 +144,59 @@ const VEHICLE_SERVICES: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>[]
 ];
 
 
+// --- MOCK DATABASE MUTATIONS ---
+export async function mockDbUpdateVehicleKm(id: string, km: number) {
+    const vehicleIndex = VEHICLES.findIndex(v => v.id === id);
+    if (vehicleIndex !== -1) {
+        VEHICLES[vehicleIndex].currentKm = km;
+    }
+    await new Promise(res => setTimeout(res, 500));
+}
+
+export async function mockDbAddVehicleService(data: Omit<VehicleService, 'id' | 'status' | 'nextDate' | 'nextKm'>) {
+    const newService = {
+        id: `vs${Date.now()}`,
+        ...data,
+    };
+    VEHICLE_SERVICES.push(newService);
+    await new Promise(res => setTimeout(res, 800));
+}
+
+export async function mockDbAddVehicle(data: { plate: string; currentKm: number; category: CategoryID }) {
+    const newVehicle: Vehicle = {
+        id: `v${Date.now()}`,
+        plate: data.plate,
+        currentKm: data.currentKm,
+        category: data.category,
+        active: true,
+        photoUrl: `https://picsum.photos/seed/${data.plate}/600/400`,
+    };
+    VEHICLES.push(newVehicle);
+
+    // Get all unique services for the category
+    const vehicleIdsInCategory = VEHICLES.filter(v => v.category === data.category && v.id !== newVehicle.id).map(v => v.id);
+    const serviceIdsForCategory = [...new Set(VEHICLE_SERVICES.filter(vs => vehicleIdsInCategory.includes(vs.vehicleId)).map(vs => vs.serviceId))];
+    const categoryServices = SERVICES.filter(s => serviceIdsForCategory.includes(s.id));
+    
+    // Add empty service history for the new vehicle
+    categoryServices.forEach(service => {
+        const newServiceRecord = {
+            id: `vs${Date.now()}-${service.id}`,
+            vehicleId: newVehicle.id,
+            serviceId: service.id,
+            // Use a far-past date and 0 km to indicate it's never been done
+            lastDate: new Date('2000-01-01'), 
+            lastKm: 0,
+            supplier: '',
+            responsible: 'Sistema',
+        };
+        VEHICLE_SERVICES.push(newServiceRecord);
+    });
+
+
+    await new Promise(res => setTimeout(res, 500));
+}
+
 // --- DATA PROCESSING LOGIC ---
 
 /**
@@ -150,12 +204,21 @@ const VEHICLE_SERVICES: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>[]
  */
 function getServiceStatus(
   vehicle: Vehicle,
-  service: VehicleService,
+  service: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>,
   serviceInfo: Service
 ): { status: ServiceStatus; nextDate: Date; nextKm: number } {
   const { lastDate, lastKm } = service;
   const { defaultMonths, defaultKm } = serviceInfo;
   const { currentKm } = vehicle;
+
+  // If the service has never been performed, flag as ALERTA
+  if (lastKm === 0 && lastDate.getFullYear() === 2000) {
+    return {
+        status: 'ALERTA',
+        nextDate: new Date(),
+        nextKm: currentKm,
+    };
+  }
 
   const nextDate = defaultMonths > 0 ? addMonths(lastDate, defaultMonths) : new Date('2999-12-31');
   const nextKm = defaultKm > 0 ? lastKm + defaultKm : Infinity;
@@ -193,7 +256,7 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
         nextKm: Infinity,
       } as VehicleService;
     }
-    const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs as VehicleService, serviceInfo);
+    const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs, serviceInfo);
     return { ...vs, status, nextDate, nextKm };
   });
 

@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
+import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm } from '@/lib/data';
+import type { CategoryID } from '@/lib/types';
 
 
 // Re-exporting for component usage
@@ -26,23 +28,12 @@ const addServiceSchema = z.object({
     notes: z.string().optional(),
 });
 
+const addVehicleSchema = z.object({
+    plate: z.string().min(3, 'Placa inválida.'),
+    currentKm: z.number().min(0, 'KM inválido.'),
+    categoryId: z.string(),
+});
 
-// --- MOCK DATABASE MUTATIONS ---
-// In a real app, these would interact with Firestore
-
-async function mockDbUpdateVehicleKm(id: string, km: number) {
-    console.log(`[ACTION] Updating vehicle ${id} to ${km} km.`);
-    // Simulate DB delay
-    await new Promise(res => setTimeout(res, 500));
-    // In a real app: await db.collection('vehicles').doc(id).update({ currentKm: km });
-}
-
-async function mockDbAddVehicleService(data: z.infer<typeof addServiceSchema>) {
-    console.log(`[ACTION] Adding service for vehicle ${data.vehicleId}:`, data);
-    // Simulate DB delay
-    await new Promise(res => setTimeout(res, 800));
-    // In a real app: await db.collection('vehicleServices').add({ ...data, createdAt: serverTimestamp() });
-}
 
 // --- SERVER ACTIONS ---
 
@@ -76,6 +67,27 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
 
     revalidatePath('/');
 }
+
+/**
+ * Adds a new vehicle to the fleet.
+ */
+export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
+    const validation = addVehicleSchema.safeParse(data);
+
+    if(!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for adding vehicle.');
+    }
+    
+    await mockDbAddVehicle({
+        plate: data.plate,
+        currentKm: data.currentKm,
+        category: data.categoryId as CategoryID,
+    });
+
+    revalidatePath('/');
+}
+
 
 /**
  * Calls the Genkit flow to get a maintenance schedule suggestion.
