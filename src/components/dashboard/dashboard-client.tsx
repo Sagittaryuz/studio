@@ -8,6 +8,8 @@ import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Button } from '../ui/button';
+import { Plus } from 'lucide-react';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -67,11 +69,22 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
           {initialData.categories.map(category => (
              <TabsContent key={category.id} value={category.id}>
                 <div className="mt-4">
-                    <VehicleList
-                        vehicles={vehiclesByCategory[category.id] || []}
-                        selectedVehicleId={selectedVehicle?.id}
-                        onSelectVehicle={handleSelectVehicle}
-                    />
+                  {vehiclesByCategory[category.id] && vehiclesByCategory[category.id].length > 0 ? (
+                      <VehicleList
+                          vehicles={vehiclesByCategory[category.id] || []}
+                          selectedVehicleId={selectedVehicle?.id}
+                          onSelectVehicle={handleSelectVehicle}
+                      />
+                  ) : (
+                      <div className="flex items-center justify-center rounded-lg border-2 border-dashed p-8 text-center text-muted-foreground">
+                          <div className='flex flex-col items-center gap-4'>
+                            <p>Nenhum veículo encontrado nesta categoria.</p>
+                            <Button variant="outline">
+                              <Plus className="mr-2 h-4 w-4" /> Adicionar Veículo
+                            </Button>
+                          </div>
+                      </div>
+                  )}
                 </div>
             </TabsContent>
           ))}
