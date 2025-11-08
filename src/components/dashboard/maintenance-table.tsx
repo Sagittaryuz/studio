@@ -120,7 +120,7 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                           <DropdownMenuItem asChild>
-                            <Link href={`/history/${vehicle.id}/${service.id}`}>
+                            <Link href={`/history/${vehicle.id}/${service.serviceId}`}>
                                 Ver Detalhes
                             </Link>
                           </DropdownMenuItem>
@@ -144,7 +144,7 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
       {canEdit && selectedService && (
           <AddMaintenanceSheet 
             isOpen={isSheetOpen}
-            setIsOpen={setSheetOpen}
+            setIsOpen={setIsOpen}
             vehicle={vehicle}
             service={selectedService}
             allServices={allServices}
