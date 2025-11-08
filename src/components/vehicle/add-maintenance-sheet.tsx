@@ -29,6 +29,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '../ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const formSchema = z.object({
   lastKm: z.coerce.number().min(0, 'Quilometragem inválida.'),
@@ -172,7 +173,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
                                 )}
                                 >
                                 {field.value ? (
-                                    format(field.value, "PPP")
+                                    format(field.value, "PPP", { locale: ptBR })
                                 ) : (
                                     <span>Escolha uma data</span>
                                 )}
@@ -189,6 +190,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
                                     date > new Date() || date < new Date("1900-01-01")
                                 }
                                 initialFocus
+                                locale={ptBR}
                             />
                         </PopoverContent>
                     </Popover>
