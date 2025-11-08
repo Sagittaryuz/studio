@@ -1,4 +1,5 @@
 
+
 import {
   Car,
   Cog,
@@ -174,8 +175,7 @@ export async function mockDbAddVehicle(data: { plate: string; currentKm: number;
     VEHICLES.push(newVehicle);
 
     // Get all unique services for the category
-    const vehicleIdsInCategory = VEHICLES.filter(v => v.category === data.category && v.id !== newVehicle.id).map(v => v.id);
-    const serviceIdsForCategory = [...new Set(VEHICLE_SERVICES.filter(vs => vehicleIdsInCategory.includes(vs.vehicleId)).map(vs => vs.serviceId))];
+    const serviceIdsForCategory = [...new Set(VEHICLE_SERVICES.filter(vs => VEHICLES.find(v => v.id === vs.vehicleId)?.category === data.category).map(vs => vs.serviceId))];
     const categoryServices = SERVICES.filter(s => serviceIdsForCategory.includes(s.id));
     
     // Add empty service history for the new vehicle
@@ -192,7 +192,6 @@ export async function mockDbAddVehicle(data: { plate: string; currentKm: number;
         };
         VEHICLE_SERVICES.push(newServiceRecord);
     });
-
 
     await new Promise(res => setTimeout(res, 500));
 }
