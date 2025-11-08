@@ -18,7 +18,7 @@ export function AppHeader() {
       <div className="flex items-center gap-2">
         <JCIcon className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl">
-          JC Fleet Control
+          Plano de Manutenção de Frota
         </h1>
       </div>
       <div className="ml-auto flex items-center gap-4">

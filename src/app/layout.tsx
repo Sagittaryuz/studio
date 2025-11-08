@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'JC Fleet Control',
+  title: 'Plano de Manutenção de Frota',
   description: 'Gestão de Manutenções Preventivas de Frotas',
 };
 
