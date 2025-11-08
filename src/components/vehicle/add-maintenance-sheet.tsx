@@ -5,6 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { addVehicleService } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useStorage } from '@/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+
 
 import { Button } from '@/components/ui/button';
 import {
@@ -48,7 +51,10 @@ interface AddMaintenanceSheetProps {
 
 export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allServices }: AddMaintenanceSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { toast } = useToast();
+  const storage = useStorage();
+
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -64,20 +70,46 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
     return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
   };
 
+  const uploadFile = (file: File, vehicleId: string, serviceId: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const storageRef = ref(storage, `attachments/${vehicleId}/${serviceId}/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          console.error("Upload Error:", error);
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            resolve(downloadURL);
+          });
+        }
+      );
+    });
+  };
+
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
+    setUploadProgress(null);
     try {
-        // Here you would handle the file upload to Firebase Storage
-        // and get the download URLs. For now, we'll just log it.
-        if (values.attachments) {
-            console.log('Files to upload:', values.attachments);
+        let attachmentUrls: string[] = [];
+        if (values.attachments && values.attachments.length > 0) {
+            const files = Array.from(values.attachments);
+            const uploadPromises = files.map(file => uploadFile(file, vehicle.id, service.id));
+            attachmentUrls = await Promise.all(uploadPromises);
+            setUploadProgress(null);
         }
 
         await addVehicleService({ 
             ...values, 
             vehicleId: vehicle.id,
             serviceId: service.serviceId,
-            attachments: [], // Replace with actual URLs after upload
+            attachments: attachmentUrls,
         });
         toast({
             title: 'Sucesso!',
@@ -217,6 +249,14 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
                 </FormItem>
               )}
             />
+             {uploadProgress !== null && (
+                <div className="space-y-1">
+                    <p className="text-sm">Enviando arquivos... {Math.round(uploadProgress)}%</p>
+                    <div className="w-full bg-muted rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                </div>
+            )}
              <SheetFooter className="pt-4">
                 <SheetClose asChild>
                     <Button type="button" variant="outline">Cancelar</Button>
