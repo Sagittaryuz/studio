@@ -5,7 +5,7 @@ import {
   Bike,
   Warehouse,
 } from 'lucide-react';
-import { addMonths, differenceInDays } from 'date-fns';
+import { addMonths, differenceInDays, parse } from 'date-fns';
 import type {
   Category,
   DashboardData,
@@ -29,33 +29,122 @@ const CATEGORIES: Category[] = [
 ];
 
 const VEHICLES: Vehicle[] = [
-  { id: 'v1', plate: 'RBC1A23', category: 'LOGISTICO', currentKm: 112500, active: true, photoUrl: 'https://picsum.photos/seed/truck1/600/400' },
-  { id: 'v2', plate: 'SDF4B56', category: 'LOGISTICO', currentKm: 85300, active: true, photoUrl: 'https://picsum.photos/seed/truck2/600/400' },
-  { id: 'v3', plate: 'GHI7C89', category: 'PASSEIO', currentKm: 45600, active: true, photoUrl: 'https://picsum.photos/seed/car1/600/400' },
-  { id: 'v4', plate: 'JKL0D12', category: 'PASSEIO', currentKm: 22100, active: false, photoUrl: 'https://picsum.photos/seed/car2/600/400' },
-  { id: 'v5', plate: 'MNO3E45', category: 'MOTOS', currentKm: 12500, active: true, photoUrl: 'https://picsum.photos/seed/bike1/600/400' },
-  { id: 'v6', plate: 'EMP001', category: 'EMPILHADEIRAS', currentKm: 1500, active: true, photoUrl: 'https://picsum.photos/seed/forklift1/600/400' },
-  { id: 'v7', plate: 'GER002', category: 'GERADORES', currentKm: 850, active: true, photoUrl: 'https://picsum.photos/seed/generator1/600/400' },
+  { id: 'v1', plate: 'ONC 9390', category: 'LOGISTICO', currentKm: 404714, active: false, photoUrl: 'https://picsum.photos/seed/truck1/600/400' },
+  { id: 'v2', plate: 'PQT 1H75', category: 'LOGISTICO', currentKm: 343000, active: false, photoUrl: 'https://picsum.photos/seed/truck2/600/400' },
+  { id: 'v3', plate: 'RBU 9C38', category: 'LOGISTICO', currentKm: 178315, active: false, photoUrl: 'https://picsum.photos/seed/truck3/600/400' },
+  { id: 'v4', plate: 'RCB 0E98', category: 'LOGISTICO', currentKm: 184786, active: false, photoUrl: 'https://picsum.photos/seed/truck4/600/400' },
+  { id: 'v5', plate: 'SCX 0J04', category: 'LOGISTICO', currentKm: 116000, active: true, photoUrl: 'https://picsum.photos/seed/truck5/600/400' },
+  { id: 'v6', plate: 'SCP 5J36', category: 'LOGISTICO', currentKm: 108000, active: false, photoUrl: 'https://picsum.photos/seed/truck6/600/400' },
+  { id: 'v7', plate: 'OGS 8583', category: 'LOGISTICO', currentKm: 225000, active: true, photoUrl: 'https://picsum.photos/seed/truck7/600/400' },
+  { id: 'v8', plate: 'RBS 5E06', category: 'LOGISTICO', currentKm: 72255, active: false, photoUrl: 'https://picsum.photos/seed/truck8/600/400' },
+  { id: 'v9', plate: 'NWO 8655', category: 'LOGISTICO', currentKm: 3, active: false, photoUrl: 'https://picsum.photos/seed/truck9/600/400' },
+  { id: 'v10', plate: 'OGS 8G13', category: 'LOGISTICO', currentKm: 193000, active: true, photoUrl: 'https://picsum.photos/seed/truck10/600/400' },
+  { id: 'v11', plate: 'PQH 4780', category: 'LOGISTICO', currentKm: 113000, active: true, photoUrl: 'https://picsum.photos/seed/truck11/600/400' },
+  { id: 'v12', plate: 'SCY 3I97', category: 'LOGISTICO', currentKm: 40350, active: true, photoUrl: 'https://picsum.photos/seed/truck12/600/400' },
+  { id: 'v13', plate: 'PQE 3070', category: 'LOGISTICO', currentKm: 135300, active: true, photoUrl: 'https://picsum.photos/seed/truck13/600/400' },
+  { id: 'v14', plate: 'NVO 8161', category: 'LOGISTICO', currentKm: 303676, active: true, photoUrl: 'https://picsum.photos/seed/truck14/600/400' },
+  { id: 'v15', plate: 'ONC 9190', category: 'LOGISTICO', currentKm: 197000, active: true, photoUrl: 'https://picsum.photos/seed/truck15/600/400' },
+
+  { id: 'v16', plate: 'HYSTER 60XT - 182', category: 'EMPILHADEIRAS', currentKm: 1300, active: true, photoUrl: 'https://picsum.photos/seed/forklift1/600/400' },
+  { id: 'v17', plate: 'HYSTER 60FT - 75', category: 'EMPILHADEIRAS', currentKm: 14600, active: true, photoUrl: 'https://picsum.photos/seed/forklift2/600/400' },
+  { id: 'v18', plate: 'HYSTER 60XT - 168', category: 'EMPILHADEIRAS', currentKm: 7039, active: true, photoUrl: 'https://picsum.photos/seed/forklift3/600/400' },
+  { id: 'v19', plate: 'HYSTER 55XM - 76', category: 'EMPILHADEIRAS', currentKm: 139, active: true, photoUrl: 'https://picsum.photos/seed/forklift4/600/400' },
+  { id: 'v20', plate: 'CLARK GTS30 - 132', category: 'EMPILHADEIRAS', currentKm: 10568, active: true, photoUrl: 'https://picsum.photos/seed/forklift5/600/400' },
+  { id: 'v21', plate: 'TLC30 DIESEL - 179', category: 'EMPILHADEIRAS', currentKm: 1300, active: true, photoUrl: 'https://picsum.photos/seed/forklift6/600/400' },
+  { id: 'v22', plate: 'STILL FMX17 - 153', category: 'EMPILHADEIRAS', currentKm: 2000, active: true, photoUrl: 'https://picsum.photos/seed/forklift7/600/400' },
+  { id: 'v23', plate: 'STILL FMX17 - 154', category: 'EMPILHADEIRAS', currentKm: 1850, active: true, photoUrl: 'https://picsum.photos/seed/forklift8/600/400' },
+  { id: 'v24', plate: 'CLARK C30 - 108', category: 'EMPILHADEIRAS', currentKm: 8150, active: false, photoUrl: 'https://picsum.photos/seed/forklift9/600/400' },
+  { id: 'v25', plate: 'STILL EGV16 - 161', category: 'EMPILHADEIRAS', currentKm: 1000, active: true, photoUrl: 'https://picsum.photos/seed/forklift10/600/400' },
+  { id: 'v26', plate: 'HYSTER 60XT - 181', category: 'EMPILHADEIRAS', currentKm: 2350, active: true, photoUrl: 'https://picsum.photos/seed/forklift11/600/400' },
+  { id: 'v27', plate: 'CLARK C30 - 122', category: 'EMPILHADEIRAS', currentKm: 7700, active: true, photoUrl: 'https://picsum.photos/seed/forklift12/600/400' },
+  { id: 'v28', plate: 'STILL EGV16 - 165', category: 'EMPILHADEIRAS', currentKm: 1400, active: true, photoUrl: 'https://picsum.photos/seed/forklift13/600/400' },
+
+  { id: 'v29', plate: 'PQR 3H80', category: 'PASSEIO', currentKm: 250000, active: true, photoUrl: 'https://picsum.photos/seed/car1/600/400' },
+  { id: 'v30', plate: 'RBO 1C73', category: 'PASSEIO', currentKm: 44000, active: true, photoUrl: 'https://picsum.photos/seed/car2/600/400' },
+  { id: 'v31', plate: 'RBO 1C93', category: 'PASSEIO', currentKm: 28650, active: true, photoUrl: 'https://picsum.photos/seed/car3/600/400' },
+  { id: 'v32', plate: 'SCN 5C62', category: 'PASSEIO', currentKm: 37500, active: false, photoUrl: 'https://picsum.photos/seed/car4/600/400' },
+  { id: 'v33', plate: 'SCH 3I62', category: 'PASSEIO', currentKm: 67865, active: true, photoUrl: 'https://picsum.photos/seed/car5/600/400' },
+  { id: 'v34', plate: 'PQE 9370', category: 'PASSEIO', currentKm: 106200, active: true, photoUrl: 'https://picsum.photos/seed/car6/600/400' },
+  { id: 'v35', plate: 'SDC 3A35', category: 'PASSEIO', currentKm: 51000, active: true, photoUrl: 'https://picsum.photos/seed/car7/600/400' },
+  { id: 'v36', plate: 'SCQ 2H05', category: 'PASSEIO', currentKm: 13000, active: true, photoUrl: 'https://picsum.photos/seed/car8/600/400' },
+  { id: 'v37', plate: 'SDL 3D58', category: 'PASSEIO', currentKm: 1, active: true, photoUrl: 'https://picsum.photos/seed/car9/600/400' },
+  { id: 'v38', plate: 'SDN 3G91', category: 'PASSEIO', currentKm: 1, active: true, photoUrl: 'https://picsum.photos/seed/car10/600/400' },
+
+  { id: 'v39', plate: 'ONQ 8222', category: 'MOTOS', currentKm: 57400, active: true, photoUrl: 'https://picsum.photos/seed/bike1/600/400' },
+  { id: 'v40', plate: 'RCA 5I35', category: 'MOTOS', currentKm: 25000, active: true, photoUrl: 'https://picsum.photos/seed/bike2/600/400' },
+  { id: 'v41', plate: 'OMJ 7E43', category: 'MOTOS', currentKm: 0, active: true, photoUrl: 'https://picsum.photos/seed/bike3/600/400' },
+  { id: 'v42', plate: 'RCL 6I62', category: 'MOTOS', currentKm: 9439, active: true, photoUrl: 'https://picsum.photos/seed/bike4/600/400' },
+  { id: 'v43', plate: 'ONQ 5462', category: 'MOTOS', currentKm: 71175, active: true, photoUrl: 'https://picsum.photos/seed/bike5/600/400' },
+  { id: 'v44', plate: 'NGL8763', category: 'MOTOS', currentKm: 53100, active: true, photoUrl: 'https://picsum.photos/seed/bike6/600/400' },
+
+  { id: 'v45', plate: '86 - MATRIZ', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator1/600/400' },
+  { id: 'v46', plate: '111 - CD', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator2/600/400' },
+  { id: 'v47', plate: '87 - CATEDRAL', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator3/600/400' },
+  { id: 'v48', plate: '112 - MINEIROS', category: 'GERADORES', currentKm: 0, active: true, photoUrl: 'https://picsum.photos/seed/generator4/600/400' },
+  { id: 'v49', plate: '148 - RHARO', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator5/600/400' },
+  { id: 'v50', plate: '162 - SAID ABDALLA', category: 'GERADORES', currentKm: 393000, active: true, photoUrl: 'https://picsum.photos/seed/generator6/600/400' },
+  { id: 'v51', plate: '98 - RIO VERDE', category: 'GERADORES', currentKm: 13, active: true, photoUrl: 'https://picsum.photos/seed/generator7/600/400' },
 ];
+
 
 const SERVICES: Service[] = [
-  { id: 's1', name: 'Troca de Óleo do Motor', defaultMonths: 6, defaultKm: 10000, defaultSupplier: 'Rodobens' },
-  { id: 's2', name: 'Filtro de Ar', defaultMonths: 12, defaultKm: 20000, defaultSupplier: 'AutoZone' },
-  { id: 's3', name: 'Alinhamento e Balanceamento', defaultMonths: 6, defaultKm: 10000, defaultSupplier: 'PneuStore' },
-  { id: 's4', name: 'Filtro de Combustível', defaultMonths: 12, defaultKm: 15000, defaultSupplier: 'MercadoCar' },
+  { id: 's1', name: 'Óleo do motor', defaultMonths: 12, defaultKm: 20000, defaultSupplier: '' },
+  { id: 's2', name: 'Filtro de diesel', defaultMonths: 6, defaultKm: 10000, defaultSupplier: '' },
+  { id: 's3', name: 'Filtro separador de água', defaultMonths: 6, defaultKm: 10000, defaultSupplier: '' },
+  { id: 's4', name: 'Filtro de arla', defaultMonths: 18, defaultKm: 40000, defaultSupplier: 'CHIP TRUCK' },
+  { id: 's5', name: 'Óleo do câmbio', defaultMonths: 18, defaultKm: 60000, defaultSupplier: 'DANIEL' },
+  { id: 's6', name: 'Óleo do diferencial', defaultMonths: 18, defaultKm: 60000, defaultSupplier: 'DANIEL' },
+  { id: 's7', name: 'Revisão do sistema de arla', defaultMonths: 72, defaultKm: 180000, defaultSupplier: 'CHIP TRUCK' },
+  { id: 's8', name: 'Rodizio de baterias', defaultMonths: 3, defaultKm: 0, defaultSupplier: 'Casa das Baterias' },
+  { id: 's9', name: 'Lubrificação', defaultMonths: 1, defaultKm: 2500, defaultSupplier: 'DC SANTOS' },
+  { id: 's10', name: 'Extintor', defaultMonths: 58, defaultKm: 0, defaultSupplier: 'JATAI EXTINTORES' },
+  { id: 's11', name: 'Revisão da suspensão, cubos, rodas e freios', defaultMonths: 14, defaultKm: 0, defaultSupplier: 'DANIEL' },
+  { id: 's12', name: 'Radiador, interculer e bloco do motor', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'MINOL' },
+  { id: 's13', name: 'Tacógrafo', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'AUTO ELETRICA SUCAL' },
+  { id: 's14', name: 'Alinhamento', defaultMonths: 6, defaultKm: 15000, defaultSupplier: 'DANIEL' },
+  { id: 's15', name: 'Regulagem de valvulas', defaultMonths: 0, defaultKm: 0, defaultSupplier: '' },
 ];
 
+
+const parseDate = (dateString: string): Date => {
+  return parse(dateString, 'dd/MM/yyyy', new Date());
+};
+
 const VEHICLE_SERVICES_HISTORY: Omit<VehicleService, 'nextDate' | 'nextKm' | 'status'>[] = [
-  // Vehicle v1 (OK)
-  { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: new Date('2024-05-10'), lastKm: 105000, supplier: 'Rodobens', responsible: 'João Silva' },
-  { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: new Date('2024-01-15'), lastKm: 98000, supplier: 'AutoZone', responsible: 'João Silva' },
-  // Vehicle v2 (Alerta e Vencido)
-  { id: 'vs3', vehicleId: 'v2', serviceId: 's1', lastDate: new Date('2024-02-20'), lastKm: 76000, supplier: 'Rodobens', responsible: 'Maria Costa' }, // Vencido por KM
-  { id: 'vs4', vehicleId: 'v2', serviceId: 's3', lastDate: new Date('2024-07-25'), lastKm: 82000, supplier: 'PneuStore', responsible: 'Maria Costa' }, // Alerta por data
-  // Vehicle v3 (Alerta)
-  { id: 'vs5', vehicleId: 'v3', serviceId: 's1', lastDate: new Date('2024-06-01'), lastKm: 40000, supplier: 'Rodobens', responsible: 'Carlos Lima' },
-  // Vehicle v6 (OK)
-  { id: 'vs6', vehicleId: 'v6', serviceId: 's1', lastDate: new Date('2024-06-01'), lastKm: 1000, supplier: 'Oficina Interna', responsible: 'Pedro' },
+  // ONC 9390
+  { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: parseDate('03/06/2025'), lastKm: 392365, supplier: '', responsible: '' },
+  { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: parseDate('03/06/2025'), lastKm: 392365, supplier: '', responsible: '' },
+  { id: 'vs3', vehicleId: 'v1', serviceId: 's3', lastDate: parseDate('03/06/2025'), lastKm: 392365, supplier: '', responsible: '' },
+  { id: 'vs4', vehicleId: 'v1', serviceId: 's4', lastDate: parseDate('09/09/2025'), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: '' },
+  { id: 'vs5', vehicleId: 'v1', serviceId: 's5', lastDate: parseDate('20/08/2024'), lastKm: 392365, supplier: 'DANIEL', responsible: '' },
+  { id: 'vs6', vehicleId: 'v1', serviceId: 's6', lastDate: parseDate('20/08/2024'), lastKm: 392365, supplier: 'DANIEL', responsible: '' },
+  { id: 'vs7', vehicleId: 'v1', serviceId: 's7', lastDate: parseDate('19/09/2025'), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: '' },
+  { id: 'vs8', vehicleId: 'v1', serviceId: 's8', lastDate: parseDate('26/08/2025'), lastKm: 404714, supplier: 'Casa das Baterias', responsible: '' },
+  { id: 'vs9', vehicleId: 'v1', serviceId: 's10', lastDate: parseDate('10/06/2025'), lastKm: 404714, supplier: 'JATAI EXTINTORES', responsible: '' },
+  { id: 'vs10', vehicleId: 'v1', serviceId: 's11', lastDate: parseDate('20/08/2024'), lastKm: 392365, supplier: 'DANIEL', responsible: '' },
+  { id: 'vs11', vehicleId: 'v1', serviceId: 's12', lastDate: parseDate('24/10/2025'), lastKm: 404714, supplier: 'MINOL', responsible: '' },
+  { id: 'vs12', vehicleId: 'v1', serviceId: 's13', lastDate: parseDate('01/07/2024'), lastKm: 392365, supplier: '', responsible: '' },
+
+  // PQT 1H75
+  { id: 'vs13', vehicleId: 'v2', serviceId: 's1', lastDate: parseDate('16/05/2025'), lastKm: 327147, supplier: '', responsible: '' },
+  { id: 'vs14', vehicleId: 'v2', serviceId: 's4', lastDate: parseDate('11/08/2025'), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: '' },
+  { id: 'vs15', vehicleId: 'v2', serviceId: 's5', lastDate: parseDate('09/07/2024'), lastKm: 327147, supplier: 'FERNANDO', responsible: '' },
+  { id: 'vs16', vehicleId: 'v2', serviceId: 's6', lastDate: parseDate('09/07/2024'), lastKm: 327147, supplier: 'FERNANDO', responsible: '' },
+  { id: 'vs17', vehicleId: 'v2', serviceId: 's7', lastDate: parseDate('11/08/2025'), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: '' },
+  { id: 'vs18', vehicleId: 'v2', serviceId: 's9', lastDate: parseDate('11/09/2025'), lastKm: 342078, supplier: 'DANIEL', responsible: '' },
+  { id: 'vs19', vehicleId: 'v2', serviceId: 's12', lastDate: parseDate('30/10/2025'), lastKm: 343000, supplier: 'MINOL NF 15849', responsible: '' },
+  { id: 'vs20', vehicleId: 'v2', serviceId: 's13', lastDate: parseDate('01/07/2024'), lastKm: 327147, supplier: '', responsible: '' },
+  { id: 'vs21', vehicleId: 'v2', serviceId: 's14', lastDate: parseDate('11/09/2025'), lastKm: 342078, supplier: 'DANIEL', responsible: '' },
+
+  // RBU 9C38
+  { id: 'vs22', vehicleId: 'v3', serviceId: 's1', lastDate: parseDate('06/05/2025'), lastKm: 166121, supplier: '', responsible: '' },
+  { id: 'vs23', vehicleId: 'v3', serviceId: 's4', lastDate: parseDate('13/06/2025'), lastKm: 169000, supplier: '', responsible: '' },
+  { id: 'vs24', vehicleId: 'v3', serviceId: 's5', lastDate: parseDate('16/07/2024'), lastKm: 166121, supplier: '', responsible: '' },
+  { id: 'vs25', vehicleId: 'v3', serviceId: 's7', lastDate: parseDate('13/06/2025'), lastKm: 169000, supplier: 'CHIP TRUCK NF 499', responsible: '' },
+  { id: 'vs26', vehicleId: 'v3', serviceId: 's8', lastDate: parseDate('21/10/2025'), lastKm: 178315, supplier: 'CASA DAS BATERIAS', responsible: '' },
+  { id: 'vs27', vehicleId: 'v3', serviceId: 's11', lastDate: parseDate('16/07/2024'), lastKm: 166121, supplier: '', responsible: '' },
+  { id: 'vs28', vehicleId: 'v3', serviceId: 's12', lastDate: parseDate('24/10/2025'), lastKm: 178315, supplier: 'MINOL', responsible: '' },
+  { id: 'vs29', vehicleId: 'v3', serviceId: 's13', lastDate: parseDate('01/05/2025'), lastKm: 166121, supplier: '', responsible: '' },
 ];
 
 
@@ -75,7 +164,7 @@ function getServiceStatus(
   const today = new Date();
   
   // VENCIDO check
-  if (vs.nextDate < today || vs.nextKm <= currentKm) {
+  if (vs.nextDate < today || (vs.nextKm > 0 && vs.nextKm <= currentKm)) {
     return 'VENCIDO';
   }
 
@@ -83,7 +172,7 @@ function getServiceStatus(
   const daysUntilNext = differenceInDays(vs.nextDate, today);
   const kmUntilNext = vs.nextKm - currentKm;
 
-  if (daysUntilNext <= ALERT_DAYS_THRESHOLD || kmUntilNext <= ALERT_KM_THRESHOLD) {
+  if (daysUntilNext <= ALERT_DAYS_THRESHOLD || (kmUntilNext > 0 && kmUntilNext <= ALERT_KM_THRESHOLD)) {
     return 'ALERTA';
   }
 
@@ -99,11 +188,21 @@ async function processData(userRole: UserRole): Promise<DashboardData> {
   const services = SERVICES;
 
   const vehicleServices: VehicleService[] = VEHICLE_SERVICES_HISTORY.map(vsHistory => {
-    const service = services.find(s => s.id === vsHistory.serviceId)!;
-    const vehicle = vehicles.find(v => v.id === vsHistory.vehicleId)!;
+    const service = services.find(s => s.id === vsHistory.serviceId);
+    const vehicle = vehicles.find(v => v.id === vsHistory.vehicleId);
 
-    const nextDate = addMonths(vsHistory.lastDate, service.defaultMonths);
-    const nextKm = vsHistory.lastKm + service.defaultKm;
+    if (!service || !vehicle) {
+        // Return a default/error structure if service or vehicle not found
+        return {
+            ...vsHistory,
+            nextDate: new Date(),
+            nextKm: 0,
+            status: 'OK',
+        };
+    }
+
+    const nextDate = service.defaultMonths > 0 ? addMonths(vsHistory.lastDate, service.defaultMonths) : new Date('2999-12-31');
+    const nextKm = service.defaultKm > 0 ? vsHistory.lastKm + service.defaultKm : 0;
 
     const status = getServiceStatus({ nextDate, nextKm }, vehicle.currentKm);
 
@@ -143,7 +242,7 @@ async function processData(userRole: UserRole): Promise<DashboardData> {
   });
 
   const categoriesWithStatus: CategoryWithStatus[] = CATEGORIES.map(category => {
-    const vehiclesInCategory = vehiclesWithStatus.filter(v => v.category === category.id);
+    const vehiclesInCategory = vehiclesWithStatus.filter(v => v.category === category.id && v.active);
     if(vehiclesInCategory.length === 0) {
         return { ...category, status: 'OK', pendingCount: 0 };
     }
