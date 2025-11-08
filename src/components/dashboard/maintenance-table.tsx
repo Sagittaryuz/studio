@@ -161,7 +161,7 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
       {canEdit && selectedService && (
           <AddMaintenanceSheet 
             isOpen={isSheetOpen}
-            setIsOpen={setIsOpen}
+            setIsOpen={setSheetOpen}
             vehicle={vehicle}
             service={selectedService}
             allServices={allServices}
