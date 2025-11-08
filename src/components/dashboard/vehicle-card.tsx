@@ -1,6 +1,5 @@
 'use client';
-import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { VehicleWithStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -12,16 +11,10 @@ interface VehicleCardProps {
 }
 
 const statusClasses: Record<string, string> = {
-  VENCIDO: 'border-destructive',
-  ALERTA: 'border-warning',
-  OK: 'border-green-500',
+  VENCIDO: 'border-destructive bg-destructive/10',
+  ALERTA: 'border-warning bg-warning/10',
+  OK: 'border-transparent',
 };
-
-const statusBadge: Record<string, string> = {
-    VENCIDO: 'destructive',
-    ALERTA: 'default',
-    OK: 'secondary',
-}
 
 export function VehicleCard({ vehicle, isSelected, onClick }: VehicleCardProps) {
   return (
@@ -34,22 +27,17 @@ export function VehicleCard({ vehicle, isSelected, onClick }: VehicleCardProps) 
       onClick={onClick}
     >
       <CardHeader className="p-2">
-        <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-bold">{vehicle.plate}</CardTitle>
-            <Badge variant={vehicle.status === 'ALERTA' ? 'default' : vehicle.status === 'VENCIDO' ? 'destructive' : 'secondary'} className={cn('text-xs', vehicle.status === 'ALERTA' && 'bg-warning text-warning-foreground')}>{vehicle.status}</Badge>
+        <div className="flex items-center justify-between gap-1">
+            <CardTitle className="text-xs font-bold truncate">{vehicle.plate}</CardTitle>
+            <Badge 
+              variant={vehicle.status === 'ALERTA' ? 'default' : vehicle.status === 'VENCIDO' ? 'destructive' : 'secondary'} 
+              className={cn('text-[10px] px-1.5 py-0', vehicle.status === 'ALERTA' && 'bg-warning text-warning-foreground')}
+            >
+              {vehicle.status}
+            </Badge>
         </div>
-        <CardDescription className="text-xs">{vehicle.currentKm.toLocaleString('pt-BR')} km</CardDescription>
+        <CardDescription className="text-[11px]">{vehicle.currentKm.toLocaleString('pt-BR')} km</CardDescription>
       </CardHeader>
-      <CardContent className="p-2 pt-0">
-        <div data-ai-hint="truck front" className="relative aspect-video w-full overflow-hidden rounded-md">
-            <Image
-                src={vehicle.photoUrl}
-                alt={`Veículo ${vehicle.plate}`}
-                fill
-                className="object-cover"
-            />
-        </div>
-      </CardContent>
     </Card>
   );
 }
