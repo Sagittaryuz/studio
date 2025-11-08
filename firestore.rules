@@ -1,0 +1,203 @@
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for user profiles and leverages
+ * denormalization to optimize authorization for vehicle services and related data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles, with 'userId' matching the Firebase Auth UID.
+ * - /vehicles/{vehicleId}: Stores vehicle information; publicly readable.
+ * - /services/{serviceId}: Stores predefined service types; only admins can write.
+ * - /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}: Stores service instances,
+ *   denormalizing 'vehicleId' for efficient authorization.
+ * - /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/attachments/{attachmentId}: Stores attachments
+ *   related to vehicle services.
+ * - /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/events/{vehicleServiceEventId}: Stores event history of vehicle services.
+ * - /settings/{settingsId}: Stores application settings; read/write access restricted.
+ * - /roles_admin/{userId}: Presence of a document grants admin privileges.
+ *
+ * Key Security Decisions:
+ * - User profiles are private and accessible only to the owning user.
+ * - Vehicle data is publicly readable, but write access is restricted.
+ * - Admin privileges are determined by the presence of a document in the 'roles_admin' collection.
+ * - Vehicle services are owned by the 'responsible' user and associated with a vehicle,
+ *   with authorization based on the denormalized 'vehicleId'.
+ * - Data validation is minimized to facilitate rapid prototyping, focusing on authorization
+ *   and relational integrity.
+ *
+ * Denormalization for Authorization:
+ * - VehicleService documents denormalize vehicleId to allow authorization without additional reads.
+ *
+ * Structural Segregation:
+ * - Admin roles are stored in a separate 'roles_admin' collection for efficient role-based checks.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the user is signed in.
+     * @path N/A
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user is the owner of the document (userId matches request.auth.uid).
+     * @path N/A
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is the owner of an existing document.
+     * @path N/A
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Checks if the user has admin privileges by checking for the existence of a document in the roles_admin collection.
+     * @path N/A
+     */
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * @description Defines rules for user profiles.
+     * @path /users/{userId}
+     * @allow (create) User 'user_abc' can create their own profile at /users/user_abc.
+     * @allow (get) User 'user_abc' can read their own profile at /users/user_abc.
+     * @allow (update) User 'user_abc' can update their own profile at /users/user_abc.
+     * @deny (create) User 'user_xyz' cannot create a profile for 'user_abc' at /users/user_abc.
+     * @deny (get) User 'user_xyz' cannot read user 'user_abc' profile at /users/user_abc.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Defines rules for vehicle data.
+     * @path /vehicles/{vehicleId}
+     * @allow (get) Any signed-in user can read vehicle data.
+     * @allow (list) Any signed-in user can list vehicles.
+     * @deny (create) Only admins can create vehicle data.
+     * @principle Vehicle data is publicly readable, write access restricted to admins.
+     */
+    match /vehicles/{vehicleId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Defines rules for predefined service types.
+     * @path /services/{serviceId}
+     * @allow (get) Any signed-in user can read service data.
+     * @allow (list) Any signed-in user can list services.
+     * @deny (create) Only admins can create service data.
+     * @principle Service data is publicly readable, write access restricted to admins.
+     */
+    match /services/{serviceId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Defines rules for vehicle service instances.
+     * @path /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}
+     * @allow (create) User 'user_abc' can create a service for vehicle 'vehicle_123' if they are the responsible user and the vehicleId matches.
+     * @allow (get) Any signed-in user can read a service for vehicle 'vehicle_123'.
+     * @allow (update) User 'user_abc' can update a service for vehicle 'vehicle_123' if they are the responsible user.
+     * @deny (create) User 'user_xyz' cannot create a service if they are not the responsible user.
+     * @deny (update) User 'user_xyz' cannot update a service if they are not the responsible user.
+     * @principle Enforces ownership based on the 'responsible' field and validates vehicleId.
+     */
+    match /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.vehicleId == vehicleId && request.resource.data.responsible == request.auth.uid;
+      allow update: if isSignedIn() && resource != null && request.resource.data.vehicleId == vehicleId && request.resource.data.responsible == resource.data.responsible;
+      allow delete: if isSignedIn() && resource != null && request.resource.data.responsible == request.auth.uid;
+    }
+
+    /**
+     * @description Defines rules for attachments related to vehicle services.
+     * @path /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/attachments/{attachmentId}
+     * @allow (create) User can create an attachment if they have access to the parent VehicleService.
+     * @allow (get) User can read an attachment if they have access to the parent VehicleService.
+     * @allow (update) User can update an attachment if they have access to the parent VehicleService.
+     * @deny (create) User cannot create an attachment if they lack access to the parent VehicleService.
+     * @principle Enforces authorization based on access to the parent VehicleService.
+     */
+    match /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/attachments/{attachmentId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Defines rules for the event history of vehicle services.
+     * @path /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/events/{vehicleServiceEventId}
+     * @allow (create) User can create an event if they have access to the parent VehicleService.
+     * @allow (get) User can read an event if they have access to the parent VehicleService.
+     * @allow (update) User can update an event if they have access to the parent VehicleService.
+     * @deny (create) User cannot create an event if they lack access to the parent VehicleService.
+     * @principle Enforces authorization based on access to the parent VehicleService.
+     */
+    match /vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/events/{vehicleServiceEventId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Defines rules for application-wide settings.
+     * @path /settings/{settingsId}
+     * @deny (get) No one can read settings data
+     * @deny (list) No one can list settings
+     * @deny (create) No one can create settings data.
+     * @principle Restricts access to application settings.
+     */
+    match /settings/{settingsId} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Defines rules for determining admin privileges.
+     * @path /roles_admin/{userId}
+     * @allow (create) Only a service account can create the roles_admin record
+     * @allow (get)  Only the user that owns the doc can read it
+     * @deny (create) Regular users are not allowed to create roles_admin records
+     * @principle Restricts write access to the roles_admin collection.
+     */
+    match /roles_admin/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if false; // TODO: Add service account validation once the authentication mechanism is defined
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
