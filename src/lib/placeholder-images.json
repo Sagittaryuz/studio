@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "vehicle-placeholder-1",
+      "description": "A placeholder image for a truck.",
+      "imageUrl": "https://images.unsplash.com/photo-1644352442473-57f4cd0873c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0cnVjayUyMGxvZ2lzdGljfGVufDB8fHx8MTc2MjYwMjg4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "truck logistic"
+    },
+    {
+      "id": "vehicle-placeholder-2",
+      "description": "A placeholder image for a car.",
+      "imageUrl": "https://images.unsplash.com/photo-1648396418755-6da68302adc9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8c2VkYW4lMjBjYXJ8ZW58MHx8fHwxNzYyNTI2ODc4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sedan car"
+    }
+  ]
 }
