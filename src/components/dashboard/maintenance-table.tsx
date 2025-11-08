@@ -31,6 +31,12 @@ const statusBadgeClasses: Record<string, string> = {
   OK: 'secondary',
 };
 
+const statusOrder: Record<string, number> = {
+  VENCIDO: 0,
+  ALERTA: 1,
+  OK: 2,
+};
+
 export function MaintenanceTable({ vehicle, services, allServices, userRole }: MaintenanceTableProps) {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isAiModalOpen, setAiModalOpen] = useState(false);
@@ -54,6 +60,17 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
   const getServiceName = (serviceId: string) => {
     return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
   };
+
+  const sortedServices = [...services].sort((a, b) => {
+    const orderA = statusOrder[a.status];
+    const orderB = statusOrder[b.status];
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    // If statuses are the same, you might want a secondary sort, e.g., by next date
+    return a.nextDate.getTime() - b.nextDate.getTime();
+  });
+
 
   return (
     <>
@@ -89,7 +106,7 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
               </TableRow>
             </TableHeader>
             <TableBody>
-              {services.length > 0 ? services.map(service => (
+              {sortedServices.length > 0 ? sortedServices.map(service => (
                 <TableRow key={service.id}>
                   <TableCell className="font-medium">{getServiceName(service.serviceId)}</TableCell>
                   <TableCell>
