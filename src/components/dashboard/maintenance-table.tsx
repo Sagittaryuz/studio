@@ -101,7 +101,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
               <TableRow className='bg-muted/30'>
                 <TableHead className='w-1/4 align-middle' rowSpan={2}>Serviço</TableHead>
                 <TableHead className="bg-muted/50 text-center" colSpan={2}>Parâmetros</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center" colSpan={3}>Última Manutenção</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center" colSpan={4}>Última Manutenção</TableHead>
                 <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center align-middle" rowSpan={2}>Próxima Manutenção</TableHead>
                 <TableHead className='text-center align-middle' rowSpan={2}>Status</TableHead>
                 <TableHead className="text-right align-middle" rowSpan={2}>Ações</TableHead>
@@ -112,6 +112,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Fornecedor</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Data</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">KM</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Observações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -131,6 +132,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.supplier : 'N/A'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-xs max-w-[200px] truncate">{vehicleService?.notes || 'N/A'}</TableCell>
                       
                       {/* Próxima Manutenção */}
                       <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center">
@@ -172,7 +174,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                               {canEdit && vehicleService && (
                                 <DropdownMenuItem onClick={() => handleOpenNotesModal(data)}>
                                     <FileText className="mr-2 h-4 w-4" />
-                                    Obs.
+                                    Editar Obs.
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -183,7 +185,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 )
               }) : (
                 <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={10} className="h-24 text-center">
                         Nenhum tipo de serviço encontrado para esta categoria de veículo.
                     </TableCell>
                 </TableRow>
