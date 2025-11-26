@@ -226,7 +226,7 @@ export function ServiceManagementClient({ initialServices, categories }: Service
             </DialogContent>
         </Dialog>
 
-      </div>
+      </CardContent>
     </Card>
   );
 }
