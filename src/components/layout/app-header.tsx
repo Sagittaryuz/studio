@@ -16,13 +16,13 @@ import Link from 'next/link';
 export function AppHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center gap-4 border-b bg-background px-4 sm:px-6">
-      <div className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2">
         {children}
         <JCIcon className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl">
           Plano de Manutenção de Frota
         </h1>
-      </div>
+      </Link>
       <div className="ml-auto flex items-center gap-4">
         <Button variant="ghost" asChild>
             <Link href="/services">Gerenciar Serviços</Link>
