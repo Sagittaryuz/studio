@@ -16,6 +16,7 @@ export interface Service {
   categoryId: CategoryID;
   defaultMonths: number;
   defaultKm: number;
+  order: number;
 }
 
 export type ServiceStatus = 'OK' | 'ALERTA' | 'VENCIDO';

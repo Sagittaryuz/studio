@@ -4,13 +4,18 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Loader2, GripVertical } from 'lucide-react';
 import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,6 +36,51 @@ interface ServiceManagementClientProps {
   categories: Category[];
 }
 
+interface SortableRowProps {
+    service: Service;
+    onEdit: (service: Service) => void;
+    onDelete: (serviceId: string) => void;
+}
+
+const SortableRow = ({ service, onEdit, onDelete }: SortableRowProps) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: service.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <TableRow ref={setNodeRef} style={style} {...attributes}>
+            <TableCell className="w-10">
+                <Button variant="ghost" size="icon" {...listeners} className="cursor-grab">
+                    <GripVertical className="h-4 w-4" />
+                </Button>
+            </TableCell>
+            <TableCell className="font-medium">{service.name}</TableCell>
+            <TableCell>{service.defaultKm > 0 ? service.defaultKm.toLocaleString('pt-BR') : 'N/A'}</TableCell>
+            <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
+            <TableCell className="text-right">
+                <div className='flex gap-2 justify-end'>
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(service)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(service.id)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+};
+
+
 export function ServiceManagementClient({ initialServices, categories }: ServiceManagementClientProps) {
   const [services, setServices] = useState<Service[]>(initialServices);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +88,13 @@ export function ServiceManagementClient({ initialServices, categories }: Service
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<CategoryID>(categories[0]?.id);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,17 +116,19 @@ export function ServiceManagementClient({ initialServices, categories }: Service
     
     if (editingService) {
         // Update existing service
-        setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID } : s));
+        setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID, order: s.order } : s));
         toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado com sucesso.` });
 
     } else {
         // Add new service
+        const maxOrder = Math.max(0, ...services.filter(s => s.categoryId === values.categoryId).map(s => s.order));
         const newService: Service = {
             id: `s${Date.now()}`,
             ...values,
             categoryId: values.categoryId as CategoryID,
             defaultKm: values.defaultKm || 0,
             defaultMonths: values.defaultMonths || 0,
+            order: maxOrder + 1,
         };
         setServices([...services, newService]);
         toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
@@ -114,6 +173,21 @@ export function ServiceManagementClient({ initialServices, categories }: Service
     setServices(services.filter(s => s.id !== serviceId));
     toast({ title: "Serviço Removido", variant: 'destructive' });
   };
+  
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+        setServices((items) => {
+            const oldIndex = items.findIndex((item) => item.id === active.id);
+            const newIndex = items.findIndex((item) => item.id === over?.id);
+            const newArray = arrayMove(items, oldIndex, newIndex);
+            // Update order property after moving
+            return newArray.map((item, index) => ({ ...item, order: index }));
+        });
+    }
+  };
+  
+  const servicesForCategory = services.filter(s => s.categoryId === activeCategory).sort((a,b) => a.order - b.order);
 
   return (
     <Card>
@@ -136,35 +210,26 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                   Novo Serviço
                 </Button>
               </div>
-              <Table>
-                  <TableHeader>
-                      <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Frequência (KM)</TableHead>
-                          <TableHead>Frequência (Meses)</TableHead>
-                          <TableHead className="text-right">Ações</TableHead>
-                      </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                      {services.filter(s => s.categoryId === cat.id).map(service => (
-                          <TableRow key={service.id}>
-                              <TableCell className="font-medium">{service.name}</TableCell>
-                              <TableCell>{service.defaultKm > 0 ? service.defaultKm.toLocaleString('pt-BR') : 'N/A'}</TableCell>
-                              <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
-                              <TableCell className="text-right">
-                                  <div className='flex gap-2 justify-end'>
-                                      <Button variant="ghost" size="icon" onClick={() => handleEdit(service)}>
-                                          <Edit className="h-4 w-4" />
-                                      </Button>
-                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(service.id)}>
-                                          <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                  </div>
-                              </TableCell>
-                          </TableRow>
-                      ))}
-                  </TableBody>
-              </Table>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={servicesForCategory.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-10"></TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Frequência (KM)</TableHead>
+                                <TableHead>Frequência (Meses)</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {servicesForCategory.map(service => (
+                                <SortableRow key={service.id} service={service} onEdit={handleEdit} onDelete={handleDelete} />
+                            ))}
+                        </TableBody>
+                    </Table>
+                </SortableContext>
+              </DndContext>
             </TabsContent>
           ))}
         </Tabs>

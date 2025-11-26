@@ -55,14 +55,15 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
     return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
   };
 
-  // Sort services based on the order in allServices (which can be user-defined)
+  // Sort services based on the custom order defined in allServices
   const sortedServices = [...services].sort((a, b) => {
-    const indexA = allServices.findIndex(s => s.id === a.serviceId);
-    const indexB = allServices.findIndex(s => s.id === b.serviceId);
-    // If a service is not in allServices, it goes to the end
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-    return indexA - indexB;
+    const serviceA = allServices.find(s => s.id === a.serviceId);
+    const serviceB = allServices.find(s => s.id === b.serviceId);
+    
+    const orderA = serviceA ? serviceA.order : Infinity;
+    const orderB = serviceB ? serviceB.order : Infinity;
+    
+    return orderA - orderB;
   });
 
 
