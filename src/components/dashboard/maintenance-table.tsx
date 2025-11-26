@@ -98,7 +98,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
         <CardContent className="p-0 flex-1 overflow-y-auto">
           <Table className="text-[10px]">
             <TableHeader>
-              <TableRow className='bg-muted/30'>
+              <TableRow className='bg-muted/30 h-6'>
                 <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
                 <TableHead className="bg-muted/50 text-center p-1" colSpan={2}>Parâmetros</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1" colSpan={4}>Última Manutenção</TableHead>
@@ -106,7 +106,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
                 <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
               </TableRow>
-              <TableRow className='bg-muted/30'>
+              <TableRow className='bg-muted/30 h-6'>
                 <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">Meses</TableHead>
                 <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">KM</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Observações</TableHead>
