@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Edit, Trash2, Loader2, GripVertical } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
 import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -212,7 +212,7 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Nome</TableHead>
+                                <TableHead>Serviço</TableHead>
                                 <TableHead>Frequência (KM)</TableHead>
                                 <TableHead>Frequência (Meses)</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
