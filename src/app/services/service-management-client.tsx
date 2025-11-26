@@ -15,13 +15,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Loader2, Plus } from 'lucide-react';
 import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
-const formSchema = z.object({
+const serviceFormSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, 'O nome do serviço deve ter pelo menos 2 caracteres.'),
   categoryId: z.string(),
@@ -29,7 +29,13 @@ const formSchema = z.object({
   defaultMonths: z.coerce.number().min(0).optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+const categoryFormSchema = z.object({
+    name: z.string().min(3, 'O nome da categoria deve ter pelo menos 3 caracteres.'),
+});
+
+type ServiceFormValues = z.infer<typeof serviceFormSchema>;
+type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+
 
 interface ServiceManagementClientProps {
   initialServices: Service[];
@@ -78,11 +84,13 @@ const SortableRow = ({ service, onEdit, onDelete }: SortableRowProps) => {
 };
 
 
-export function ServiceManagementClient({ initialServices, categories }: ServiceManagementClientProps) {
+export function ServiceManagementClient({ initialServices, categories: initialCategories }: ServiceManagementClientProps) {
   const [services, setServices] = useState<Service[]>(initialServices);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<CategoryID>(categories[0]?.id);
   const { toast } = useToast();
 
@@ -93,8 +101,8 @@ export function ServiceManagementClient({ initialServices, categories }: Service
     })
   );
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const serviceForm = useForm<ServiceFormValues>({
+    resolver: zodResolver(serviceFormSchema),
     defaultValues: {
       name: '',
       categoryId: activeCategory,
@@ -102,11 +110,18 @@ export function ServiceManagementClient({ initialServices, categories }: Service
       defaultMonths: 0,
     },
   });
+  
+  const categoryForm = useForm<CategoryFormValues>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: '',
+    },
+  });
 
-  const onSubmit = async (values: FormValues) => {
+  const onServiceSubmit = async (values: ServiceFormValues) => {
     setIsSubmitting(true);
     // Here you would call a server action to save the service
-    console.log('Form submitted:', values);
+    console.log('Service Form submitted:', values);
     
     // Mocking API call
     await new Promise(res => setTimeout(res, 1000));
@@ -131,40 +146,59 @@ export function ServiceManagementClient({ initialServices, categories }: Service
         toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
     }
 
-    closeDialog();
+    closeServiceDialog();
     setIsSubmitting(false);
   };
+  
+  const onCategorySubmit = async (values: CategoryFormValues) => {
+    setIsSubmitting(true);
+    // Mocking API call
+    await new Promise(res => setTimeout(res, 500));
+    
+    const newCategory: Category = {
+        id: values.name.toUpperCase().replace(/\s/g, '_') as CategoryID,
+        name: values.name,
+    };
+    
+    setCategories([...categories, newCategory]);
+    toast({ title: "Categoria Adicionada", description: `A categoria "${values.name}" foi adicionada.` });
+    
+    setIsCategoryDialogOpen(false);
+    categoryForm.reset();
+    setIsSubmitting(false);
+    setActiveCategory(newCategory.id);
+  };
 
-  const handleAddNew = (categoryId: CategoryID) => {
+  const handleAddNewService = (categoryId: CategoryID) => {
     setEditingService(null);
-    form.reset({
+    serviceForm.reset({
       name: '',
       categoryId: categoryId,
       defaultKm: 0,
       defaultMonths: 0,
     });
-    setIsDialogOpen(true);
+    setIsServiceDialogOpen(true);
   }
   
-  const handleEdit = (service: Service) => {
+  const handleEditService = (service: Service) => {
     setEditingService(service);
-    form.reset({
+    serviceForm.reset({
         id: service.id,
         name: service.name,
         categoryId: service.categoryId,
         defaultKm: service.defaultKm,
         defaultMonths: service.defaultMonths,
     });
-    setIsDialogOpen(true);
+    setIsServiceDialogOpen(true);
   }
 
-  const closeDialog = () => {
-    setIsDialogOpen(false);
+  const closeServiceDialog = () => {
+    setIsServiceDialogOpen(false);
     setEditingService(null);
-    form.reset();
+    serviceForm.reset();
   }
 
-  const handleDelete = (serviceId: string) => {
+  const handleDeleteService = (serviceId: string) => {
     // Here you would call a server action to delete the service
     console.log('Deleting service:', serviceId);
     setServices(services.filter(s => s.id !== serviceId));
@@ -194,15 +228,21 @@ export function ServiceManagementClient({ initialServices, categories }: Service
       </CardHeader>
       <CardContent>
         <Tabs value={activeCategory} onValueChange={(value) => setActiveCategory(value as CategoryID)}>
-          <TabsList>
-            {categories.map(cat => (
-              <TabsTrigger key={cat.id} value={cat.id}>{cat.name}</TabsTrigger>
-            ))}
-          </TabsList>
+          <div className='flex items-center gap-2 mb-4'>
+            <TabsList>
+                {categories.map(cat => (
+                <TabsTrigger key={cat.id} value={cat.id}>{cat.name}</TabsTrigger>
+                ))}
+            </TabsList>
+             <Button variant="outline" size="sm" onClick={() => setIsCategoryDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Categoria
+            </Button>
+          </div>
           {categories.map(cat => (
             <TabsContent key={cat.id} value={cat.id}>
               <div className="flex justify-end mb-4">
-                <Button onClick={() => handleAddNew(cat.id)}>
+                <Button onClick={() => handleAddNewService(cat.id)}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Novo Serviço
                 </Button>
@@ -220,7 +260,7 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                         </TableHeader>
                         <TableBody>
                             {servicesForCategory.map(service => (
-                                <SortableRow key={service.id} service={service} onEdit={handleEdit} onDelete={handleDelete} />
+                                <SortableRow key={service.id} service={service} onEdit={handleEditService} onDelete={handleDeleteService} />
                             ))}
                         </TableBody>
                     </Table>
@@ -230,7 +270,7 @@ export function ServiceManagementClient({ initialServices, categories }: Service
           ))}
         </Tabs>
 
-         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+         <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{editingService ? 'Editar Serviço' : 'Adicionar Novo Serviço'}</DialogTitle>
@@ -238,10 +278,10 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                         Preencha os detalhes do serviço abaixo.
                     </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Form {...serviceForm}>
+                    <form onSubmit={serviceForm.handleSubmit(onServiceSubmit)} className="space-y-4">
                        <FormField
-                        control={form.control}
+                        control={serviceForm.control}
                         name="name"
                         render={({ field }) => (
                             <FormItem>
@@ -253,7 +293,7 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                         />
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
-                            control={form.control}
+                            control={serviceForm.control}
                             name="defaultKm"
                             render={({ field }) => (
                                 <FormItem>
@@ -264,7 +304,7 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                             )}
                             />
                             <FormField
-                            control={form.control}
+                            control={serviceForm.control}
                             name="defaultMonths"
                             render={({ field }) => (
                                 <FormItem>
@@ -276,10 +316,43 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                             />
                         </div>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={closeDialog}>Cancelar</Button>
+                            <Button type="button" variant="outline" onClick={closeServiceDialog}>Cancelar</Button>
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {editingService ? 'Salvar' : 'Adicionar'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+        
+        <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Adicionar Nova Categoria</DialogTitle>
+                    <DialogDescription>
+                        Digite o nome da nova categoria de veículos.
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...categoryForm}>
+                    <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
+                       <FormField
+                        control={categoryForm.control}
+                        name="name"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Nome da Categoria</FormLabel>
+                            <FormControl><Input {...field} placeholder="Ex: Veículos Leves" /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>Cancelar</Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Adicionar Categoria
                             </Button>
                         </DialogFooter>
                     </form>
