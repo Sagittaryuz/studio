@@ -78,9 +78,9 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
       <Card className="flex-1 flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between p-3">
           <div>
-             <div className="flex items-center gap-3">
-              <Monitor className="h-6 w-6 text-primary" />
-              <CardTitle className="text-xl">
+             <div className="flex items-center gap-2">
+              <Monitor className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">
                 Plano de Manutenção: <span className="font-bold text-primary">{vehicle.plate}</span>
               </CardTitle>
             </div>
@@ -96,7 +96,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
           </div>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-y-auto">
-          <Table className="text-xs">
+          <Table className="text-[10px]">
             <TableHeader>
               <TableRow className='bg-muted/30'>
                 <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
@@ -107,12 +107,12 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
               </TableRow>
               <TableRow className='bg-muted/30'>
-                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-8">Meses</TableHead>
-                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-8">KM</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">Observações</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">Fornecedor</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">Data</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">KM</TableHead>
+                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">Meses</TableHead>
+                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">KM</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Observações</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Fornecedor</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Data</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">KM</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -121,7 +121,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 const hasBeenServiced = vehicleService && vehicleService.lastKm > 0;
                 
                 return (
-                    <TableRow key={serviceInfo.id} className={cn('text-xs', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
+                    <TableRow key={serviceInfo.id} className={cn('h-8', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
                       <TableCell className="font-medium text-left p-1">{serviceInfo.name}</TableCell>
                       
                       {/* Parâmetros */}
@@ -147,7 +147,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
 
                       {/* Status */}
                       <TableCell className='text-center p-1'>
-                         <Badge className={cn('text-[10px] font-bold w-[70px] justify-center', statusClasses[vehicleService?.status || 'OK'])}>
+                         <Badge className={cn('text-[9px] font-bold w-[60px] justify-center px-1', statusClasses[vehicleService?.status || 'OK'])}>
                             {vehicleService?.status || 'OK'}
                         </Badge>
                       </TableCell>
@@ -155,14 +155,14 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       <TableCell className="text-right p-1">
                         <div className="flex items-center justify-end">
                           {canEdit && (
-                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-6 text-[10px] px-2">
+                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-5 text-[9px] px-1">
                                   <PlusCircle className="mr-1 h-3 w-3" /> Registrar
                               </Button>
                           )}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <MoreVertical className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" className="h-5 w-5">
+                                <MoreVertical className="h-3 w-3" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
