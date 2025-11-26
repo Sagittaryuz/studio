@@ -115,7 +115,6 @@ export function ServiceManagementClient({ initialServices, categories }: Service
     toast({ title: "Serviço Removido", variant: 'destructive' });
   };
 
-
   return (
     <Card>
       <CardHeader>
