@@ -58,12 +58,12 @@ const SortableRow = ({ service, onEdit, onDelete }: SortableRowProps) => {
 
     return (
         <TableRow ref={setNodeRef} style={style} {...attributes}>
-            <TableCell className="w-10">
-                <Button variant="ghost" size="icon" {...listeners} className="cursor-grab">
-                    <GripVertical className="h-4 w-4" />
-                </Button>
+            <TableCell className="font-medium cursor-grab" {...listeners}>
+              <div className='flex items-center gap-2'>
+                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                {service.name}
+              </div>
             </TableCell>
-            <TableCell className="font-medium">{service.name}</TableCell>
             <TableCell>{service.defaultKm > 0 ? service.defaultKm.toLocaleString('pt-BR') : 'N/A'}</TableCell>
             <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
             <TableCell className="text-right">
@@ -215,7 +215,6 @@ export function ServiceManagementClient({ initialServices, categories }: Service
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-10"></TableHead>
                                 <TableHead>Nome</TableHead>
                                 <TableHead>Frequência (KM)</TableHead>
                                 <TableHead>Frequência (Meses)</TableHead>
