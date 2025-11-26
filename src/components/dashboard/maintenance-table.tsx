@@ -76,7 +76,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
   return (
     <>
       <Card className="flex-1 flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between p-3">
+      <CardHeader className="flex flex-row items-center justify-between p-2">
           <div>
              <div className="flex items-center gap-2">
               <Monitor className="h-5 w-5 text-primary" />
@@ -96,7 +96,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
           </div>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-y-auto">
-          <Table className="text-[10px]">
+          <Table>
             <TableHeader>
               <TableRow className='bg-muted/30 h-6'>
                 <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
@@ -145,7 +145,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
 
                       {/* Status */}
                       <TableCell className='text-center p-1'>
-                         <Badge className={cn('text-[9px] font-bold w-[60px] justify-center px-1', statusClasses[vehicleService?.status || 'OK'])}>
+                         <Badge className={cn('font-bold w-[60px] justify-center px-1', statusClasses[vehicleService?.status || 'OK'])}>
                             {vehicleService?.status || 'OK'}
                         </Badge>
                       </TableCell>
@@ -153,14 +153,14 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       <TableCell className="text-right p-1">
                         <div className="flex items-center justify-end">
                           {canEdit && (
-                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-5 text-[9px] px-1">
+                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-6 px-1">
                                   <PlusCircle className="mr-1 h-3 w-3" /> Registrar
                               </Button>
                           )}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-5 w-5">
-                                <MoreVertical className="h-3 w-3" />
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -183,7 +183,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 )
               }) : (
                 <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                         Nenhum tipo de serviço encontrado para esta categoria de veículo.
                     </TableCell>
                 </TableRow>

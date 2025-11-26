@@ -199,6 +199,16 @@ export async function mockDbAddVehicle(data: { plate: string; currentKm: number;
     await new Promise(res => setTimeout(res, 500));
 }
 
+export async function mockDbDeleteService(id: string) {
+    const serviceIndex = SERVICES.findIndex(s => s.id === id);
+    if (serviceIndex !== -1) {
+        SERVICES.splice(serviceIndex, 1);
+        // Also remove related vehicle services
+        VEHICLE_SERVICES = VEHICLE_SERVICES.filter(vs => vs.serviceId !== id);
+    }
+    await new Promise(res => setTimeout(res, 500));
+}
+
 // --- DATA PROCESSING LOGIC ---
 
 /**
@@ -312,7 +322,7 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
 
   return {
     vehicles: vehiclesWithStatus,
-    services: SERVICES,
+    services: [...SERVICES],
     vehicleServices: processedVehicleServices as VehicleService[],
     categories: categoriesWithStatus,
     userRole,

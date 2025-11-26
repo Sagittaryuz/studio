@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
-import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes } from '@/lib/data';
+import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes, mockDbDeleteService } from '@/lib/data';
 import type { CategoryID } from '@/lib/types';
 
 
@@ -40,6 +40,10 @@ const updateNotesSchema = z.object({
   notes: z.string(),
 });
 
+const deleteServiceSchema = z.object({
+  serviceId: z.string(),
+});
+
 
 // --- SERVER ACTIONS ---
 
@@ -56,6 +60,7 @@ export async function updateVehicleKm(vehicleId: string, currentKm: number) {
   await mockDbUpdateVehicleKm(vehicleId, currentKm);
   
   revalidatePath('/');
+  revalidatePath('/services');
 }
 
 /**
@@ -73,6 +78,7 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
 
     revalidatePath('/');
     revalidatePath(`/history/${data.vehicleId}/${data.serviceId}`);
+    revalidatePath('/services');
 }
 
 /**
@@ -93,6 +99,7 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
     });
 
     revalidatePath('/');
+    revalidatePath('/services');
 }
 
 /**
@@ -109,6 +116,24 @@ export async function updateVehicleServiceNotes(vehicleServiceId: string, notes:
     await mockDbUpdateVehicleServiceNotes(vehicleServiceId, notes);
     
     revalidatePath('/');
+    revalidatePath('/services');
+}
+
+/**
+ * Deletes a service type.
+ */
+export async function deleteService(serviceId: string) {
+    const validation = deleteServiceSchema.safeParse({ serviceId });
+
+    if(!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for deleting service.');
+    }
+    
+    await mockDbDeleteService(serviceId);
+
+    revalidatePath('/');
+    revalidatePath('/services');
 }
 
 

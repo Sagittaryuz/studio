@@ -19,6 +19,7 @@ import { PlusCircle, Edit, Trash2, Loader2, Plus } from 'lucide-react';
 import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { deleteService } from '@/app/actions';
 
 
 const serviceFormSchema = z.object({
@@ -46,9 +47,10 @@ interface SortableRowProps {
     service: Service;
     onEdit: (service: Service) => void;
     onDelete: (serviceId: string) => void;
+    isDeleting: boolean;
 }
 
-const SortableRow = ({ service, onEdit, onDelete }: SortableRowProps) => {
+const SortableRow = ({ service, onEdit, onDelete, isDeleting }: SortableRowProps) => {
     const {
         attributes,
         listeners,
@@ -71,11 +73,11 @@ const SortableRow = ({ service, onEdit, onDelete }: SortableRowProps) => {
             <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
             <TableCell className="text-right">
                 <div className='flex gap-2 justify-end'>
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(service)}>
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(service)} disabled={isDeleting}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(service.id)}>
-                        <Trash2 className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(service.id)} disabled={isDeleting}>
+                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </Button>
                 </div>
             </TableCell>
@@ -88,6 +90,7 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
   const [services, setServices] = useState<Service[]>(initialServices);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -198,11 +201,19 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     serviceForm.reset();
   }
 
-  const handleDeleteService = (serviceId: string) => {
-    // Here you would call a server action to delete the service
-    console.log('Deleting service:', serviceId);
-    setServices(services.filter(s => s.id !== serviceId));
-    toast({ title: "Serviço Removido", variant: 'destructive' });
+  const handleDeleteService = async (serviceId: string) => {
+    setDeletingId(serviceId);
+    try {
+        await deleteService(serviceId);
+        // Optimistic update on the client
+        setServices(currentServices => currentServices.filter(s => s.id !== serviceId));
+        toast({ title: "Serviço Removido" });
+    } catch (error) {
+        toast({ title: "Erro ao remover serviço", variant: 'destructive' });
+        console.error(error);
+    } finally {
+        setDeletingId(null);
+    }
   };
   
   const handleDragEnd = (event: DragEndEvent) => {
@@ -260,7 +271,13 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
                         </TableHeader>
                         <TableBody>
                             {servicesForCategory.map(service => (
-                                <SortableRow key={service.id} service={service} onEdit={handleEditService} onDelete={handleDeleteService} />
+                                <SortableRow 
+                                    key={service.id} 
+                                    service={service} 
+                                    onEdit={handleEditService} 
+                                    onDelete={handleDeleteService}
+                                    isDeleting={deletingId === service.id}
+                                />
                             ))}
                         </TableBody>
                     </Table>
