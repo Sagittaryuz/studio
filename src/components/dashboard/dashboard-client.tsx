@@ -2,15 +2,13 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService } from '@/lib/types';
-import { AppHeader } from '@/components/layout/app-header';
-import { VehicleList } from '@/components/dashboard/vehicle-list';
 import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { Plus, Cog } from 'lucide-react';
-import Link from 'next/link';
+import { Plus } from 'lucide-react';
+import { VehicleList } from './vehicle-list';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -56,17 +54,8 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
   
   return (
     <div className="flex h-screen w-full flex-col">
-      <AppHeader />
       <main className="flex flex-1 flex-col overflow-hidden p-2 md:p-4">
-        <div className="flex items-center justify-between py-1">
-            <h2 className="text-xl font-bold tracking-tight">Painel de Controle</h2>
-            <Button asChild variant="outline" size="sm">
-                <Link href="/services">
-                    <Cog className="mr-2 h-4 w-4" />
-                    Gerenciar Serviços
-                </Link>
-            </Button>
-        </div>
+        
         <Tabs value={selectedCategory} onValueChange={handleSelectCategory} className="mt-1">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
             {initialData.categories.map((category: CategoryWithStatus) => (
