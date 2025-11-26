@@ -99,23 +99,19 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
           <Table>
             <TableHeader>
               <TableRow className='bg-muted/30'>
-                <TableHead className='w-1/4'>Serviço</TableHead>
+                <TableHead className='w-1/4 align-middle' rowSpan={2}>Serviço</TableHead>
                 <TableHead className="bg-muted/50 text-center" colSpan={2}>Parâmetros</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center" colSpan={3}>Última Manutenção</TableHead>
-                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center">Próxima Manutenção</TableHead>
-                <TableHead className='text-center'>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center align-middle" rowSpan={2}>Próxima Manutenção</TableHead>
+                <TableHead className='text-center align-middle' rowSpan={2}>Status</TableHead>
+                <TableHead className="text-right align-middle" rowSpan={2}>Ações</TableHead>
               </TableRow>
               <TableRow className='bg-muted/30'>
-                <TableHead></TableHead>
                 <TableHead className="bg-muted/50 text-center font-semibold">Meses</TableHead>
                 <TableHead className="bg-muted/50 text-center font-semibold">KM</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Fornecedor</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Data</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">KM</TableHead>
-                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white font-semibold text-center">Data / KM</TableHead>
-                <TableHead></TableHead>
-                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
