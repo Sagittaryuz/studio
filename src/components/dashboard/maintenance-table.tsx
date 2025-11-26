@@ -101,7 +101,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
               <TableRow className='bg-muted/30 h-6'>
                 <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
                 <TableHead className="bg-muted/50 text-center p-1" colSpan={2}>Parâmetros</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1" colSpan={4}>Última Manutenção</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1" colSpan={3}>Última Manutenção</TableHead>
                 <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
                 <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
                 <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
@@ -109,7 +109,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
               <TableRow className='bg-muted/30 h-6'>
                 <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">Meses</TableHead>
                 <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">KM</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Observações</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Fornecedor</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Data</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">KM</TableHead>
@@ -129,7 +128,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       <TableCell className="bg-muted/50 text-center p-1">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
                       
                       {/* Última Manutenção */}
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 max-w-[150px] truncate text-left p-1">{vehicleService?.notes || 'N/A'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
@@ -185,7 +183,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 )
               }) : (
                 <TableRow>
-                    <TableCell colSpan={10} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                         Nenhum tipo de serviço encontrado para esta categoria de veículo.
                     </TableCell>
                 </TableRow>

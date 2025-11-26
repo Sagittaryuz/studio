@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Plus } from 'lucide-react';
 import { VehicleList } from './vehicle-list';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -94,13 +96,25 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
           ))}
         </Tabs>
         
-        <div className="flex-1 overflow-y-auto mt-2">
+        <div className="flex-1 overflow-y-auto mt-2 flex flex-col gap-2">
             <MaintenanceTable 
                 vehicle={selectedVehicle}
                 servicesForCategory={servicesByCategory[selectedCategory] || []}
                 vehicleServices={initialData.vehicleServices}
                 userRole={initialData.userRole}
             />
+            {selectedVehicle && (
+              <div className='flex-shrink-0'>
+                <Label htmlFor='vehicle-notes'>Observações do Veículo</Label>
+                <Textarea
+                  id='vehicle-notes'
+                  readOnly
+                  value={selectedVehicle.notes || 'Nenhuma observação para este veículo.'}
+                  className='text-xs mt-1'
+                  rows={2}
+                  />
+              </div>
+            )}
         </div>
       </main>
     </div>
