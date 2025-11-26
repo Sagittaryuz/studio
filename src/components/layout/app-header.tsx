@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { JCIcon } from '@/components/icons';
 import { LogOut, Settings, User } from 'lucide-react';
+import Link from 'next/link';
 
 export function AppHeader({ children }: { children?: React.ReactNode }) {
   return (
@@ -23,6 +24,9 @@ export function AppHeader({ children }: { children?: React.ReactNode }) {
         </h1>
       </div>
       <div className="ml-auto flex items-center gap-4">
+        <Button variant="ghost" asChild>
+            <Link href="/services">Gerenciar Serviços</Link>
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
