@@ -155,12 +155,35 @@ export async function mockDbUpdateVehicleKm(id: string, km: number) {
 }
 
 export async function mockDbAddVehicleService(data: Omit<VehicleService, 'id' | 'status' | 'nextDate' | 'nextKm'>) {
-    const newService = {
-        id: `vs${Date.now()}`,
-        ...data,
-    };
-    VEHICLE_SERVICES.push(newService);
+    // Find if a record for this vehicle and service already exists
+    const existingServiceIndex = VEHICLE_SERVICES.findIndex(
+        vs => vs.vehicleId === data.vehicleId && vs.serviceId === data.serviceId
+    );
+
+    if (existingServiceIndex !== -1) {
+        // Update the existing record
+        VEHICLE_SERVICES[existingServiceIndex] = {
+            ...VEHICLE_SERVICES[existingServiceIndex],
+            ...data,
+        };
+    } else {
+        // Add a new record
+        const newService = {
+            id: `vs${Date.now()}`,
+            ...data,
+        };
+        VEHICLE_SERVICES.push(newService);
+    }
+    
     await new Promise(res => setTimeout(res, 800));
+}
+
+export async function mockDbUpdateVehicleServiceNotes(id: string, notes: string) {
+    const serviceIndex = VEHICLE_SERVICES.findIndex(vs => vs.id === id);
+    if (serviceIndex !== -1) {
+        VEHICLE_SERVICES[serviceIndex].notes = notes;
+    }
+    await new Promise(res => setTimeout(res, 500));
 }
 
 export async function mockDbAddVehicle(data: { plate: string; currentKm: number; category: CategoryID }) {
@@ -173,25 +196,6 @@ export async function mockDbAddVehicle(data: { plate: string; currentKm: number;
         photoUrl: `https://picsum.photos/seed/${data.plate}/600/400`,
     };
     VEHICLES.push(newVehicle);
-
-    // Get all services for the category
-    const categoryServices = SERVICES.filter(s => s.categoryId === data.category);
-    
-    // Add empty service history for the new vehicle
-    categoryServices.forEach(service => {
-        const newServiceRecord = {
-            id: `vs${Date.now()}-${service.id}`,
-            vehicleId: newVehicle.id,
-            serviceId: service.id,
-            // Use a far-past date and 0 km to indicate it's never been done
-            lastDate: new Date('2000-01-01'), 
-            lastKm: 0,
-            supplier: '',
-            responsible: 'Sistema',
-        };
-        VEHICLE_SERVICES.push(newServiceRecord);
-    });
-
     await new Promise(res => setTimeout(res, 500));
 }
 
@@ -210,7 +214,7 @@ function getServiceStatus(
   const { currentKm } = vehicle;
 
   // If the service has never been performed, flag as ALERTA
-  if (lastKm === 0 && lastDate.getFullYear() === 2000) {
+  if (lastKm === 0 && lastDate.getFullYear() < 2001) {
     return {
         status: 'ALERTA',
         nextDate: new Date(),

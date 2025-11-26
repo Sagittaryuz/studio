@@ -1,14 +1,15 @@
 'use client';
-import { useState } from 'react';
-import type { VehicleWithStatus, VehicleService, Service, UserRole } from '@/lib/types';
+import { useState, useMemo } from 'react';
+import type { VehicleWithStatus, VehicleService, Service, UserRole, MergedServiceData, CategoryID } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, PlusCircle, Monitor } from 'lucide-react';
+import { MoreVertical, PlusCircle, Monitor, FileText } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
 import { AiSuggestionModal } from '@/components/vehicle/ai-suggestion-modal';
+import { EditNotesModal } from '@/components/vehicle/edit-notes-modal';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import {
@@ -20,28 +21,49 @@ import {
 
 interface MaintenanceTableProps {
   vehicle: VehicleWithStatus | null;
-  services: VehicleService[];
-  allServices: Service[];
+  servicesForCategory: Service[];
+  vehicleServices: VehicleService[];
   userRole: UserRole;
 }
 
-const statusBadgeClasses: Record<string, string> = {
-  VENCIDO: 'destructive',
-  ALERTA: 'default',
-  OK: 'secondary',
+const statusClasses: Record<string, string> = {
+  VENCIDO: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+  ALERTA: 'bg-warning text-warning-foreground hover:bg-warning/90',
+  OK: 'bg-green-600 text-white hover:bg-green-700',
 };
 
-export function MaintenanceTable({ vehicle, services, allServices, userRole }: MaintenanceTableProps) {
-  const [isSheetOpen, setSheetOpen] = useState(false);
+export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, userRole }: MaintenanceTableProps) {
+  const [isAddSheetOpen, setAddSheetOpen] = useState(false);
   const [isAiModalOpen, setAiModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<VehicleService | null>(null);
+  const [isNotesModalOpen, setNotesModalOpen] = useState(false);
+  const [selectedServiceData, setSelectedServiceData] = useState<MergedServiceData | null>(null);
 
-  const handleOpenSheet = (service: VehicleService) => {
-    setSelectedService(service);
-    setSheetOpen(true);
+  const handleOpenAddSheet = (data: MergedServiceData) => {
+    setSelectedServiceData(data);
+    setAddSheetOpen(true);
+  };
+  
+  const handleOpenNotesModal = (data: MergedServiceData) => {
+    setSelectedServiceData(data);
+    setNotesModalOpen(true);
   };
   
   const canEdit = userRole === 'admin' || userRole === 'operator';
+
+  // This is the core logic change.
+  // We merge the list of all services for the category with the actual service history of the vehicle.
+  const mergedData: MergedServiceData[] = useMemo(() => {
+    if (!vehicle) return [];
+    
+    // Sort all services for the category by the defined order
+    const sortedCategoryServices = [...servicesForCategory].sort((a,b) => a.order - b.order);
+    
+    return sortedCategoryServices.map(serviceInfo => {
+      const vehicleService = vehicleServices.find(vs => vs.serviceId === serviceInfo.id && vs.vehicleId === vehicle.id) || null;
+      return { serviceInfo, vehicleService };
+    });
+  }, [vehicle, servicesForCategory, vehicleServices]);
+
 
   if (!vehicle) {
     return (
@@ -51,22 +73,6 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
     );
   }
 
-  const getServiceName = (serviceId: string) => {
-    return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
-  };
-
-  // Sort services based on the custom order defined in allServices
-  const sortedServices = [...services].sort((a, b) => {
-    const serviceA = allServices.find(s => s.id === a.serviceId);
-    const serviceB = allServices.find(s => s.id === b.serviceId);
-    
-    const orderA = serviceA ? serviceA.order : Infinity;
-    const orderB = serviceB ? serviceB.order : Infinity;
-    
-    return orderA - orderB;
-  });
-
-
   return (
     <>
       <Card className="mt-6">
@@ -75,11 +81,11 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
              <div className="flex items-center gap-3">
               <Monitor className="h-8 w-8 text-primary" />
               <CardTitle className="text-2xl">
-                Detalhes do Veículo: <span className="font-bold text-primary">{vehicle.plate}</span>
+                Plano de Manutenção: <span className="font-bold text-primary">{vehicle.plate}</span>
               </CardTitle>
             </div>
             <CardDescription>
-                KM Atual: {vehicle.currentKm.toLocaleString('pt-BR')} km. Histórico e agendamentos de serviços.
+                KM Atual: {vehicle.currentKm.toLocaleString('pt-BR')} km.
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -92,60 +98,97 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Próxima Manutenção</TableHead>
-                <TableHead>Última Manutenção</TableHead>
+              <TableRow className='bg-muted/30'>
+                <TableHead className='w-1/4'>Serviço</TableHead>
+                <TableHead className="bg-muted/50 text-center" colSpan={2}>Parâmetros</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center" colSpan={3}>Última Manutenção</TableHead>
+                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center">Próxima Manutenção</TableHead>
+                <TableHead className='text-center'>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+              <TableRow className='bg-muted/30'>
+                <TableHead></TableHead>
+                <TableHead className="bg-muted/50 text-center font-semibold">Meses</TableHead>
+                <TableHead className="bg-muted/50 text-center font-semibold">KM</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Fornecedor</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Data</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">KM</TableHead>
+                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white font-semibold text-center">Data / KM</TableHead>
+                <TableHead></TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedServices.length > 0 ? sortedServices.map(service => (
-                <TableRow key={service.id}>
-                  <TableCell className="font-medium">{getServiceName(service.serviceId)}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusBadgeClasses[service.status]} className={cn(service.status === 'ALERTA' && 'bg-warning text-warning-foreground')}>
-                      {service.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {service.nextKm > 0 && Number.isFinite(service.nextKm) ? `${service.nextKm.toLocaleString('pt-BR')} km` : ''}
-                    {service.nextKm > 0 && Number.isFinite(service.nextKm) && service.nextDate < new Date('2999-01-01') ? ' / ' : ''}
-                    {service.nextDate < new Date('2999-01-01') ? service.nextDate.toLocaleDateString('pt-BR') : ''}
-                  </TableCell>
-                  <TableCell>
-                    {service.lastDate.getFullYear() > 2000 ? `${service.lastKm.toLocaleString('pt-BR')} km / ${service.lastDate.toLocaleDateString('pt-BR')}` : 'Nunca realizado'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {canEdit && (
-                          <Button onClick={() => handleOpenSheet(service)} size="sm">
-                              <PlusCircle className="mr-2 h-4 w-4" /> Registrar
-                          </Button>
-                      )}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/history/${vehicle.id}/${service.serviceId}`}>
-                                Ver Detalhes
-                            </Link>
-                          </DropdownMenuItem>
-                          {canEdit && <DropdownMenuItem>Reagendar</DropdownMenuItem>}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )) : (
+              {mergedData.length > 0 ? mergedData.map(data => {
+                const { serviceInfo, vehicleService } = data;
+                const hasBeenServiced = vehicleService && vehicleService.lastKm > 0;
+                
+                return (
+                    <TableRow key={serviceInfo.id} className={cn(vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
+                      <TableCell className="font-medium">{serviceInfo.name}</TableCell>
+                      
+                      {/* Parâmetros */}
+                      <TableCell className="bg-muted/50 text-center">{serviceInfo.defaultMonths > 0 ? serviceInfo.defaultMonths : '-'}</TableCell>
+                      <TableCell className="bg-muted/50 text-center">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      
+                      {/* Última Manutenção */}
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.supplier : 'N/A'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      
+                      {/* Próxima Manutenção */}
+                      <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center">
+                        {hasBeenServiced ? (
+                             <>
+                                {serviceInfo.defaultMonths > 0 ? vehicleService.nextDate.toLocaleDateString('pt-BR') : ''}
+                                {serviceInfo.defaultMonths > 0 && serviceInfo.defaultKm > 0 ? <span className='mx-1'>/</span> : ''}
+                                {serviceInfo.defaultKm > 0 ? `${vehicleService.nextKm.toLocaleString('pt-br')} km` : ''}
+                             </>
+                        ) : '-'}
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell className='text-center'>
+                         <Badge className={cn('text-xs font-bold w-[80px] justify-center', statusClasses[vehicleService?.status || 'OK'])}>
+                            {vehicleService?.status || 'OK'}
+                        </Badge>
+                      </TableCell>
+                      
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {canEdit && (
+                              <Button onClick={() => handleOpenAddSheet(data)} size="sm">
+                                  <PlusCircle className="mr-2 h-4 w-4" /> Registrar
+                              </Button>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/history/${vehicle.id}/${serviceInfo.id}`}>
+                                    Ver Histórico
+                                </Link>
+                              </DropdownMenuItem>
+                              {canEdit && vehicleService && (
+                                <DropdownMenuItem onClick={() => handleOpenNotesModal(data)}>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Obs.
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                )
+              }) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                        Nenhum serviço de manutenção encontrado para este veículo.
+                    <TableCell colSpan={9} className="h-24 text-center">
+                        Nenhum tipo de serviço encontrado para esta categoria de veículo.
                     </TableCell>
                 </TableRow>
               )}
@@ -153,21 +196,29 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
           </Table>
         </CardContent>
       </Card>
-      {canEdit && selectedService && (
+
+      {canEdit && selectedServiceData && (
           <AddMaintenanceSheet 
-            isOpen={isSheetOpen}
-            setIsOpen={setSheetOpen}
+            isOpen={isAddSheetOpen}
+            setIsOpen={setAddSheetOpen}
             vehicle={vehicle}
-            service={selectedService}
-            allServices={allServices}
+            serviceInfo={selectedServiceData.serviceInfo}
+            vehicleService={selectedServiceData.vehicleService}
           />
+      )}
+      {canEdit && selectedServiceData?.vehicleService && (
+        <EditNotesModal
+            isOpen={isNotesModalOpen}
+            setIsOpen={setNotesModalOpen}
+            vehicleService={selectedServiceData.vehicleService}
+        />
       )}
       <AiSuggestionModal
         isOpen={isAiModalOpen}
         setIsOpen={setAiModalOpen}
         vehicle={vehicle}
-        serviceHistory={services}
-        allServices={allServices}
+        serviceHistory={vehicleServices}
+        allServices={servicesForCategory}
        />
     </>
   );

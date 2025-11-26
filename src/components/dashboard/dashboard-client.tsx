@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import type { DashboardData, VehicleWithStatus, CategoryWithStatus } from '@/lib/types';
+import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService } from '@/lib/types';
 import { AppHeader } from '@/components/layout/app-header';
 import { VehicleList } from '@/components/dashboard/vehicle-list';
 import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
@@ -29,11 +29,15 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
     });
     return grouped;
   }, [initialData.vehicles, initialData.categories]);
+  
+  const servicesByCategory = useMemo(() => {
+    const grouped: { [key: string]: Service[] } = {};
+    initialData.categories.forEach(category => {
+        grouped[category.id] = initialData.services.filter(s => s.categoryId === category.id);
+    });
+    return grouped;
+  }, [initialData.services, initialData.categories]);
 
-  const maintenanceForSelectedVehicle = useMemo(() => {
-    if (!selectedVehicle) return [];
-    return initialData.vehicleServices.filter(vs => vs.vehicleId === selectedVehicle.id);
-  }, [selectedVehicle, initialData.vehicleServices]);
 
   // Effect to select the first vehicle when category changes
   useEffect(() => {
@@ -102,8 +106,8 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
         
         <MaintenanceTable 
             vehicle={selectedVehicle}
-            services={maintenanceForSelectedVehicle}
-            allServices={initialData.services}
+            servicesForCategory={servicesByCategory[selectedCategory] || []}
+            vehicleServices={initialData.vehicleServices}
             userRole={initialData.userRole}
         />
       </main>

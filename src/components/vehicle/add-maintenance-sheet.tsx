@@ -46,11 +46,11 @@ interface AddMaintenanceSheetProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   vehicle: Vehicle;
-  service: VehicleService;
-  allServices: Service[];
+  serviceInfo: Service;
+  vehicleService: VehicleService | null;
 }
 
-export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allServices }: AddMaintenanceSheetProps) {
+export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, serviceInfo, vehicleService }: AddMaintenanceSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { toast } = useToast();
@@ -61,15 +61,11 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
     resolver: zodResolver(formSchema),
     defaultValues: {
       lastKm: vehicle.currentKm,
-      supplier: service.supplier || '',
+      supplier: vehicleService?.supplier || '',
       responsible: '',
-      notes: '',
+      notes: vehicleService?.notes || '',
     },
   });
-
-  const getServiceName = (serviceId: string) => {
-    return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
-  };
 
   const uploadFile = (file: File, vehicleId: string, serviceId: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -101,7 +97,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
         let attachmentUrls: string[] = [];
         if (values.attachments && values.attachments.length > 0) {
             const files = Array.from(values.attachments);
-            const uploadPromises = files.map(file => uploadFile(file, vehicle.id, service.id));
+            const uploadPromises = files.map(file => uploadFile(file, vehicle.id, serviceInfo.id));
             attachmentUrls = await Promise.all(uploadPromises);
             setUploadProgress(null);
         }
@@ -109,7 +105,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
         await addVehicleService({ 
             ...values, 
             vehicleId: vehicle.id,
-            serviceId: service.serviceId,
+            serviceId: serviceInfo.id,
             attachments: attachmentUrls,
         });
         toast({
@@ -134,7 +130,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, service, allSe
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent className="sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Registrar: {getServiceName(service.serviceId)} - {vehicle.plate}</SheetTitle>
+          <SheetTitle>Registrar: {serviceInfo.name} - {vehicle.plate}</SheetTitle>
           <SheetDescription>
             Adicione um novo registro de serviço realizado para este veículo.
           </SheetDescription>

@@ -60,3 +60,9 @@ export interface DashboardData {
   categories: CategoryWithStatus[];
   userRole: UserRole;
 }
+
+// Type for the combined data used in the new maintenance table
+export interface MergedServiceData {
+  serviceInfo: Service;
+  vehicleService: VehicleService | null; // It can be null if never performed
+}

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
-import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm } from '@/lib/data';
+import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes } from '@/lib/data';
 import type { CategoryID } from '@/lib/types';
 
 
@@ -33,6 +33,11 @@ const addVehicleSchema = z.object({
     plate: z.string().min(3, 'Placa inválida.'),
     currentKm: z.number().min(0, 'KM inválido.'),
     categoryId: z.string(),
+});
+
+const updateNotesSchema = z.object({
+  vehicleServiceId: z.string(),
+  notes: z.string(),
 });
 
 
@@ -87,6 +92,22 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
         category: data.categoryId as CategoryID,
     });
 
+    revalidatePath('/');
+}
+
+/**
+ * Updates the notes for a specific vehicle service record.
+ */
+export async function updateVehicleServiceNotes(vehicleServiceId: string, notes: string) {
+    const validation = updateNotesSchema.safeParse({ vehicleServiceId, notes });
+
+    if(!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for updating notes.');
+    }
+
+    await mockDbUpdateVehicleServiceNotes(vehicleServiceId, notes);
+    
     revalidatePath('/');
 }
 
