@@ -67,7 +67,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
 
   if (!vehicle) {
     return (
-        <div className="mt-6 flex h-full items-center justify-center rounded-lg border border-dashed p-8 text-center">
+        <div className="flex h-full items-center justify-center rounded-lg border border-dashed p-8 text-center">
             <p className="text-muted-foreground">Selecione um veículo para ver os detalhes da manutenção.</p>
         </div>
     );
@@ -75,22 +75,22 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
 
   return (
     <>
-      <Card className="mt-6 flex-1 flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="flex-1 flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between p-3">
           <div>
              <div className="flex items-center gap-3">
-              <Monitor className="h-8 w-8 text-primary" />
-              <CardTitle className="text-2xl">
+              <Monitor className="h-6 w-6 text-primary" />
+              <CardTitle className="text-xl">
                 Plano de Manutenção: <span className="font-bold text-primary">{vehicle.plate}</span>
               </CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-xs">
                 KM Atual: {vehicle.currentKm.toLocaleString('pt-BR')} km.
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <UpdateKmForm vehicle={vehicle} disabled={!canEdit} />
-             <Button variant="outline" onClick={() => setAiModalOpen(true)}>
+             <Button variant="outline" size="sm" onClick={() => setAiModalOpen(true)}>
                 Sugerir com IA
             </Button>
           </div>
@@ -99,20 +99,20 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
           <Table className="text-xs">
             <TableHeader>
               <TableRow className='bg-muted/30'>
-                <TableHead className='w-1/4 align-middle p-2' rowSpan={2}>Serviço</TableHead>
+                <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
                 <TableHead className="bg-muted/50 text-center p-1" colSpan={2}>Parâmetros</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1" colSpan={4}>Última Manutenção</TableHead>
-                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center align-middle p-2" rowSpan={2}>Próxima Manutenção</TableHead>
-                <TableHead className='text-center align-middle p-2' rowSpan={2}>Status</TableHead>
-                <TableHead className="text-right align-middle p-2" rowSpan={2}>Ações</TableHead>
+                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
+                <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
+                <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
               </TableRow>
               <TableRow className='bg-muted/30'>
-                <TableHead className="bg-muted/50 text-center font-semibold p-1">Meses</TableHead>
-                <TableHead className="bg-muted/50 text-center font-semibold p-1">KM</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1">Observações</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1">Fornecedor</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1">Data</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1">KM</TableHead>
+                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-8">Meses</TableHead>
+                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-8">KM</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">Observações</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">Fornecedor</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">Data</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-8">KM</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -122,20 +122,20 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 
                 return (
                     <TableRow key={serviceInfo.id} className={cn('text-xs', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
-                      <TableCell className="font-medium text-left p-2">{serviceInfo.name}</TableCell>
+                      <TableCell className="font-medium text-left p-1">{serviceInfo.name}</TableCell>
                       
                       {/* Parâmetros */}
-                      <TableCell className="bg-muted/50 text-center p-2">{serviceInfo.defaultMonths > 0 ? serviceInfo.defaultMonths : '-'}</TableCell>
-                      <TableCell className="bg-muted/50 text-center p-2">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      <TableCell className="bg-muted/50 text-center p-1">{serviceInfo.defaultMonths > 0 ? serviceInfo.defaultMonths : '-'}</TableCell>
+                      <TableCell className="bg-muted/50 text-center p-1">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
                       
                       {/* Última Manutenção */}
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 max-w-[150px] truncate text-left p-2">{vehicleService?.notes || 'N/A'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-2">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-2">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-2">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 max-w-[150px] truncate text-left p-1">{vehicleService?.notes || 'N/A'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
                       
                       {/* Próxima Manutenção */}
-                      <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center p-2">
+                      <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center p-1">
                         {hasBeenServiced ? (
                              <>
                                 {serviceInfo.defaultMonths > 0 ? vehicleService.nextDate.toLocaleDateString('pt-BR') : ''}
@@ -146,22 +146,22 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       </TableCell>
 
                       {/* Status */}
-                      <TableCell className='text-center p-2'>
+                      <TableCell className='text-center p-1'>
                          <Badge className={cn('text-[10px] font-bold w-[70px] justify-center', statusClasses[vehicleService?.status || 'OK'])}>
                             {vehicleService?.status || 'OK'}
                         </Badge>
                       </TableCell>
                       
-                      <TableCell className="text-right p-2">
+                      <TableCell className="text-right p-1">
                         <div className="flex items-center justify-end">
                           {canEdit && (
-                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-7 text-[11px] px-2">
+                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-6 text-[10px] px-2">
                                   <PlusCircle className="mr-1 h-3 w-3" /> Registrar
                               </Button>
                           )}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

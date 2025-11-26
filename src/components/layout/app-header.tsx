@@ -14,7 +14,7 @@ import { LogOut, Settings, User } from 'lucide-react';
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-12 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <div className="flex items-center gap-2">
         <JCIcon className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl">
@@ -27,9 +27,9 @@ export function AppHeader() {
             <Button
               variant="outline"
               size="icon"
-              className="overflow-hidden rounded-full"
+              className="overflow-hidden rounded-full h-8 w-8"
             >
-              <Avatar>
+              <Avatar className='h-8 w-8'>
                 <AvatarImage src="https://picsum.photos/seed/user/32/32" alt="@user" />
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>

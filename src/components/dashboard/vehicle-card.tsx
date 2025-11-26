@@ -26,17 +26,17 @@ export function VehicleCard({ vehicle, isSelected, onClick }: VehicleCardProps) 
       )}
       onClick={onClick}
     >
-      <CardHeader className="p-2">
+      <CardHeader className="p-1">
         <div className="flex items-center justify-between gap-1">
             <CardTitle className="text-xs font-bold truncate">{vehicle.plate}</CardTitle>
             <Badge 
               variant={vehicle.status === 'ALERTA' ? 'default' : vehicle.status === 'VENCIDO' ? 'destructive' : 'secondary'} 
-              className={cn('text-[10px] px-1.5 py-0', vehicle.status === 'ALERTA' && 'bg-warning text-warning-foreground')}
+              className={cn('text-[9px] px-1 py-0', vehicle.status === 'ALERTA' && 'bg-warning text-warning-foreground')}
             >
               {vehicle.status}
             </Badge>
         </div>
-        <CardDescription className="text-[11px]">{vehicle.currentKm.toLocaleString('pt-BR')} km</CardDescription>
+        <CardDescription className="text-[10px]">{vehicle.currentKm.toLocaleString('pt-BR')} km</CardDescription>
       </CardHeader>
     </Card>
   );

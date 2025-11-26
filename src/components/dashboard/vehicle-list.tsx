@@ -17,7 +17,7 @@ export function VehicleList({ vehicles, selectedVehicleId, onSelectVehicle, cate
   const [isAddVehicleOpen, setAddVehicleOpen] = useState(false);
     
   return (
-    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 xl:grid-cols-12">
       {vehicles.map((vehicle) => (
         <VehicleCard
           key={vehicle.id}

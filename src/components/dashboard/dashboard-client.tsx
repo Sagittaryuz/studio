@@ -57,17 +57,17 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
   return (
     <div className="flex h-screen w-full flex-col">
       <AppHeader />
-      <main className="flex flex-1 flex-col overflow-y-hidden p-4 md:p-6 lg:p-8">
-        <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">Painel de Controle</h2>
-            <Button asChild variant="outline">
+      <main className="flex flex-1 flex-col overflow-hidden p-2 md:p-4">
+        <div className="flex items-center justify-between py-1">
+            <h2 className="text-xl font-bold tracking-tight">Painel de Controle</h2>
+            <Button asChild variant="outline" size="sm">
                 <Link href="/services">
                     <Cog className="mr-2 h-4 w-4" />
                     Gerenciar Serviços
                 </Link>
             </Button>
         </div>
-        <Tabs value={selectedCategory} onValueChange={handleSelectCategory} className="mt-4">
+        <Tabs value={selectedCategory} onValueChange={handleSelectCategory} className="mt-1">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
             {initialData.categories.map((category: CategoryWithStatus) => (
               <TabsTrigger key={category.id} value={category.id} className="relative">
@@ -81,8 +81,8 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
             ))}
           </TabsList>
           {initialData.categories.map(category => (
-             <TabsContent key={category.id} value={category.id} className="flex-1">
-                <div className="mt-4">
+             <TabsContent key={category.id} value={category.id} className="flex-1 mt-2">
+                <div className="">
                   {vehiclesByCategory[category.id] && vehiclesByCategory[category.id].length > 0 ? (
                       <VehicleList
                           vehicles={vehiclesByCategory[category.id] || []}
@@ -105,7 +105,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
           ))}
         </Tabs>
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto mt-2">
             <MaintenanceTable 
                 vehicle={selectedVehicle}
                 servicesForCategory={servicesByCategory[selectedCategory] || []}
