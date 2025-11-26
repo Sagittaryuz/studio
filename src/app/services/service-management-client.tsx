@@ -59,10 +59,7 @@ const SortableRow = ({ service, onEdit, onDelete }: SortableRowProps) => {
     return (
         <TableRow ref={setNodeRef} style={style} {...attributes}>
             <TableCell className="font-medium cursor-grab" {...listeners}>
-              <div className='flex items-center gap-2'>
-                <GripVertical className="h-4 w-4 text-muted-foreground" />
                 {service.name}
-              </div>
             </TableCell>
             <TableCell>{service.defaultKm > 0 ? service.defaultKm.toLocaleString('pt-BR') : 'N/A'}</TableCell>
             <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
