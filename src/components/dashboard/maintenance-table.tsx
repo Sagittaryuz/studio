@@ -121,18 +121,18 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 const hasBeenServiced = vehicleService && vehicleService.lastKm > 0;
                 
                 return (
-                    <TableRow key={serviceInfo.id} className={cn(vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
-                      <TableCell className="font-medium">{serviceInfo.name}</TableCell>
+                    <TableRow key={serviceInfo.id} className={cn('text-sm', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
+                      <TableCell className="font-medium text-left">{serviceInfo.name}</TableCell>
                       
                       {/* Parâmetros */}
                       <TableCell className="bg-muted/50 text-center">{serviceInfo.defaultMonths > 0 ? serviceInfo.defaultMonths : '-'}</TableCell>
                       <TableCell className="bg-muted/50 text-center">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
                       
                       {/* Última Manutenção */}
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.supplier : 'N/A'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-xs max-w-[200px] truncate">{vehicleService?.notes || 'N/A'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-xs max-w-[200px] truncate text-left">{vehicleService?.notes || 'N/A'}</TableCell>
                       
                       {/* Próxima Manutenção */}
                       <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center">
