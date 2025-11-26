@@ -6,7 +6,5 @@ export default async function DashboardPage() {
   // and pass the currently logged-in user's role.
   const initialData = await getDashboardData('admin');
 
-  return (
-      <DashboardClient initialData={initialData} />
-  );
+  return <DashboardClient initialData={initialData} />;
 }
