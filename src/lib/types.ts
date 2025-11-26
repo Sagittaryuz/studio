@@ -16,7 +16,6 @@ export interface Service {
   categoryId: CategoryID;
   defaultMonths: number;
   defaultKm: number;
-  defaultSupplier: string;
 }
 
 export type ServiceStatus = 'OK' | 'ALERTA' | 'VENCIDO';
@@ -60,5 +59,3 @@ export interface DashboardData {
   categories: CategoryWithStatus[];
   userRole: UserRole;
 }
-
-    

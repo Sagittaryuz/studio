@@ -91,30 +91,30 @@ let VEHICLES: Vehicle[] = [
 
 
 let SERVICES: Service[] = [
-  { id: 's1', name: 'Óleo do motor', categoryId: 'LOGISTICO', defaultMonths: 12, defaultKm: 20000, defaultSupplier: '' },
-  { id: 's2', name: 'Filtro de diesel', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 10000, defaultSupplier: '' },
-  { id: 's3', name: 'Filtro separador de água', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 10000, defaultSupplier: '' },
-  { id: 's4', name: 'Filtro de arla', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 40000, defaultSupplier: 'CHIP TRUCK' },
-  { id: 's5', name: 'Óleo do câmbio', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 60000, defaultSupplier: 'DANIEL' },
-  { id: 's6', name: 'Óleo do diferencial', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 60000, defaultSupplier: 'DANIEL' },
-  { id: 's7', name: 'Revisão do sistema de arla', categoryId: 'LOGISTICO', defaultMonths: 72, defaultKm: 180000, defaultSupplier: 'CHIP TRUCK' },
-  { id: 's8', name: 'Rodizio de baterias', categoryId: 'LOGISTICO', defaultMonths: 3, defaultKm: 0, defaultSupplier: 'Casa das Baterias' },
-  { id: 's9', name: 'Lubrificação', categoryId: 'LOGISTICO', defaultMonths: 1, defaultKm: 2500, defaultSupplier: 'DANIEL' },
-  { id: 's10', name: 'Extintor', categoryId: 'LOGISTICO', defaultMonths: 58, defaultKm: 0, defaultSupplier: 'JATAI EXTINTORES' },
-  { id: 's11', name: 'Revisão da suspensão, cubos, rodas e freios', categoryId: 'LOGISTICO', defaultMonths: 14, defaultKm: 0, defaultSupplier: 'DANIEL' },
-  { id: 's12', name: 'Radiador, intercooler e bloco do motor', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'MINOL' },
-  { id: 's13', name: 'Tacógrafo', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0, defaultSupplier: '' },
-  { id: 's14', name: 'Alinhamento', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 15000, defaultSupplier: 'DANIEL' },
-  { id: 's15', name: 'Regulagem de válvulas', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0, defaultSupplier: '' },
-  { id: 's16', name: 'Óleo do motor e filtros', categoryId: 'PASSEIO', defaultMonths: 12, defaultKm: 10000, defaultSupplier: 'URCA' },
-  { id: 's17', name: 'Óleo da transmissão', categoryId: 'PASSEIO', defaultMonths: 24, defaultKm: 30000, defaultSupplier: 'URCA' },
-  { id: 's18', name: 'Óleo do motor PSI', categoryId: 'EMPILHADEIRAS', defaultMonths: 6, defaultKm: 250, defaultSupplier: 'DALMI' },
-  { id: 's19', name: 'Óleo hidraulico', categoryId: 'EMPILHADEIRAS', defaultMonths: 18, defaultKm: 1500, defaultSupplier: 'Elevar' },
-  { id: 's20', name: 'Correia dentada', categoryId: 'EMPILHADEIRAS', defaultMonths: 0, defaultKm: 2000, defaultSupplier: '' },
-  { id: 's21', name: 'Pneus traseiros', categoryId: 'EMPILHADEIRAS', defaultMonths: 0, defaultKm: 0, defaultSupplier: 'SOLUÇÃO' },
-  { id: 's22', name: 'Bateria', categoryId: 'EMPILHADEIRAS', defaultMonths: 24, defaultKm: 0, defaultSupplier: 'Casa das Baterias' },
-  { id: 's23', name: 'Revisão periódica', categoryId: 'MOTOS', defaultMonths: 12, defaultKm: 10000, defaultSupplier: '' },
-  { id: 's24', name: 'Revisão', categoryId: 'GERADORES', defaultMonths: 12, defaultKm: 10000, defaultSupplier: '' },
+  { id: 's1', name: 'Óleo do motor', categoryId: 'LOGISTICO', defaultMonths: 12, defaultKm: 20000 },
+  { id: 's2', name: 'Filtro de diesel', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 10000 },
+  { id: 's3', name: 'Filtro separador de água', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 10000 },
+  { id: 's4', name: 'Filtro de arla', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 40000 },
+  { id: 's5', name: 'Óleo do câmbio', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 60000 },
+  { id: 's6', name: 'Óleo do diferencial', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 60000 },
+  { id: 's7', name: 'Revisão do sistema de arla', categoryId: 'LOGISTICO', defaultMonths: 72, defaultKm: 180000 },
+  { id: 's8', name: 'Rodizio de baterias', categoryId: 'LOGISTICO', defaultMonths: 3, defaultKm: 0 },
+  { id: 's9', name: 'Lubrificação', categoryId: 'LOGISTICO', defaultMonths: 1, defaultKm: 2500 },
+  { id: 's10', name: 'Extintor', categoryId: 'LOGISTICO', defaultMonths: 58, defaultKm: 0 },
+  { id: 's11', name: 'Revisão da suspensão, cubos, rodas e freios', categoryId: 'LOGISTICO', defaultMonths: 14, defaultKm: 0 },
+  { id: 's12', name: 'Radiador, intercooler e bloco do motor', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0 },
+  { id: 's13', name: 'Tacógrafo', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0 },
+  { id: 's14', name: 'Alinhamento', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 15000 },
+  { id: 's15', name: 'Regulagem de válvulas', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0 },
+  { id: 's16', name: 'Óleo do motor e filtros', categoryId: 'PASSEIO', defaultMonths: 12, defaultKm: 10000 },
+  { id: 's17', name: 'Óleo da transmissão', categoryId: 'PASSEIO', defaultMonths: 24, defaultKm: 30000 },
+  { id: 's18', name: 'Óleo do motor PSI', categoryId: 'EMPILHADEIRAS', defaultMonths: 6, defaultKm: 250 },
+  { id: 's19', name: 'Óleo hidraulico', categoryId: 'EMPILHADEIRAS', defaultMonths: 18, defaultKm: 1500 },
+  { id: 's20', name: 'Correia dentada', categoryId: 'EMPILHADEIRAS', defaultMonths: 0, defaultKm: 2000 },
+  { id: 's21', name: 'Pneus traseiros', categoryId: 'EMPILHADEIRAS', defaultMonths: 0, defaultKm: 0 },
+  { id: 's22', name: 'Bateria', categoryId: 'EMPILHADEIRAS', defaultMonths: 24, defaultKm: 0 },
+  { id: 's23', name: 'Revisão periódica', categoryId: 'MOTOS', defaultMonths: 12, defaultKm: 10000 },
+  { id: 's24', name: 'Revisão', categoryId: 'GERADORES', defaultMonths: 12, defaultKm: 10000 },
 ];
 
 
@@ -314,5 +314,3 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
     userRole,
   };
 }
-
-    

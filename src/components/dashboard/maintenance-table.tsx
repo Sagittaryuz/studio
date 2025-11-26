@@ -31,12 +31,6 @@ const statusBadgeClasses: Record<string, string> = {
   OK: 'secondary',
 };
 
-const statusOrder: Record<string, number> = {
-  VENCIDO: 0,
-  ALERTA: 1,
-  OK: 2,
-};
-
 export function MaintenanceTable({ vehicle, services, allServices, userRole }: MaintenanceTableProps) {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isAiModalOpen, setAiModalOpen] = useState(false);
@@ -61,14 +55,14 @@ export function MaintenanceTable({ vehicle, services, allServices, userRole }: M
     return allServices.find(s => s.id === serviceId)?.name || 'Serviço desconhecido';
   };
 
+  // Sort services based on the order in allServices (which can be user-defined)
   const sortedServices = [...services].sort((a, b) => {
-    const orderA = statusOrder[a.status];
-    const orderB = statusOrder[b.status];
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-    // If statuses are the same, you might want a secondary sort, e.g., by next date
-    return a.nextDate.getTime() - b.nextDate.getTime();
+    const indexA = allServices.findIndex(s => s.id === a.serviceId);
+    const indexB = allServices.findIndex(s => s.id === b.serviceId);
+    // If a service is not in allServices, it goes to the end
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
   });
 
 
