@@ -109,10 +109,10 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
               <TableRow className='bg-muted/30'>
                 <TableHead className="bg-muted/50 text-center font-semibold">Meses</TableHead>
                 <TableHead className="bg-muted/50 text-center font-semibold">KM</TableHead>
+                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Observações</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Fornecedor</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Data</TableHead>
                 <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">KM</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold">Observações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,10 +129,10 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       <TableCell className="bg-muted/50 text-center">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
                       
                       {/* Última Manutenção */}
+                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-xs max-w-[200px] truncate text-left">{vehicleService?.notes || 'N/A'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
                       <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-xs max-w-[200px] truncate text-left">{vehicleService?.notes || 'N/A'}</TableCell>
                       
                       {/* Próxima Manutenção */}
                       <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center">
