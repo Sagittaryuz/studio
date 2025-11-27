@@ -1,6 +1,6 @@
 'use client';
-import { useState, useMemo } from 'react';
-import type { VehicleWithStatus, VehicleService, Service, UserRole, MergedServiceData, CategoryID } from '@/lib/types';
+import { useState, useMemo, useEffect } from 'react';
+import type { VehicleWithStatus, VehicleService, Service, UserRole, MergedServiceData } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '../ui/input';
+import { addVehicleService } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 interface MaintenanceTableProps {
   vehicle: VehicleWithStatus | null;
@@ -37,6 +40,12 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
   const [isAiModalOpen, setAiModalOpen] = useState(false);
   const [isNotesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedServiceData, setSelectedServiceData] = useState<MergedServiceData | null>(null);
+  const [localVehicleServices, setLocalVehicleServices] = useState<VehicleService[]>(vehicleServices);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    setLocalVehicleServices(vehicleServices);
+  }, [vehicleServices]);
 
   const handleOpenAddSheet = (data: MergedServiceData) => {
     setSelectedServiceData(data);
@@ -50,25 +59,61 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
   
   const canEdit = userRole === 'admin' || userRole === 'operator';
 
-  // This is the core logic change.
-  // We merge the list of all services for the category with the actual service history of the vehicle.
   const mergedData: MergedServiceData[] = useMemo(() => {
     if (!vehicle) return [];
     
-    // Sort all services for the category by the defined order
     const sortedCategoryServices = [...servicesForCategory].sort((a,b) => a.order - b.order);
     
     return sortedCategoryServices.map(serviceInfo => {
-      const vehicleService = vehicleServices.find(vs => vs.serviceId === serviceInfo.id && vs.vehicleId === vehicle.id) || null;
+      const vehicleService = localVehicleServices.find(vs => vs.serviceId === serviceInfo.id && vs.vehicleId === vehicle.id) || null;
       return { serviceInfo, vehicleService };
     });
-  }, [vehicle, servicesForCategory, vehicleServices]);
+  }, [vehicle, servicesForCategory, localVehicleServices]);
+
+  const handleParamChange = async (serviceId: string, param: 'km' | 'months', value: number) => {
+      if (!vehicle) return;
+
+      const existingService = localVehicleServices.find(vs => vs.vehicleId === vehicle.id && vs.serviceId === serviceId);
+
+      const updatedService = {
+          vehicleId: vehicle.id,
+          serviceId: serviceId,
+          lastKm: existingService?.lastKm || 0,
+          lastDate: existingService?.lastDate || new Date(2000, 0, 1),
+          supplier: existingService?.supplier || '-',
+          responsible: existingService?.responsible || '-',
+          km: param === 'km' ? value : existingService?.km,
+          months: param === 'months' ? value : existingService?.months,
+      };
+
+      try {
+        // We call the server action to persist this change
+        await addVehicleService(updatedService);
+        
+        // This is a mock of re-fetching the data after update.
+        // In a real app with live data, this would update automatically.
+        const newVs = { ...updatedService, id: existingService?.id || `new-${Date.now()}` }
+        
+        setLocalVehicleServices(prev => {
+            const index = prev.findIndex(p => p.id === newVs.id);
+            if (index > -1) {
+                const newState = [...prev];
+                newState[index] = { ...newState[index], ...newVs };
+                return newState;
+            }
+            return [...prev, newVs as VehicleService];
+        })
+
+      } catch (error) {
+          toast({ title: "Erro ao atualizar parâmetro", variant: 'destructive' });
+      }
+  };
 
 
   if (!vehicle) {
     return (
-        <div className="flex h-full items-center justify-center rounded-lg border border-dashed p-8 text-center">
-            <p className="text-muted-foreground">Selecione um veículo para ver os detalhes da manutenção.</p>
+        <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed border-muted p-8 text-center text-muted-foreground">
+            <p>Selecione um veículo para ver os detalhes da manutenção.</p>
         </div>
     );
   }
@@ -76,15 +121,15 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
   return (
     <>
       <Card className="flex-1 flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between p-2">
-          <div>
+        <CardHeader className="flex flex-row items-center justify-between py-2 px-4">
+          <div className="flex items-center gap-4">
              <div className="flex items-center gap-2">
               <Monitor className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">
+              <CardTitle className="text-lg font-semibold">
                 Plano de Manutenção: <span className="font-bold text-primary">{vehicle.plate}</span>
               </CardTitle>
             </div>
-            <CardDescription className="text-xs">
+            <CardDescription className="text-sm pt-1">
                 KM Atual: {vehicle.currentKm.toLocaleString('pt-BR')} km.
             </CardDescription>
           </div>
@@ -98,20 +143,20 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
         <CardContent className="p-0 flex-1 overflow-y-auto">
           <Table>
             <TableHeader>
-              <TableRow className='bg-muted/30 h-6'>
+              <TableRow className='bg-muted/40 h-6'>
                 <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
-                <TableHead className="bg-muted/50 text-center p-1" colSpan={2}>Parâmetros</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1" colSpan={3}>Última Manutenção</TableHead>
-                <TableHead className="bg-gray-800 dark:bg-gray-700 text-white text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
+                <TableHead className="text-center p-1" colSpan={2}>Parâmetros</TableHead>
+                <TableHead className="bg-muted/20 text-center p-1" colSpan={3}>Última Manutenção</TableHead>
+                <TableHead className="bg-muted/60 text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
                 <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
                 <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
               </TableRow>
-              <TableRow className='bg-muted/30 h-6'>
-                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">Meses</TableHead>
-                <TableHead className="bg-muted/50 text-center font-semibold p-1 h-6">KM</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Fornecedor</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">Data</TableHead>
-                <TableHead className="bg-yellow-100/50 dark:bg-yellow-900/30 font-semibold p-1 h-6">KM</TableHead>
+              <TableRow className='bg-muted/40 h-6'>
+                <TableHead className="text-center font-semibold p-1 h-6">Meses</TableHead>
+                <TableHead className="text-center font-semibold p-1 h-6">KM</TableHead>
+                <TableHead className="bg-muted/20 font-semibold p-1 h-6">Fornecedor</TableHead>
+                <TableHead className="bg-muted/20 font-semibold p-1 h-6">Data</TableHead>
+                <TableHead className="bg-muted/20 font-semibold p-1 h-6">KM</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -120,32 +165,47 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 const hasBeenServiced = vehicleService && vehicleService.lastKm > 0;
                 
                 return (
-                    <TableRow key={serviceInfo.id} className={cn('h-8', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
-                      <TableCell className="font-medium text-left p-1">{serviceInfo.name}</TableCell>
+                    <TableRow key={serviceInfo.id} className={cn('h-10', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
+                      <TableCell className="font-medium text-left p-1 text-sm">{serviceInfo.name}</TableCell>
                       
-                      {/* Parâmetros */}
-                      <TableCell className="bg-muted/50 text-center p-1">{serviceInfo.defaultMonths > 0 ? serviceInfo.defaultMonths : '-'}</TableCell>
-                      <TableCell className="bg-muted/50 text-center p-1">{serviceInfo.defaultKm > 0 ? serviceInfo.defaultKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      <TableCell className="text-center p-1 w-24">
+                        <Input
+                          type="number"
+                          defaultValue={vehicleService?.months}
+                          onBlur={(e) => handleParamChange(serviceInfo.id, 'months', parseInt(e.target.value, 10))}
+                          className="h-8 text-center text-sm"
+                          disabled={!canEdit}
+                        />
+                      </TableCell>
+                      <TableCell className="text-center p-1 w-32">
+                        <Input
+                          type="number"
+                          defaultValue={vehicleService?.km}
+                          onBlur={(e) => handleParamChange(serviceInfo.id, 'km', parseInt(e.target.value, 10))}
+                          className="h-8 text-center text-sm"
+                          disabled={!canEdit}
+                        />
+                      </TableCell>
                       
                       {/* Última Manutenção */}
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
-                      <TableCell className="bg-yellow-100/50 dark:bg-yellow-900/30 text-center p-1">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                      <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
+                      <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
+                      <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
                       
                       {/* Próxima Manutenção */}
-                      <TableCell className="bg-gray-800 dark:bg-gray-700 text-white text-center p-1">
+                      <TableCell className="bg-muted/60 text-center font-semibold p-1 text-sm">
                         {hasBeenServiced ? (
                              <>
-                                {serviceInfo.defaultMonths > 0 ? vehicleService.nextDate.toLocaleDateString('pt-BR') : ''}
-                                {serviceInfo.defaultMonths > 0 && serviceInfo.defaultKm > 0 ? <span className='mx-1'>/</span> : ''}
-                                {serviceInfo.defaultKm > 0 ? `${vehicleService.nextKm.toLocaleString('pt-br')} km` : ''}
+                                {vehicleService.months && vehicleService.months > 0 ? vehicleService.nextDate.toLocaleDateString('pt-BR') : ''}
+                                {vehicleService.months && vehicleService.months > 0 && vehicleService.km && vehicleService.km > 0 ? <span className='mx-1'>/</span> : ''}
+                                {vehicleService.km && vehicleService.km > 0 ? `${vehicleService.nextKm.toLocaleString('pt-br')} km` : ''}
                              </>
                         ) : '-'}
                       </TableCell>
 
                       {/* Status */}
                       <TableCell className='text-center p-1'>
-                         <Badge className={cn('font-bold w-[60px] justify-center px-1', statusClasses[vehicleService?.status || 'OK'])}>
+                         <Badge className={cn('font-bold w-[70px] justify-center px-2 py-1 text-xs', statusClasses[vehicleService?.status || 'OK'])}>
                             {vehicleService?.status || 'OK'}
                         </Badge>
                       </TableCell>
@@ -153,13 +213,13 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                       <TableCell className="text-right p-1">
                         <div className="flex items-center justify-end">
                           {canEdit && (
-                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" className="h-6 px-1">
-                                  <PlusCircle className="mr-1 h-3 w-3" /> Registrar
+                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" variant="outline" className="h-8 px-2">
+                                  <PlusCircle className="mr-2 h-4 w-4" /> Registrar
                               </Button>
                           )}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -183,7 +243,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 )
               }) : (
                 <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                         Nenhum tipo de serviço encontrado para esta categoria de veículo.
                     </TableCell>
                 </TableRow>

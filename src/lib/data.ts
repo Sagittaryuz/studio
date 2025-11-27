@@ -91,57 +91,57 @@ let VEHICLES: Vehicle[] = [
 
 
 let SERVICES: Service[] = [
-  { id: 's1', name: 'Óleo do motor', categoryId: 'LOGISTICO', defaultMonths: 12, defaultKm: 20000, order: 0 },
-  { id: 's2', name: 'Filtro de diesel', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 10000, order: 1 },
-  { id: 's3', name: 'Filtro separador de água', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 10000, order: 2 },
-  { id: 's4', name: 'Filtro de arla', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 40000, order: 3 },
-  { id: 's5', name: 'Óleo do câmbio', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 60000, order: 4 },
-  { id: 's6', name: 'Óleo do diferencial', categoryId: 'LOGISTICO', defaultMonths: 18, defaultKm: 60000, order: 5 },
-  { id: 's7', name: 'Revisão do sistema de arla', categoryId: 'LOGISTICO', defaultMonths: 72, defaultKm: 180000, order: 6 },
-  { id: 's8', name: 'Rodizio de baterias', categoryId: 'LOGISTICO', defaultMonths: 3, defaultKm: 0, order: 7 },
-  { id: 's9', name: 'Lubrificação', categoryId: 'LOGISTICO', defaultMonths: 1, defaultKm: 2500, order: 8 },
-  { id: 's10', name: 'Extintor', categoryId: 'LOGISTICO', defaultMonths: 58, defaultKm: 0, order: 9 },
-  { id: 's11', name: 'Revisão da suspensão, cubos, rodas e freios', categoryId: 'LOGISTICO', defaultMonths: 14, defaultKm: 0, order: 10 },
-  { id: 's12', name: 'Radiador, intercooler e bloco do motor', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0, order: 11 },
-  { id: 's13', name: 'Tacógrafo', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0, order: 12 },
-  { id: 's14', name: 'Alinhamento', categoryId: 'LOGISTICO', defaultMonths: 6, defaultKm: 15000, order: 13 },
-  { id: 's15', name: 'Regulagem de válvulas', categoryId: 'LOGISTICO', defaultMonths: 24, defaultKm: 0, order: 14 },
-  { id: 's16', name: 'Óleo do motor e filtros', categoryId: 'PASSEIO', defaultMonths: 12, defaultKm: 10000, order: 0 },
-  { id: 's17', name: 'Óleo da transmissão', categoryId: 'PASSEIO', defaultMonths: 24, defaultKm: 30000, order: 1 },
-  { id: 's18', name: 'Óleo do motor PSI', categoryId: 'EMPILHADEIRAS', defaultMonths: 6, defaultKm: 250, order: 0 },
-  { id: 's19', name: 'Óleo hidraulico', categoryId: 'EMPILHADEIRAS', defaultMonths: 18, defaultKm: 1500, order: 1 },
-  { id: 's20', name: 'Correia dentada', categoryId: 'EMPILHADEIRAS', defaultMonths: 0, defaultKm: 2000, order: 2 },
-  { id: 's21', name: 'Pneus traseiros', categoryId: 'EMPILHADEIRAS', defaultMonths: 0, defaultKm: 0, order: 3 },
-  { id: 's22', name: 'Bateria', categoryId: 'EMPILHADEIRAS', defaultMonths: 24, defaultKm: 0, order: 4 },
-  { id: 's23', name: 'Revisão periódica', categoryId: 'MOTOS', defaultMonths: 12, defaultKm: 10000, order: 0 },
-  { id: 's24', name: 'Revisão', categoryId: 'GERADORES', defaultMonths: 12, defaultKm: 10000, order: 0 },
+  { id: 's1', name: 'Óleo do motor', categoryId: 'LOGISTICO', order: 0 },
+  { id: 's2', name: 'Filtro de diesel', categoryId: 'LOGISTICO', order: 1 },
+  { id: 's3', name: 'Filtro separador de água', categoryId: 'LOGISTICO', order: 2 },
+  { id: 's4', name: 'Filtro de arla', categoryId: 'LOGISTICO', order: 3 },
+  { id: 's5', name: 'Óleo do câmbio', categoryId: 'LOGISTICO', order: 4 },
+  { id: 's6', name: 'Óleo do diferencial', categoryId: 'LOGISTico', order: 5 },
+  { id: 's7', name: 'Revisão do sistema de arla', categoryId: 'LOGISTICO', order: 6 },
+  { id: 's8', name: 'Rodizio de baterias', categoryId: 'LOGISTICO', order: 7 },
+  { id: 's9', name: 'Lubrificação', categoryId: 'LOGISTICO', order: 8 },
+  { id: 's10', name: 'Extintor', categoryId: 'LOGISTICO', order: 9 },
+  { id: 's11', name: 'Revisão da suspensão, cubos, rodas e freios', categoryId: 'LOGISTICO', order: 10 },
+  { id: 's12', name: 'Radiador, intercooler e bloco do motor', categoryId: 'LOGISTICO', order: 11 },
+  { id: 's13', name: 'Tacógrafo', categoryId: 'LOGISTICO', order: 12 },
+  { id: 's14', name: 'Alinhamento', categoryId: 'LOGISTICO', order: 13 },
+  { id: 's15', name: 'Regulagem de válvulas', categoryId: 'LOGISTICO', order: 14 },
+  { id: 's16', name: 'Óleo do motor e filtros', categoryId: 'PASSEIO', order: 0 },
+  { id: 's17', name: 'Óleo da transmissão', categoryId: 'PASSEIO', order: 1 },
+  { id: 's18', name: 'Óleo do motor PSI', categoryId: 'EMPILHADEIRAS', order: 0 },
+  { id: 's19', name: 'Óleo hidraulico', categoryId: 'EMPILHADEIRAS', order: 1 },
+  { id: 's20', name: 'Correia dentada', categoryId: 'EMPILHADEIRAS', order: 2 },
+  { id: 's21', name: 'Pneus traseiros', categoryId: 'EMPILHADEIRAS', order: 3 },
+  { id: 's22', name: 'Bateria', categoryId: 'EMPILHADEIRAS', order: 4 },
+  { id: 's23', name: 'Revisão periódica', categoryId: 'MOTOS', order: 0 },
+  { id: 's24', name: 'Revisão', categoryId: 'GERADORES', order: 0 },
 ];
 
 
 let VEHICLE_SERVICES: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>[] = [
     // ONC 9390
-    { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
-    { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
-    { id: 'vs3', vehicleId: 'v1', serviceId: 's3', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin' },
-    { id: 'vs4', vehicleId: 'v1', serviceId: 's4', lastDate: parse('09/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: 'Admin' },
-    { id: 'vs5', vehicleId: 'v1', serviceId: 's5', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin' },
-    { id: 'vs6', vehicleId: 'v1', serviceId: 's6', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin' },
-    { id: 'vs7', vehicleId: 'v1', serviceId: 's7', lastDate: parse('19/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: 'Admin' },
-    { id: 'vs8', vehicleId: 'v1', serviceId: 's8', lastDate: parse('26/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 400000, supplier: 'Casa das Baterias', responsible: 'Admin' },
-    { id: 'vs9', vehicleId: 'v1', serviceId: 's10', lastDate: parse('10/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 395000, supplier: 'JATAI EXTINTORES', responsible: 'Admin' },
-    { id: 'vs10', vehicleId: 'v1', serviceId: 's11', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin' },
-    { id: 'vs11', vehicleId: 'v1', serviceId: 's12', lastDate: parse('24/10/2025', 'dd/MM/yyyy', new Date()), lastKm: 410000, supplier: 'MINOL', responsible: 'Admin' },
-    { id: 'vs12', vehicleId: 'v1', serviceId: 's13', lastDate: parse('01/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 370000, supplier: 'Interno', responsible: 'Admin' },
+    { id: 'vs1', vehicleId: 'v1', serviceId: 's1', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin', km: 20000, months: 12 },
+    { id: 'vs2', vehicleId: 'v1', serviceId: 's2', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin', km: 10000, months: 6 },
+    { id: 'vs3', vehicleId: 'v1', serviceId: 's3', lastDate: parse('03/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 392365, supplier: 'Interno', responsible: 'Admin', km: 10000, months: 6 },
+    { id: 'vs4', vehicleId: 'v1', serviceId: 's4', lastDate: parse('09/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: 'Admin', km: 40000, months: 18 },
+    { id: 'vs5', vehicleId: 'v1', serviceId: 's5', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin', km: 60000, months: 18 },
+    { id: 'vs6', vehicleId: 'v1', serviceId: 's6', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin', km: 60000, months: 18 },
+    { id: 'vs7', vehicleId: 'v1', serviceId: 's7', lastDate: parse('19/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 404995, supplier: 'CHIP TRUCK', responsible: 'Admin', km: 180000, months: 72 },
+    { id: 'vs8', vehicleId: 'v1', serviceId: 's8', lastDate: parse('26/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 400000, supplier: 'Casa das Baterias', responsible: 'Admin', km: 0, months: 3 },
+    { id: 'vs9', vehicleId: 'v1', serviceId: 's10', lastDate: parse('10/06/2025', 'dd/MM/yyyy', new Date()), lastKm: 395000, supplier: 'JATAI EXTINTORES', responsible: 'Admin', km: 0, months: 58 },
+    { id: 'vs10', vehicleId: 'v1', serviceId: 's11', lastDate: parse('20/08/2024', 'dd/MM/yyyy', new Date()), lastKm: 380000, supplier: 'DANIEL', responsible: 'Admin', km: 0, months: 14 },
+    { id: 'vs11', vehicleId: 'v1', serviceId: 's12', lastDate: parse('24/10/2025', 'dd/MM/yyyy', new Date()), lastKm: 410000, supplier: 'MINOL', responsible: 'Admin', km: 0, months: 24 },
+    { id: 'vs12', vehicleId: 'v1', serviceId: 's13', lastDate: parse('01/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 370000, supplier: 'Interno', responsible: 'Admin', km: 0, months: 24 },
     // PQT 1H75
-    { id: 'vs13', vehicleId: 'v2', serviceId: 's1', lastDate: parse('16/05/2025', 'dd/MM/yyyy', new Date()), lastKm: 327147, supplier: 'Interno', responsible: 'Admin' },
-    { id: 'vs14', vehicleId: 'v2', serviceId: 's4', lastDate: parse('11/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: 'Admin' },
-    { id: 'vs15', vehicleId: 'v2', serviceId: 's5', lastDate: parse('09/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'FERNANDO', responsible: 'Admin' },
-    { id: 'vs16', vehicleId: 'v2', serviceId: 's6', lastDate: parse('09/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'FERNANDO', responsible: 'Admin' },
-    { id: 'vs17', vehicleId: 'v2', serviceId: 's7', lastDate: parse('11/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: 'Admin' },
-    { id: 'vs18', vehicleId: 'v2', serviceId: 's9', lastDate: parse('11/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 342078, supplier: 'DANIEL', responsible: 'Admin' },
-    { id: 'vs19', vehicleId: 'v2', serviceId: 's12', lastDate: parse('30/10/2025', 'dd/MM/yyyy', new Date()), lastKm: 345000, supplier: 'MINOL NF 15849', responsible: 'Admin' },
-    { id: 'vs20', vehicleId: 'v2', serviceId: 's13', lastDate: parse('01/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'Interno', responsible: 'Admin' },
-    { id: 'vs21', vehicleId: 'v2', serviceId: 's14', lastDate: parse('11/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 342078, supplier: 'DANIEL', responsible: 'Admin' },
+    { id: 'vs13', vehicleId: 'v2', serviceId: 's1', lastDate: parse('16/05/2025', 'dd/MM/yyyy', new Date()), lastKm: 327147, supplier: 'Interno', responsible: 'Admin', km: 20000, months: 12 },
+    { id: 'vs14', vehicleId: 'v2', serviceId: 's4', lastDate: parse('11/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: 'Admin', km: 40000, months: 18 },
+    { id: 'vs15', vehicleId: 'v2', serviceId: 's5', lastDate: parse('09/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'FERNANDO', responsible: 'Admin', km: 60000, months: 18 },
+    { id: 'vs16', vehicleId: 'v2', serviceId: 's6', lastDate: parse('09/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'FERNANDO', responsible: 'Admin', km: 60000, months: 18 },
+    { id: 'vs17', vehicleId: 'v2', serviceId: 's7', lastDate: parse('11/08/2025', 'dd/MM/yyyy', new Date()), lastKm: 330000, supplier: 'CHIP TRUCK', responsible: 'Admin', km: 180000, months: 72 },
+    { id: 'vs18', vehicleId: 'v2', serviceId: 's9', lastDate: parse('11/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 342078, supplier: 'DANIEL', responsible: 'Admin', km: 2500, months: 1 },
+    { id: 'vs19', vehicleId: 'v2', serviceId: 's12', lastDate: parse('30/10/2025', 'dd/MM/yyyy', new Date()), lastKm: 345000, supplier: 'MINOL NF 15849', responsible: 'Admin', km: 0, months: 24 },
+    { id: 'vs20', vehicleId: 'v2', serviceId: 's13', lastDate: parse('01/07/2024', 'dd/MM/yyyy', new Date()), lastKm: 310000, supplier: 'Interno', responsible: 'Admin', km: 0, months: 24 },
+    { id: 'vs21', vehicleId: 'v2', serviceId: 's14', lastDate: parse('11/09/2025', 'dd/MM/yyyy', new Date()), lastKm: 342078, supplier: 'DANIEL', responsible: 'Admin', km: 15000, months: 6 },
 ];
 
 
@@ -217,10 +217,8 @@ export async function mockDbDeleteService(id: string) {
 function getServiceStatus(
   vehicle: Vehicle,
   service: Omit<VehicleService, 'status' | 'nextDate' | 'nextKm'>,
-  serviceInfo: Service
 ): { status: ServiceStatus; nextDate: Date; nextKm: number } {
-  const { lastDate, lastKm } = service;
-  const { defaultMonths, defaultKm } = serviceInfo;
+  const { lastDate, lastKm, months, km } = service;
   const { currentKm } = vehicle;
 
   // If the service has never been performed, flag as ALERTA
@@ -231,18 +229,21 @@ function getServiceStatus(
         nextKm: currentKm,
     };
   }
+  
+  const pMonths = months || 0;
+  const pKm = km || 0;
 
-  const nextDate = defaultMonths > 0 ? addMonths(lastDate, defaultMonths) : new Date('2999-12-31');
-  const nextKm = defaultKm > 0 ? lastKm + defaultKm : Infinity;
+  const nextDate = pMonths > 0 ? addMonths(lastDate, pMonths) : new Date('2999-12-31');
+  const nextKm = pKm > 0 ? lastKm + pKm : Infinity;
 
   const daysUntilNextDate = differenceInDays(nextDate, new Date());
   const kmUntilNextService = nextKm - currentKm;
 
   let status: ServiceStatus = 'OK';
-  const isKmAlert = defaultKm > 0 && kmUntilNextService <= defaultKm * 0.1; // 10% threshold
-  const isDateAlert = defaultMonths > 0 && daysUntilNextDate <= 30; // 30 days threshold
+  const isKmAlert = pKm > 0 && kmUntilNextService <= pKm * 0.1; // 10% threshold
+  const isDateAlert = pMonths > 0 && daysUntilNextDate <= 30; // 30 days threshold
 
-  if ((defaultKm > 0 && currentKm >= nextKm) || (defaultMonths > 0 && new Date() >= nextDate)) {
+  if ((pKm > 0 && currentKm >= nextKm) || (pMonths > 0 && new Date() >= nextDate)) {
     status = 'VENCIDO';
   } else if (isKmAlert || isDateAlert) {
     status = 'ALERTA';
@@ -258,8 +259,7 @@ function getServiceStatus(
 export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
   const processedVehicleServices = VEHICLE_SERVICES.map((vs) => {
     const vehicle = VEHICLES.find(v => v.id === vs.vehicleId);
-    const serviceInfo = SERVICES.find(s => s.id === vs.serviceId);
-    if (!vehicle || !serviceInfo) {
+    if (!vehicle) {
       // This should not happen in a real app with foreign keys
       return {
         ...vs,
@@ -268,7 +268,7 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
         nextKm: Infinity,
       } as VehicleService;
     }
-    const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs, serviceInfo);
+    const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs);
     return { ...vs, status, nextDate, nextKm };
   });
 

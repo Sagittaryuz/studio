@@ -27,6 +27,8 @@ const addServiceSchema = z.object({
     responsible: z.string(),
     notes: z.string().optional(),
     attachments: z.array(z.string()).optional(),
+    km: z.number().optional(),
+    months: z.number().optional(),
 });
 
 const addVehicleSchema = z.object({

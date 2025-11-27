@@ -26,8 +26,6 @@ const serviceFormSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, 'O nome do serviço deve ter pelo menos 2 caracteres.'),
   categoryId: z.string(),
-  defaultKm: z.coerce.number().min(0).optional(),
-  defaultMonths: z.coerce.number().min(0).optional(),
 });
 
 const categoryFormSchema = z.object({
@@ -69,8 +67,6 @@ const SortableRow = ({ service, onEdit, onDelete, isDeleting }: SortableRowProps
             <TableCell className="font-medium cursor-grab" {...listeners}>
                 {service.name}
             </TableCell>
-            <TableCell>{service.defaultKm > 0 ? service.defaultKm.toLocaleString('pt-BR') : 'N/A'}</TableCell>
-            <TableCell>{service.defaultMonths > 0 ? service.defaultMonths : 'N/A'}</TableCell>
             <TableCell className="text-right">
                 <div className='flex gap-2 justify-end'>
                     <Button variant="ghost" size="icon" onClick={() => onEdit(service)} disabled={isDeleting}>
@@ -109,8 +105,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     defaultValues: {
       name: '',
       categoryId: activeCategory,
-      defaultKm: 0,
-      defaultMonths: 0,
     },
   });
   
@@ -141,8 +135,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
             id: `s${Date.now()}`,
             ...values,
             categoryId: values.categoryId as CategoryID,
-            defaultKm: values.defaultKm || 0,
-            defaultMonths: values.defaultMonths || 0,
             order: maxOrder + 1,
         };
         setServices([...services, newService]);
@@ -177,8 +169,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     serviceForm.reset({
       name: '',
       categoryId: categoryId,
-      defaultKm: 0,
-      defaultMonths: 0,
     });
     setIsServiceDialogOpen(true);
   }
@@ -189,8 +179,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
         id: service.id,
         name: service.name,
         categoryId: service.categoryId,
-        defaultKm: service.defaultKm,
-        defaultMonths: service.defaultMonths,
     });
     setIsServiceDialogOpen(true);
   }
@@ -235,7 +223,7 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     <Card>
       <CardHeader>
         <CardTitle>Gerenciamento de Serviços</CardTitle>
-        <CardDescription>Adicione, edite ou remova os tipos de serviço para cada categoria de veículo.</CardDescription>
+        <CardDescription>Adicione, edite, ordene ou remova os tipos de serviço para cada categoria de veículo. A frequência (KM e meses) é definida por veículo na tela principal.</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs value={activeCategory} onValueChange={(value) => setActiveCategory(value as CategoryID)}>
@@ -264,8 +252,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Serviço</TableHead>
-                                <TableHead>Frequência (KM)</TableHead>
-                                <TableHead>Frequência (Meses)</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -308,30 +294,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
                             </FormItem>
                         )}
                         />
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                            control={serviceForm.control}
-                            name="defaultKm"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Frequência (KM)</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="Ex: 10000" /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                            <FormField
-                            control={serviceForm.control}
-                            name="defaultMonths"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Frequência (Meses)</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="Ex: 12" /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                        </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={closeServiceDialog}>Cancelar</Button>
                             <Button type="submit" disabled={isSubmitting}>

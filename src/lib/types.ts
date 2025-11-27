@@ -11,11 +11,9 @@ export interface Vehicle {
 }
 
 export interface Service {
-  id: string;
+  id:string;
   name: string;
   categoryId: CategoryID;
-  defaultMonths: number;
-  defaultKm: number;
   order: number;
 }
 
@@ -34,6 +32,9 @@ export interface VehicleService {
   status: ServiceStatus;
   notes?: string;
   attachments?: string[];
+  // Parameters are now per vehicle-service instance
+  months?: number;
+  km?: number;
 }
 
 export type CategoryID = 'LOGISTICO' | 'EMPILHADEIRAS' | 'PASSEIO' | 'MOTOS' | 'GERADORES';
