@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
-import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes, mockDbDeleteService } from '@/lib/data';
+import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes, mockDbDeleteService, mockDbEditVehicle } from '@/lib/data';
 import type { CategoryID } from '@/lib/types';
 
 
@@ -35,7 +35,16 @@ const addVehicleSchema = z.object({
     plate: z.string().min(3, 'Placa inválida.'),
     currentKm: z.number().min(0, 'KM inválido.'),
     categoryId: z.string(),
+    fleetNumber: z.string().optional(),
 });
+
+const editVehicleSchema = z.object({
+    id: z.string(),
+    plate: z.string().min(3, 'Placa inválida.'),
+    currentKm: z.number().min(0, 'KM inválido.'),
+    fleetNumber: z.string().optional(),
+});
+
 
 const updateNotesSchema = z.object({
   vehicleServiceId: z.string(),
@@ -98,6 +107,28 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
         plate: data.plate,
         currentKm: data.currentKm,
         category: data.categoryId as CategoryID,
+        fleetNumber: data.fleetNumber,
+    });
+
+    revalidatePath('/');
+    revalidatePath('/services');
+}
+
+/**
+ * Edits an existing vehicle in the fleet.
+ */
+export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
+    const validation = editVehicleSchema.safeParse(data);
+
+    if(!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for editing vehicle.');
+    }
+    
+    await mockDbEditVehicle(data.id, {
+        plate: data.plate,
+        currentKm: data.currentKm,
+        fleetNumber: data.fleetNumber,
     });
 
     revalidatePath('/');
@@ -160,3 +191,5 @@ export async function getSignedUploadUrl(fileName: string, contentType: string, 
   const url = `https://fake-upload.url/for/${fileName}`;
   return { success: true, url };
 }
+
+    

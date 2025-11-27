@@ -2,6 +2,7 @@ export type UserRole = 'admin' | 'operator' | 'read-only';
 
 export interface Vehicle {
   id: string;
+  fleetNumber?: string;
   plate: string;
   category: CategoryID;
   currentKm: number;
@@ -67,3 +68,5 @@ export interface MergedServiceData {
   serviceInfo: Service;
   vehicleService: VehicleService | null; // It can be null if never performed
 }
+
+    

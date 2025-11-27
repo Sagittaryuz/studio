@@ -1,10 +1,10 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { addVehicle } from '@/app/actions';
+import { addVehicle, editVehicle } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
@@ -19,32 +19,52 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import type { CategoryID } from '@/lib/types';
+import type { CategoryID, Vehicle } from '@/lib/types';
 
 const formSchema = z.object({
+  fleetNumber: z.string().optional(),
   plate: z.string().min(3, 'A placa deve ter pelo menos 3 caracteres.'),
   currentKm: z.coerce.number().min(0, 'A quilometragem não pode ser negativa.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface AddVehicleDialogProps {
+interface VehicleDialogProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   categoryId: CategoryID;
+  vehicle: Vehicle | null;
 }
 
-export function AddVehicleDialog({ isOpen, setIsOpen, categoryId }: AddVehicleDialogProps) {
+export function VehicleDialog({ isOpen, setIsOpen, categoryId, vehicle }: VehicleDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const isEditing = !!vehicle;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fleetNumber: '',
       plate: '',
       currentKm: 0,
     },
   });
+
+  useEffect(() => {
+    if (vehicle && isOpen) {
+        form.reset({
+            fleetNumber: vehicle.fleetNumber || '',
+            plate: vehicle.plate,
+            currentKm: vehicle.currentKm,
+        });
+    } else if (!vehicle && isOpen) {
+        form.reset({
+            fleetNumber: '',
+            plate: '',
+            currentKm: 0,
+        });
+    }
+  }, [vehicle, isOpen, form]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -54,17 +74,25 @@ export function AddVehicleDialog({ isOpen, setIsOpen, categoryId }: AddVehicleDi
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
     try {
-        await addVehicle({ ...values, categoryId });
-        toast({
-            title: 'Sucesso!',
-            description: `Veículo ${values.plate} adicionado.`,
-        });
+        if(isEditing && vehicle) {
+            await editVehicle({ id: vehicle.id, ...values });
+             toast({
+                title: 'Sucesso!',
+                description: `Veículo ${values.plate} atualizado.`,
+            });
+        } else {
+            await addVehicle({ ...values, categoryId });
+            toast({
+                title: 'Sucesso!',
+                description: `Veículo ${values.plate} adicionado.`,
+            });
+        }
         handleClose();
     } catch (error) {
         toast({
             variant: 'destructive',
             title: 'Erro',
-            description: 'Não foi possível adicionar o veículo.',
+            description: `Não foi possível ${isEditing ? 'atualizar' : 'adicionar'} o veículo.`,
         });
     } finally {
         setIsSubmitting(false);
@@ -75,19 +103,35 @@ export function AddVehicleDialog({ isOpen, setIsOpen, categoryId }: AddVehicleDi
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Veículo</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Veículo' : 'Adicionar Novo Veículo'}</DialogTitle>
           <DialogDescription>
-            Insira a placa e a quilometragem atual do novo veículo.
+            {isEditing 
+                ? 'Atualize os dados do veículo.'
+                : 'Insira os dados do novo veículo.'
+            }
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="fleetNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nº da Frota (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Ex: 152" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="plate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Placa</FormLabel>
+                  <FormLabel>Placa / Identificação</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="ABC-1234" />
                   </FormControl>
@@ -112,7 +156,7 @@ export function AddVehicleDialog({ isOpen, setIsOpen, categoryId }: AddVehicleDi
                 <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>Cancelar</Button>
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Adicionar Veículo
+                    {isEditing ? 'Salvar Alterações' : 'Adicionar Veículo'}
                 </Button>
             </DialogFooter>
           </form>
@@ -122,3 +166,4 @@ export function AddVehicleDialog({ isOpen, setIsOpen, categoryId }: AddVehicleDi
   );
 }
 
+    
