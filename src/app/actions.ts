@@ -59,6 +59,7 @@ const serviceFormSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, 'O nome do serviço deve ter pelo menos 2 caracteres.'),
   categoryId: z.string(),
+  order: z.number(),
 });
 
 const categoryFormSchema = z.object({
@@ -163,7 +164,7 @@ export async function updateVehicleServiceNotes(vehicleServiceId: string, notes:
 }
 
 /**
- * Deletes a service type.
+ * Deletes a service type and all its associated vehicle service records.
  */
 export async function deleteService(serviceId: string) {
     const validation = deleteServiceSchema.safeParse({ serviceId });

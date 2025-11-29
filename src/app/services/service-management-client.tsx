@@ -125,10 +125,12 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
         };
         await addOrUpdateService(serviceData);
         
+        // Optimistic update for UI
         if (editingService) {
             setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID, order: s.order } : s));
             toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado.` });
         } else {
+             // In a real app, the action would return the new service with ID
             const newService = { ...serviceData, id: `s${Date.now()}`, categoryId: values.categoryId as CategoryID};
             setServices([...services, newService]);
             toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
@@ -203,17 +205,24 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
-        const reorderedServices = arrayMove(services, services.findIndex(item => item.id === active.id), services.findIndex(item => item.id === over?.id));
-        const updatedServicesWithOrder = reorderedServices.map((item, index) => ({ ...item, order: index }));
-
-        setServices(updatedServicesWithOrder);
+        const oldIndex = services.findIndex(item => item.id === active.id);
+        const newIndex = services.findIndex(item => item.id === over?.id);
         
+        // Create reordered list for optimistic update
+        const reorderedServices = arrayMove(services, oldIndex, newIndex);
+        setServices(reorderedServices);
+        
+        // Create a list with updated order properties to send to server
+        const servicesForCategory = reorderedServices.filter(s => s.categoryId === activeCategory);
+        const updatedServicesWithOrder = servicesForCategory.map((item, index) => ({ ...item, order: index }));
+
         try {
+            // Update the backend with the new order for the services in the current category
             await updateServiceOrder(updatedServicesWithOrder);
         } catch (error) {
             console.error(error);
             toast({ title: 'Erro ao reordenar serviços', variant: 'destructive' });
-            // Revert optimistic update
+            // Revert optimistic update on failure
             setServices(services);
         }
     }

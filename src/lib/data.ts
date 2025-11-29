@@ -222,7 +222,7 @@ export async function mockDbAddOrUpdateService(service: Partial<Service>) {
     if (service.id) {
         const index = SERVICES.findIndex(s => s.id === service.id);
         if (index !== -1) {
-            SERVICES[index] = { ...SERVICES[index], ...service };
+            SERVICES[index] = { ...SERVICES[index], ...service as Service };
         }
     } else {
         const newService: Service = {
@@ -373,7 +373,7 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
     vehicles: vehiclesWithStatus,
     services: [...SERVICES],
     vehicleServices: processedVehicleServices as VehicleService[],
-    categories: [...CATEGORIES],
+    categories: categoriesWithStatus,
     userRole,
   };
 }
