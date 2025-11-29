@@ -125,14 +125,14 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
         };
         await addOrUpdateService(serviceData);
         
-        // Optimistic update for UI
+        // This is now just an optimistic update, the server action revalidates
         if (editingService) {
             setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID, order: s.order } : s));
             toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado.` });
         } else {
-             // In a real app, the action would return the new service with ID
-            const newService = { ...serviceData, id: `s${Date.now()}`, categoryId: values.categoryId as CategoryID};
-            setServices([...services, newService]);
+             // A real app would refetch or get the new item from the server action
+            const tempNewService = { ...serviceData, id: `s${Date.now()}`, categoryId: values.categoryId as CategoryID};
+            setServices([...services, tempNewService]);
             toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
         }
 
@@ -208,16 +208,16 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
         const oldIndex = services.findIndex(item => item.id === active.id);
         const newIndex = services.findIndex(item => item.id === over?.id);
         
-        // Create reordered list for optimistic update
         const reorderedServices = arrayMove(services, oldIndex, newIndex);
-        setServices(reorderedServices);
         
-        // Create a list with updated order properties to send to server
-        const servicesForCategory = reorderedServices.filter(s => s.categoryId === activeCategory);
-        const updatedServicesWithOrder = servicesForCategory.map((item, index) => ({ ...item, order: index }));
-
+        const updatedServicesWithOrder = reorderedServices.map((service, index) => ({
+            ...service,
+            order: index,
+        }));
+        
+        setServices(updatedServicesWithOrder);
+        
         try {
-            // Update the backend with the new order for the services in the current category
             await updateServiceOrder(updatedServicesWithOrder);
         } catch (error) {
             console.error(error);

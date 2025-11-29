@@ -237,14 +237,12 @@ export async function mockDbAddOrUpdateService(service: Partial<Service>) {
 }
 
 export async function mockDbUpdateServiceOrder(orderedServices: Service[]) {
-    // This is complex to do perfectly without a real DB.
-    // A simple approach is to just replace the services for the affected categories.
-    const categoryIds = [...new Set(orderedServices.map(s => s.categoryId))];
-    for (const catId of categoryIds) {
-        const otherServices = SERVICES.filter(s => s.categoryId !== catId);
-        const newServicesForCat = orderedServices.filter(s => s.categoryId === catId);
-        SERVICES = [...otherServices, ...newServicesForCat];
-    }
+    orderedServices.forEach(serviceToUpdate => {
+        const index = SERVICES.findIndex(s => s.id === serviceToUpdate.id);
+        if (index !== -1) {
+            SERVICES[index].order = serviceToUpdate.order;
+        }
+    });
     await new Promise(res => setTimeout(res, 500));
 }
 
