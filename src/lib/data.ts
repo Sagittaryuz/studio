@@ -23,7 +23,7 @@ import type {
 
 // --- MOCK DATABASE ---
 
-const CATEGORIES: Category[] = [
+let CATEGORIES: Category[] = [
   { id: 'LOGISTICO', name: 'Logístico' },
   { id: 'EMPILHADEIRAS', name: 'Empilhadeiras' },
   { id: 'PASSEIO', name: 'Passeio' },
@@ -218,6 +218,46 @@ export async function mockDbDeleteService(id: string) {
     await new Promise(res => setTimeout(res, 500));
 }
 
+export async function mockDbAddOrUpdateService(service: Partial<Service>) {
+    if (service.id) {
+        const index = SERVICES.findIndex(s => s.id === service.id);
+        if (index !== -1) {
+            SERVICES[index] = { ...SERVICES[index], ...service };
+        }
+    } else {
+        const newService: Service = {
+            id: `s${Date.now()}`,
+            name: service.name!,
+            categoryId: service.categoryId!,
+            order: service.order!,
+        };
+        SERVICES.push(newService);
+    }
+    await new Promise(res => setTimeout(res, 500));
+}
+
+export async function mockDbUpdateServiceOrder(orderedServices: Service[]) {
+    // This is complex to do perfectly without a real DB.
+    // A simple approach is to just replace the services for the affected categories.
+    const categoryIds = [...new Set(orderedServices.map(s => s.categoryId))];
+    for (const catId of categoryIds) {
+        const otherServices = SERVICES.filter(s => s.categoryId !== catId);
+        const newServicesForCat = orderedServices.filter(s => s.categoryId === catId);
+        SERVICES = [...otherServices, ...newServicesForCat];
+    }
+    await new Promise(res => setTimeout(res, 500));
+}
+
+
+export async function mockDbAddOrUpdateCategory(category: Category) {
+    const index = CATEGORIES.findIndex(c => c.id === category.id);
+    if (index === -1) {
+        CATEGORIES.push(category);
+    }
+    // No update for now, as ID is derived from name.
+    await new Promise(res => setTimeout(res, 500));
+}
+
 // --- DATA PROCESSING LOGIC ---
 
 /**
@@ -333,9 +373,7 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
     vehicles: vehiclesWithStatus,
     services: [...SERVICES],
     vehicleServices: processedVehicleServices as VehicleService[],
-    categories: categoriesWithStatus,
+    categories: [...CATEGORIES],
     userRole,
   };
 }
-
-    

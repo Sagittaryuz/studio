@@ -19,7 +19,7 @@ import { PlusCircle, Edit, Trash2, Loader2, Plus } from 'lucide-react';
 import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { deleteService } from '@/app/actions';
+import { deleteService, addOrUpdateService, updateServiceOrder, addOrUpdateCategory } from '@/app/actions';
 
 
 const serviceFormSchema = z.object({
@@ -117,51 +117,48 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
 
   const onServiceSubmit = async (values: ServiceFormValues) => {
     setIsSubmitting(true);
-    // Here you would call a server action to save the service
-    console.log('Service Form submitted:', values);
-    
-    // Mocking API call
-    await new Promise(res => setTimeout(res, 1000));
-    
-    if (editingService) {
-        // Update existing service
-        setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID, order: s.order } : s));
-        toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado com sucesso.` });
-
-    } else {
-        // Add new service
+    try {
         const maxOrder = Math.max(0, ...services.filter(s => s.categoryId === values.categoryId).map(s => s.order));
-        const newService: Service = {
-            id: `s${Date.now()}`,
+        const serviceData = {
             ...values,
-            categoryId: values.categoryId as CategoryID,
-            order: maxOrder + 1,
+            order: editingService ? editingService.order : maxOrder + 1,
         };
-        setServices([...services, newService]);
-        toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
-    }
+        await addOrUpdateService(serviceData);
+        
+        if (editingService) {
+            setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID, order: s.order } : s));
+            toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado.` });
+        } else {
+            const newService = { ...serviceData, id: `s${Date.now()}`, categoryId: values.categoryId as CategoryID};
+            setServices([...services, newService]);
+            toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
+        }
 
-    closeServiceDialog();
-    setIsSubmitting(false);
+        closeServiceDialog();
+    } catch (error) {
+        console.error(error);
+        toast({ title: 'Erro ao salvar serviço', variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
   
   const onCategorySubmit = async (values: CategoryFormValues) => {
     setIsSubmitting(true);
-    // Mocking API call
-    await new Promise(res => setTimeout(res, 500));
-    
-    const newCategory: Category = {
-        id: values.name.toUpperCase().replace(/\s/g, '_') as CategoryID,
-        name: values.name,
-    };
-    
-    setCategories([...categories, newCategory]);
-    toast({ title: "Categoria Adicionada", description: `A categoria "${values.name}" foi adicionada.` });
-    
-    setIsCategoryDialogOpen(false);
-    categoryForm.reset();
-    setIsSubmitting(false);
-    setActiveCategory(newCategory.id);
+    try {
+        const newCategory = await addOrUpdateCategory(values);
+        setCategories([...categories, newCategory]);
+        toast({ title: "Categoria Adicionada", description: `A categoria "${values.name}" foi adicionada.` });
+        
+        setIsCategoryDialogOpen(false);
+        categoryForm.reset();
+        setActiveCategory(newCategory.id);
+    } catch(error) {
+        console.error(error);
+        toast({ title: 'Erro ao adicionar categoria', variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const handleAddNewService = (categoryId: CategoryID) => {
@@ -193,7 +190,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     setDeletingId(serviceId);
     try {
         await deleteService(serviceId);
-        // Optimistic update on the client
         setServices(currentServices => currentServices.filter(s => s.id !== serviceId));
         toast({ title: "Serviço Removido" });
     } catch (error) {
@@ -204,16 +200,22 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     }
   };
   
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
-        setServices((items) => {
-            const oldIndex = items.findIndex((item) => item.id === active.id);
-            const newIndex = items.findIndex((item) => item.id === over?.id);
-            const newArray = arrayMove(items, oldIndex, newIndex);
-            // Update order property after moving
-            return newArray.map((item, index) => ({ ...item, order: index }));
-        });
+        const reorderedServices = arrayMove(services, services.findIndex(item => item.id === active.id), services.findIndex(item => item.id === over?.id));
+        const updatedServicesWithOrder = reorderedServices.map((item, index) => ({ ...item, order: index }));
+
+        setServices(updatedServicesWithOrder);
+        
+        try {
+            await updateServiceOrder(updatedServicesWithOrder);
+        } catch (error) {
+            console.error(error);
+            toast({ title: 'Erro ao reordenar serviços', variant: 'destructive' });
+            // Revert optimistic update
+            setServices(services);
+        }
     }
   };
   

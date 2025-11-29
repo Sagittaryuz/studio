@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
-import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes, mockDbDeleteService, mockDbEditVehicle } from '@/lib/data';
-import type { CategoryID } from '@/lib/types';
+import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes, mockDbDeleteService, mockDbEditVehicle, mockDbAddOrUpdateService, mockDbUpdateServiceOrder, mockDbAddOrUpdateCategory } from '@/lib/data';
+import type { Category, CategoryID, Service } from '@/lib/types';
 
 
 // Re-exporting for component usage
@@ -53,6 +53,16 @@ const updateNotesSchema = z.object({
 
 const deleteServiceSchema = z.object({
   serviceId: z.string(),
+});
+
+const serviceFormSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(2, 'O nome do serviço deve ter pelo menos 2 caracteres.'),
+  categoryId: z.string(),
+});
+
+const categoryFormSchema = z.object({
+    name: z.string().min(3, 'O nome da categoria deve ter pelo menos 3 caracteres.'),
 });
 
 
@@ -169,6 +179,58 @@ export async function deleteService(serviceId: string) {
     revalidatePath('/services');
 }
 
+/**
+ * Adds or updates a service type.
+ */
+export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>) {
+    const validation = serviceFormSchema.safeParse(data);
+
+    if (!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for service.');
+    }
+
+    await mockDbAddOrUpdateService(data);
+    revalidatePath('/services');
+    revalidatePath('/');
+}
+
+/**
+ * Updates the order of services.
+ */
+export async function updateServiceOrder(orderedServices: Service[]) {
+    // Basic validation to ensure it's an array
+    if (!Array.isArray(orderedServices)) {
+        throw new Error('Invalid input for updating service order.');
+    }
+    
+    await mockDbUpdateServiceOrder(orderedServices);
+    revalidatePath('/services');
+    revalidatePath('/');
+}
+
+/**
+ * Adds or updates a category.
+ */
+export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchema>) {
+    const validation = categoryFormSchema.safeParse(data);
+
+    if (!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for category.');
+    }
+
+    const newCategory: Category = {
+        id: data.name.toUpperCase().replace(/\s/g, '_') as CategoryID,
+        name: data.name,
+    };
+
+    await mockDbAddOrUpdateCategory(newCategory);
+    revalidatePath('/services');
+    revalidatePath('/');
+    return newCategory;
+}
+
 
 /**
  * Calls the Genkit flow to get a maintenance schedule suggestion.
@@ -191,5 +253,3 @@ export async function getSignedUploadUrl(fileName: string, contentType: string, 
   const url = `https://fake-upload.url/for/${fileName}`;
   return { success: true, url };
 }
-
-    
