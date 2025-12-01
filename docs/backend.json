@@ -10,13 +10,9 @@
           "type": "string",
           "description": "Unique identifier for the Vehicle entity."
         },
-        "fleetNumber": {
-            "type": "string",
-            "description": "The internal fleet number assigned to the vehicle."
-        },
         "plate": {
           "type": "string",
-          "description": "The license plate number of the vehicle."
+          "description": "The vehicle's license plate number."
         },
         "category": {
           "type": "string",
@@ -24,11 +20,11 @@
         },
         "currentKm": {
           "type": "number",
-          "description": "The current mileage of the vehicle in kilometers."
+          "description": "The current kilometer reading of the vehicle."
         },
         "active": {
           "type": "boolean",
-          "description": "Indicates whether the vehicle is currently active in the fleet."
+          "description": "Indicates if the vehicle is currently active in the fleet."
         },
         "photoUrl": {
           "type": "string",
@@ -37,7 +33,7 @@
         },
         "notes": {
           "type": "string",
-          "description": "Any additional notes or observations about the vehicle."
+          "description": "Additional notes or observations about the vehicle."
         }
       },
       "required": [
@@ -52,7 +48,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Service",
       "type": "object",
-      "description": "Represents a type of maintenance service that can be performed on a vehicle.",
+      "description": "Represents a type of maintenance service.",
       "properties": {
         "id": {
           "type": "string",
@@ -60,11 +56,7 @@
         },
         "name": {
           "type": "string",
-          "description": "The name of the service (e.g., OIL CHANGE)."
-        },
-        "categoryId": {
-          "type": "string",
-          "description": "The ID of the category this service belongs to."
+          "description": "The name of the service (e.g., ÓLEO DO MOTOR)."
         },
         "defaultMonths": {
           "type": "number",
@@ -73,14 +65,18 @@
         "defaultKm": {
           "type": "number",
           "description": "The default periodicity of the service in kilometers."
+        },
+        "defaultSupplier": {
+          "type": "string",
+          "description": "The default supplier for the service."
         }
       },
       "required": [
         "id",
         "name",
-        "categoryId",
         "defaultMonths",
-        "defaultKm"
+        "defaultKm",
+        "defaultSupplier"
       ]
     },
     "VehicleService": {
@@ -103,12 +99,12 @@
         },
         "lastDate": {
           "type": "string",
-          "description": "The date when the service was last performed.",
+          "description": "The date the service was last performed.",
           "format": "date-time"
         },
         "lastKm": {
           "type": "number",
-          "description": "The mileage at which the service was last performed."
+          "description": "The kilometer reading when the service was last performed."
         },
         "supplier": {
           "type": "string",
@@ -116,40 +112,40 @@
         },
         "responsible": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N VehicleService). The user responsible for the service."
+          "description": "Reference to User. (Relationship: User 1:N VehicleService) The user responsible for the service."
         },
         "nextDate": {
           "type": "string",
-          "description": "The calculated date for the next scheduled service.",
+          "description": "The calculated next date for the service to be performed.",
           "format": "date-time"
         },
         "nextKm": {
           "type": "number",
-          "description": "The calculated mileage for the next scheduled service."
+          "description": "The calculated next kilometer reading for the service to be performed."
         },
         "status": {
           "type": "string",
-          "description": "The status of the service (OK, ALERT, DUE)."
+          "description": "The status of the service (OK, ALERTA, VENCIDO)."
         },
         "notes": {
           "type": "string",
-          "description": "Any notes related to this service instance."
+          "description": "Additional notes about the service."
         },
         "attachments": {
           "type": "array",
-          "description": "References to Attachment. (Relationship: Attachment 1:N VehicleService). URLs of attached files (e.g., invoices, images).",
+          "description": "List of URLs for attachments related to the service.",
           "items": {
             "type": "string"
           }
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp of when this service was created.",
+          "description": "Timestamp of when the vehicle service was created.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp of when this service was last updated.",
+          "description": "Timestamp of when the vehicle service was last updated.",
           "format": "date-time"
         }
       },
@@ -163,7 +159,9 @@
         "responsible",
         "nextDate",
         "nextKm",
-        "status"
+        "status",
+        "createdAt",
+        "updatedAt"
       ]
     },
     "User": {
@@ -174,7 +172,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the User entity.  This corresponds to the Firebase Auth UID."
+          "description": "Unique identifier for the User entity. This corresponds to the Firebase Auth UID."
         },
         "role": {
           "type": "string",
@@ -182,7 +180,7 @@
         },
         "name": {
           "type": "string",
-          "description": "The name of the user."
+          "description": "The full name of the user."
         },
         "email": {
           "type": "string",
@@ -205,11 +203,11 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Setting",
       "type": "object",
-      "description": "Represents application settings.",
+      "description": "Represents application-wide settings, specifically for notifications.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Setting entity.  Likely a single document with a known ID."
+          "description": "Unique identifier for the Settings entity.  There should only be one of these documents."
         },
         "alertDays": {
           "type": "number",
@@ -217,7 +215,7 @@
         },
         "alertKmDelta": {
           "type": "number",
-          "description": "The kilometer delta before a service is due to trigger an alert."
+          "description": "The kilometer range before a service is due to trigger an alert."
         },
         "webhookWhatsApp": {
           "type": "string",
@@ -226,90 +224,9 @@
         }
       },
       "required": [
-        "id"
-      ]
-    },
-    "Attachment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Attachment",
-      "type": "object",
-      "description": "Represents a file attached to a VehicleService record.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Attachment entity."
-        },
-        "vehicleServiceId": {
-          "type": "string",
-          "description": "Reference to VehicleService. (Relationship: VehicleService 1:N Attachment)"
-        },
-        "fileName": {
-          "type": "string",
-          "description": "The original name of the attached file."
-        },
-        "fileType": {
-          "type": "string",
-          "description": "The MIME type of the attached file (e.g., application/pdf, image/jpeg)."
-        },
-        "fileUrl": {
-          "type": "string",
-          "description": "The URL where the attached file is stored.",
-          "format": "uri"
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "The date and time when the file was uploaded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
         "id",
-        "vehicleServiceId",
-        "fileName",
-        "fileType",
-        "fileUrl",
-        "uploadDate"
-      ]
-    },
-    "VehicleServiceEvent": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "VehicleServiceEvent",
-      "type": "object",
-      "description": "Represents an event (history) of a specific VehicleService.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the VehicleServiceEvent entity."
-        },
-        "vehicleServiceId": {
-          "type": "string",
-          "description": "Reference to VehicleService. (Relationship: VehicleService 1:N VehicleServiceEvent)"
-        },
-        "eventType": {
-          "type": "string",
-          "description": "The type of event (e.g., 'created', 'updated', 'completed')."
-        },
-        "eventDate": {
-          "type": "string",
-          "description": "The date and time when the event occurred.",
-          "format": "date-time"
-        },
-        "eventData": {
-          "type": "string",
-          "description": "A JSON string containing the event data.  For example, the old and new values of a field that was updated."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N VehicleServiceEvent)"
-        }
-      },
-      "required": [
-        "id",
-        "vehicleServiceId",
-        "eventType",
-        "eventDate",
-        "eventData",
-        "userId"
+        "alertDays",
+        "alertKmDelta"
       ]
     }
   },
@@ -322,29 +239,13 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles.  The 'userId' corresponds to the Firebase Auth UID, and enables path-based ownership for user-specific data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The Firebase Auth UID of the user."
-            }
-          ]
-        }
-      },
-      {
         "path": "/vehicles/{vehicleId}",
         "definition": {
           "entityName": "Vehicle",
           "schema": {
             "$ref": "#/backend/entities/Vehicle"
           },
-          "description": "Stores vehicle information. All authenticated users can list vehicles.",
+          "description": "Stores vehicle information. Accessible to all authenticated users for reading. Only admins can create, update, or delete vehicles.",
           "params": [
             {
               "name": "vehicleId",
@@ -360,7 +261,7 @@
           "schema": {
             "$ref": "#/backend/entities/Service"
           },
-          "description": "Stores predefined service types. Only admins have write access.",
+          "description": "Stores types of services. Accessible to all authenticated users for reading. Only admins can create, update, or delete services.",
           "params": [
             {
               "name": "serviceId",
@@ -370,18 +271,14 @@
         }
       },
       {
-        "path": "/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}",
+        "path": "/vehicleServices/{vehicleServiceId}",
         "definition": {
           "entityName": "VehicleService",
           "schema": {
             "$ref": "#/backend/entities/VehicleService"
           },
-          "description": "Represents specific instances of services performed on vehicles. Includes denormalized 'vehicleId' for authorization independence. The 'responsible' field tracks which user performed this service.",
+          "description": "Stores specific instances of services performed on vehicles. Includes denormalized 'responsibleUserRole' for authorization independence.",
           "params": [
-            {
-              "name": "vehicleId",
-              "description": "The unique identifier of the vehicle."
-            },
             {
               "name": "vehicleServiceId",
               "description": "The unique identifier of the vehicle service."
@@ -390,49 +287,17 @@
         }
       },
       {
-        "path": "/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/attachments/{attachmentId}",
+        "path": "/users/{userId}",
         "definition": {
-          "entityName": "Attachment",
+          "entityName": "User",
           "schema": {
-            "$ref": "#/backend/entities/Attachment"
+            "$ref": "#/backend/entities/User"
           },
-          "description": "Stores attachments related to vehicle services.",
+          "description": "Stores user profiles. Accessible only to the user themselves and admins.",
           "params": [
             {
-              "name": "vehicleId",
-              "description": "The unique identifier of the vehicle."
-            },
-            {
-              "name": "vehicleServiceId",
-              "description": "The unique identifier of the vehicle service."
-            },
-            {
-              "name": "attachmentId",
-              "description": "The unique identifier of the attachment."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/events/{vehicleServiceEventId}",
-        "definition": {
-          "entityName": "VehicleServiceEvent",
-          "schema": {
-            "$ref": "#/backend/entities/VehicleServiceEvent"
-          },
-          "description": "Stores the event history of the vehicle service.",
-          "params": [
-            {
-              "name": "vehicleId",
-              "description": "The unique identifier of the vehicle."
-            },
-            {
-              "name": "vehicleServiceId",
-              "description": "The unique identifier of the vehicle service."
-            },
-            {
-              "name": "vehicleServiceEventId",
-              "description": "The unique identifier of the vehicle service event."
+              "name": "userId",
+              "description": "The unique identifier of the user (Firebase Auth UID)."
             }
           ]
         }
@@ -444,34 +309,16 @@
           "schema": {
             "$ref": "#/backend/entities/Setting"
           },
-          "description": "Stores application-wide settings. There will be a single document with the ID 'config'.",
+          "description": "Stores application settings. Only accessible to admins. There should only be ONE settings document.",
           "params": [
             {
               "name": "settingsId",
-              "description": "The identifier for the settings document (e.g., 'config')."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/roles_admin/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Documents in this collection indicate admin privileges. The existence of a document determines admin status.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The Firebase Auth UID of the user."
+              "description": "The unique identifier of the settings document (should be a constant value)."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to prioritize authorization independence, clarity, and scalability. It leverages denormalization to avoid hierarchical authorization dependencies and structural segregation to ensure homogeneous security postures within collections.\n\n*   **/users/{userId}**: Stores user profiles, using the Firebase Auth UID as the document ID, enabling path-based ownership for user-specific data.\n*   **/vehicles/{vehicleId}**: Stores vehicle information. All users with read access can list the vehicles.\n*   **/services/{serviceId}**: Stores predefined service types.  Only admins have write access.\n*   **/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}**: Represents specific instances of services performed on vehicles. The `vehicleId` is denormalized into this collection. The `responsible` field tracks which user performed this service. This enforces clear ownership and avoids the need for complex `get()` calls in security rules.\n*   **/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/attachments/{attachmentId}**: Stores attachments related to vehicle services. Authorization is simplified because it is nested under vehicleServices.\n*   **/vehicles/{vehicleId}/vehicleServices/{vehicleServiceId}/events/{vehicleServiceEventId}**: Stores the event history of the vehicle service.\n*   **/settings/{settingsId}**: Stores application-wide settings, with a single document (e.g., `settingsId = 'config'`).\n*   **/roles_admin/{userId}**:  Documents in this collection indicate admin privileges. The existence of a document determines admin status. This allows us to implement QAPs.\n\n**Authorization Independence:**\n\n*   The `vehicleServices` subcollection denormalizes the `vehicleId`, avoiding the need to fetch the vehicle to authorize operations on vehicle services.\n\n**QAPs Support:**\n\n*   The segregation of admin roles into the `roles_admin` collection and user data into `/users/{userId}` enables efficient and secure list operations based on role or user ID.\n*   By nesting `vehicleServices` as a subcollection of `vehicles`, listing vehicle services is naturally scoped to a particular vehicle, preventing broad, unfiltered queries."
+    "reasoning": "The Firestore structure is designed to provide a clear, secure, and scalable data model for the JC Fleet Control application, adhering to the principles of Authorization Independence, Structural Segregation, and Access Modeling. This design facilitates simple, robust, and easily debuggable security rules.\n\nAuthorization Independence is achieved through denormalization. Specifically, the `VehicleService` documents will include a denormalized copy of the `User.role` who is the `responsible` for the service. This eliminates the need for `get()` calls in security rules to verify user roles, enabling atomic operations.\n\nStructural Segregation is implemented by separating data with different access requirements into distinct collections. User profiles and global settings are stored in their own collections (`/users` and `/settings`), separate from vehicle and service data.\n\nAccess Modeling is standardized with path-based ownership for user-related data (e.g., `/users/{userId}`) and membership maps where applicable.\n\nQAPs (Rules are not Filters) are supported by the data structure. The segregation of data based on ownership and role allows for secure list operations. For example, listing vehicle services is secured by checking the responsible user's ID in the `VehicleService` document.\n\nSpecifically, the following denormalization strategy is employed:\n\n*   `VehicleService`: Includes the `responsibleUserRole` field, which is a copy of the `User.role` field for the user who is responsible for the service. This eliminates the need to perform a `get()` operation to retrieve the user's role when enforcing security rules on `VehicleService` documents. This is *critical* for maintaining authorization independence.\n"
   }
 }
-
-    
