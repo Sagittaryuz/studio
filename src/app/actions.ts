@@ -305,8 +305,8 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
         categoryRef = doc(firestore, 'categories', categoryId);
         
         // Get max order to append the new one
-        const maxOrderQuery = query(collection(firestore, 'categories'));
-        const querySnapshot = await getDocs(maxOrderQuery);
+        const q = query(collection(firestore, 'categories'));
+        const querySnapshot = await getDocs(q);
         const maxOrder = Math.max(-1, ...querySnapshot.docs.map(doc => doc.data().order ?? -1));
 
         newCategory = {
@@ -321,7 +321,8 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
     revalidatePath('/');
 
     // Return the full category object so the client can update its state
-    const savedDocSnapshot = await getDocs(query(collection(firestore, 'categories'), where('name', '==', data.name)));
+    const q = query(collection(firestore, 'categories'), where('name', '==', data.name));
+    const savedDocSnapshot = await getDocs(q);
     if (savedDocSnapshot.empty) {
         // This case is for an edit where we don't have the full object yet.
         // We just return what we know, client must merge.
