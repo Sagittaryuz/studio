@@ -13,6 +13,7 @@ import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { VehicleDialog } from '../vehicle/add-vehicle-dialog';
 import { EditVehicleNotesDialog } from '../vehicle/edit-vehicle-notes-dialog';
+import { SidebarTrigger } from '../ui/sidebar';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -65,7 +66,11 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
 
   return (
     <>
-    <div className="flex h-[calc(100vh-3.5rem)] w-full flex-col">
+    <div className="flex h-[calc(100vh)] w-full flex-col">
+      <div className="flex h-12 items-center border-b px-2 md:px-4">
+        <SidebarTrigger />
+        <h1 className='ml-4 font-semibold text-lg'>Plano de Manutenção</h1>
+      </div>
       <main className="flex flex-1 flex-col overflow-hidden p-2 md:p-4">
         
         <Tabs value={selectedCategory} onValueChange={handleSelectCategory} className="mt-1">
