@@ -293,18 +293,21 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
     const { firestore } = initializeFirebaseAdmin();
 
     let categoryId = data.id;
-    let newCategory: Omit<Category, 'id'> & { id?: string } = { name: data.name };
+    let newCategory: Omit<Category, 'id'> & { id?: string };
     let categoryRef;
 
     if (data.id) { // Editing
         categoryRef = doc(firestore, 'categories', data.id);
         await setDoc(categoryRef, { name: data.name }, { merge: true });
+        newCategory = { name: data.name }; // To get full object back
     } else { // Adding
         categoryId = data.name.toUpperCase().replace(/\s/g, '_');
         categoryRef = doc(firestore, 'categories', categoryId);
+        
+        // Get max order to append the new one
         const maxOrderQuery = query(collection(firestore, 'categories'));
         const querySnapshot = await getDocs(maxOrderQuery);
-        const maxOrder = Math.max(0, ...querySnapshot.docs.map(doc => doc.data().order || 0));
+        const maxOrder = Math.max(-1, ...querySnapshot.docs.map(doc => doc.data().order ?? -1));
 
         newCategory = {
             id: categoryId,
@@ -317,9 +320,14 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
     revalidatePath('/services');
     revalidatePath('/');
 
-    // Return the full category object
-    const savedDoc = await getDocs(query(collection(firestore, 'categories'), where('name', '==', data.name)));
-    return { ...savedDoc.docs[0].data(), id: savedDoc.docs[0].id } as Category;
+    // Return the full category object so the client can update its state
+    const savedDocSnapshot = await getDocs(query(collection(firestore, 'categories'), where('name', '==', data.name)));
+    if (savedDocSnapshot.empty) {
+        // This case is for an edit where we don't have the full object yet.
+        // We just return what we know, client must merge.
+        return { ...newCategory, id: categoryId } as Category;
+    }
+    return { ...savedDocSnapshot.docs[0].data(), id: savedDocSnapshot.docs[0].id } as Category;
 }
 
 /**
