@@ -74,16 +74,12 @@ export function DashboardCalendar({ vehicles, services, vehicleServices }: Dashb
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <Card className="lg:col-span-2">
-         <CardContent className="p-0">
+         <CardContent className="p-0 flex justify-center">
              <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 className="p-4"
-                classNames={{
-                    day: "h-12 w-12 text-base",
-                    head_cell: "w-12",
-                }}
                 locale={ptBR}
                 components={{
                     Day: ({ date }) => <DayWithDot date={date}>{date.getDate()}</DayWithDot>,
@@ -114,7 +110,7 @@ export function DashboardCalendar({ vehicles, services, vehicleServices }: Dashb
                     <p>Responsável: {event.responsible}</p>
                   </div>
                   <Button asChild size="sm" variant="link" className='p-0 h-auto mt-2'>
-                    <Link href={`/plan`}>Ir para o plano</Link>
+                    <Link href={`/plan?vehicleId=${event.vehicleId}`}>Ir para o plano</Link>
                   </Button>
                 </li>
               ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService, CategoryID } from '@/lib/types';
 import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,11 +23,13 @@ const badgeStatusClasses: Record<string, string> = {
 };
 
 export function DashboardClient({ initialData }: { initialData: DashboardData }) {
+  const searchParams = useSearchParams();
+  const vehicleIdFromUrl = searchParams.get('vehicleId');
+
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData.categories[0]?.id || '');
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithStatus | null>(null);
   const [isVehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [isNotesDialogOpen, setNotesDialogOpen] = useState(false);
-
 
   const vehiclesByCategory = useMemo(() => {
     const grouped: { [key: string]: VehicleWithStatus[] } = {};
@@ -45,11 +48,25 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
   }, [initialData.services, initialData.categories]);
 
 
-  // Effect to select the first vehicle when category changes
+  // Effect to select vehicle from URL or first in category
   useEffect(() => {
-    const firstVehicleInCategory = vehiclesByCategory[selectedCategory]?.[0];
-    setSelectedVehicle(firstVehicleInCategory || null);
-  }, [selectedCategory, vehiclesByCategory]);
+      let vehicleToSelect: VehicleWithStatus | undefined;
+      if (vehicleIdFromUrl) {
+          vehicleToSelect = initialData.vehicles.find(v => v.id === vehicleIdFromUrl);
+          if (vehicleToSelect) {
+              // If vehicle found, switch to its category
+              setSelectedCategory(vehicleToSelect.category);
+          }
+      } 
+      
+      // If no URL param or vehicle not found, select first in the current category
+      if (!vehicleToSelect) {
+          vehicleToSelect = vehiclesByCategory[selectedCategory]?.[0];
+      }
+      
+      setSelectedVehicle(vehicleToSelect || null);
+
+  }, [vehicleIdFromUrl, selectedCategory, vehiclesByCategory, initialData.vehicles]);
 
 
   const handleSelectCategory = (categoryId: string) => {
