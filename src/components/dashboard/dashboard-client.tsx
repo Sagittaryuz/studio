@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService } from '@/lib/types';
+import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService, CategoryID } from '@/lib/types';
 import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Plus } from 'lucide-react';
 import { VehicleList } from './vehicle-list';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import { VehicleDialog } from '../vehicle/add-vehicle-dialog';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -21,6 +22,7 @@ const badgeStatusClasses: Record<string, string> = {
 export function DashboardClient({ initialData }: { initialData: DashboardData }) {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData.categories[0]?.id || '');
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithStatus | null>(null);
+  const [isVehicleDialogOpen, setVehicleDialogOpen] = useState(false);
 
   const vehiclesByCategory = useMemo(() => {
     const grouped: { [key: string]: VehicleWithStatus[] } = {};
@@ -54,7 +56,12 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
     setSelectedVehicle(vehicle);
   };
   
+  const handleOpenDialog = () => {
+    setVehicleDialogOpen(true);
+  };
+
   return (
+    <>
     <div className="flex h-screen w-full flex-col">
       <main className="flex flex-1 flex-col overflow-hidden p-2 md:p-4">
         
@@ -85,7 +92,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
                       <div className="flex items-center justify-center rounded-lg border-2 border-dashed p-8 text-center text-muted-foreground">
                           <div className='flex flex-col items-center gap-4'>
                             <p>Nenhum veículo encontrado nesta categoria.</p>
-                            <Button variant="outline">
+                            <Button variant="outline" onClick={handleOpenDialog}>
                               <Plus className="mr-2 h-4 w-4" /> Adicionar Veículo
                             </Button>
                           </div>
@@ -118,5 +125,12 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
         </div>
       </main>
     </div>
+    <VehicleDialog
+      isOpen={isVehicleDialogOpen}
+      setIsOpen={setVehicleDialogOpen}
+      categoryId={selectedCategory as CategoryID}
+      vehicle={null}
+    />
+    </>
   );
 }
