@@ -11,42 +11,37 @@ interface VehicleCardProps {
   children?: React.ReactNode;
 }
 
-const statusClasses: Record<string, string> = {
-  VENCIDO: 'border-destructive bg-destructive/10',
-  ALERTA: 'border-warning bg-warning/10',
-  OK: 'border-transparent',
+const statusIndicatorClasses: Record<string, string> = {
+  VENCIDO: 'absolute -top-1 -right-1 w-3 h-3 rounded-full bg-destructive border-2 border-background',
+  ALERTA: 'absolute -top-1 -right-1 w-3 h-3 rounded-full bg-warning border-2 border-background',
 };
 
 export function VehicleCard({ vehicle, isSelected, onClick, children }: VehicleCardProps) {
   return (
-    <Card
-      className={cn(
-        'cursor-pointer transition-all hover:shadow-md relative',
-        isSelected ? 'ring-2 ring-primary ring-offset-2 border-primary' : 'border-2',
-        !isSelected && (statusClasses[vehicle.status] || 'border-transparent')
+    <div className="relative">
+      <Card
+        className={cn(
+          'cursor-pointer transition-all hover:shadow-md',
+          isSelected ? 'ring-2 ring-primary ring-offset-2' : 'border-2'
+        )}
+        onClick={onClick}
+      >
+        <CardHeader className="p-1">
+          <div className="flex items-start justify-between gap-1">
+              <div className='flex-1'>
+                  {vehicle.fleetNumber && (
+                      <p className="text-[9px] font-bold text-muted-foreground">{vehicle.fleetNumber}</p>
+                  )}
+                  <CardTitle className="text-xs font-bold truncate">{vehicle.plate}</CardTitle>
+              </div>
+          </div>
+          <CardDescription className="text-[10px]">{vehicle.currentKm.toLocaleString('pt-BR')} km</CardDescription>
+        </CardHeader>
+        {children && <div className="absolute top-0.5 right-0.5">{children}</div>}
+      </Card>
+      {vehicle.status !== 'OK' && (
+        <div className={cn(statusIndicatorClasses[vehicle.status])} title={`Status: ${vehicle.status}`} />
       )}
-      onClick={onClick}
-    >
-      <CardHeader className="p-1">
-        <div className="flex items-start justify-between gap-1">
-            <div className='flex-1'>
-                {vehicle.fleetNumber && (
-                    <p className="text-[9px] font-bold text-muted-foreground">{vehicle.fleetNumber}</p>
-                )}
-                <CardTitle className="text-xs font-bold truncate">{vehicle.plate}</CardTitle>
-            </div>
-            <Badge 
-              variant={vehicle.status === 'ALERTA' ? 'default' : vehicle.status === 'VENCIDO' ? 'destructive' : 'secondary'} 
-              className={cn('text-[9px] px-1 py-0 h-4', vehicle.status === 'ALERTA' && 'bg-warning text-warning-foreground')}
-            >
-              {vehicle.status}
-            </Badge>
-        </div>
-        <CardDescription className="text-[10px]">{vehicle.currentKm.toLocaleString('pt-BR')} km</CardDescription>
-      </CardHeader>
-      {children && <div className="absolute top-0 right-0">{children}</div>}
-    </Card>
+    </div>
   );
 }
-
-    
