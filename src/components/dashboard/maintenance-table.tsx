@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { MoreVertical, PlusCircle, Monitor, FileText } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
-import { AiSuggestionModal } from '@/components/vehicle/ai-suggestion-modal';
 import { EditNotesModal } from '@/components/vehicle/edit-notes-modal';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -37,7 +36,6 @@ const statusClasses: Record<string, string> = {
 
 export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, userRole }: MaintenanceTableProps) {
   const [isAddSheetOpen, setAddSheetOpen] = useState(false);
-  const [isAiModalOpen, setAiModalOpen] = useState(false);
   const [isNotesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedServiceData, setSelectedServiceData] = useState<MergedServiceData | null>(null);
   const [localVehicleServices, setLocalVehicleServices] = useState<VehicleService[]>(vehicleServices);
@@ -135,9 +133,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
           </div>
           <div className="flex items-center gap-2">
             <UpdateKmForm vehicle={vehicle} disabled={!canEdit} />
-             <Button variant="outline" size="sm" onClick={() => setAiModalOpen(true)}>
-                Sugerir com IA
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-y-auto">
@@ -269,13 +264,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
             vehicleService={selectedServiceData.vehicleService}
         />
       )}
-      <AiSuggestionModal
-        isOpen={isAiModalOpen}
-        setIsOpen={setAiModalOpen}
-        vehicle={vehicle}
-        serviceHistory={vehicleServices}
-        allServices={servicesForCategory}
-       />
     </>
   );
 }

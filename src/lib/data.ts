@@ -63,9 +63,7 @@ function getServiceStatus(
 export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
   const { firestore: db } = initializeFirebaseAdmin();
   
-  // The orderBy was removed to prevent server-side render errors if 'order' field is missing on some documents.
-  // Sorting will be handled client-side.
-  const categoriesQuery = query(collection(db, 'categories'));
+  const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
 
   const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap] = await Promise.all([
     getDocs(collection(db, 'vehicles')),

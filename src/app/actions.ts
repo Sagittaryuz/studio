@@ -2,15 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
-import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
 import { doc, setDoc, deleteDoc, writeBatch, collection, query, where, getDocs } from 'firebase/firestore';
 import { initializeFirebaseAdmin } from '@/firebase/server-init';
 import type { Category, CategoryID, Service } from '@/lib/types';
-
-
-// Re-exporting for component usage
-export type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput };
 
 
 // --- FORM SCHEMAS ---
@@ -400,20 +394,6 @@ export async function deleteCategory(categoryId: string) {
     revalidatePath('/services');
 }
 
-
-/**
- * Calls the Genkit flow to get a maintenance schedule suggestion.
- */
-export async function suggestMaintenanceSchedule(
-    input: SuggestMaintenanceScheduleInput
-  ): Promise<SuggestMaintenanceScheduleOutput> {
-    
-    console.log(`[ACTION] Calling Genkit flow with input:`, input);
-    // Here we call the actual AI flow.
-    const result = await suggestMaintenanceScheduleFlow(input);
-    
-    return result;
-}
 
 export async function getSignedUploadUrl(fileName: string, contentType: string, size: number, checksum: string) {
   // In a real app, you'd use the Firebase Admin SDK here to create a signed URL.
