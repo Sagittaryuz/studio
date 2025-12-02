@@ -4,12 +4,14 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { AppHeader } from '@/components/layout/app-header';
-import Link from 'next/link';
+import { AuthHandler } from '@/components/dev/auth-handler';
+
 
 export const metadata: Metadata = {
   title: 'Plano de Manutenção de Frota',
   description: 'Gestão de Manutenções Preventivas de Frotas',
 };
+
 
 export default function RootLayout({
   children,
@@ -32,11 +34,13 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
-            <AppHeader />
-            <main>
-                {children}
-            </main>
-            <Toaster />
+            <AuthHandler>
+                <AppHeader />
+                <main>
+                    {children}
+                </main>
+                <Toaster />
+            </AuthHandler>
         </FirebaseClientProvider>
       </body>
     </html>

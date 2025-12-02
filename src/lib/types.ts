@@ -20,11 +20,26 @@ export interface Service {
 
 export type ServiceStatus = 'OK' | 'ALERTA' | 'VENCIDO';
 
+// This is the type that comes from Firestore, with a string date
+export interface RawVehicleService {
+  id: string;
+  vehicleId: string;
+  serviceId: string;
+  lastDate: string; // ISO date string
+  lastKm: number;
+  supplier: string;
+  responsible: string;
+  notes?: string;
+  attachments?: string[];
+  months?: number;
+  km?: number;
+}
+
 export interface VehicleService {
   id: string;
   vehicleId: string;
   serviceId: string;
-  lastDate: Date;
+  lastDate: Date; // Converted to Date object
   lastKm: number;
   supplier: string;
   responsible: string; // user name or id
@@ -68,5 +83,3 @@ export interface MergedServiceData {
   serviceInfo: Service;
   vehicleService: VehicleService | null; // It can be null if never performed
 }
-
-    

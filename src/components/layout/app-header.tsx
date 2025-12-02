@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { JCIcon } from '@/components/icons';
 import { LogOut, Settings, User } from 'lucide-react';
 import Link from 'next/link';
+import { DatabaseSeeder } from '@/components/dev/database-seeder';
+
 
 export function AppHeader({ children }: { children?: React.ReactNode }) {
   return (
@@ -23,6 +25,7 @@ export function AppHeader({ children }: { children?: React.ReactNode }) {
         </h1>
       </Link>
       <div className="ml-auto flex items-center gap-4">
+        <DatabaseSeeder />
         <Button variant="ghost" asChild>
             <Link href="/services">Gerenciar Serviços</Link>
         </Button>

@@ -4,7 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
-import { mockDbAddVehicle, mockDbAddVehicleService, mockDbUpdateVehicleKm, mockDbUpdateVehicleServiceNotes, mockDbDeleteService, mockDbEditVehicle, mockDbAddOrUpdateService, mockDbUpdateServiceOrder, mockDbAddOrUpdateCategory } from '@/lib/data';
+import { getDashboardData } from '@/lib/data';
+import { doc, setDoc, deleteDoc, writeBatch, collection } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 import type { Category, CategoryID, Service } from '@/lib/types';
 
 
@@ -79,7 +81,9 @@ export async function updateVehicleKm(vehicleId: string, currentKm: number) {
     throw new Error('Invalid input');
   }
 
-  await mockDbUpdateVehicleKm(vehicleId, currentKm);
+  const { firestore } = initializeFirebase();
+  const vehicleRef = doc(firestore, 'vehicles', vehicleId);
+  await setDoc(vehicleRef, { currentKm }, { merge: true });
   
   revalidatePath('/');
   revalidatePath('/services');
@@ -95,8 +99,26 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
         console.error(validation.error);
         throw new Error('Invalid input for adding service.');
     }
+    
+    const { firestore } = initializeFirebase();
+    
+    // Find if a vehicleService for this vehicle and service already exists
+    const vsQuery = query(
+        collection(firestore, 'vehicleServices'),
+        where('vehicleId', '==', data.vehicleId),
+        where('serviceId', '==', data.serviceId)
+    );
+    const querySnapshot = await getDocs(vsQuery);
+    
+    const vsDocRef = querySnapshot.docs.length > 0
+        ? querySnapshot.docs[0].ref
+        : doc(collection(firestore, 'vehicleServices'));
 
-    await mockDbAddVehicleService(data);
+    await setDoc(vsDocRef, {
+        ...data,
+        lastDate: data.lastDate.toISOString(), // Store as ISO string
+    }, { merge: true });
+
 
     revalidatePath('/');
     revalidatePath(`/history/${data.vehicleId}/${data.serviceId}`);
@@ -113,12 +135,18 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
         console.error(validation.error);
         throw new Error('Invalid input for adding vehicle.');
     }
-    
-    await mockDbAddVehicle({
+
+    const { firestore } = initializeFirebase();
+    const newVehicleRef = doc(collection(firestore, 'vehicles'));
+
+    await setDoc(newVehicleRef, {
+        id: newVehicleRef.id,
         plate: data.plate,
         currentKm: data.currentKm,
         category: data.categoryId as CategoryID,
-        fleetNumber: data.fleetNumber,
+        fleetNumber: data.fleetNumber || '',
+        active: true,
+        photoUrl: `https://picsum.photos/seed/${newVehicleRef.id}/600/400`,
     });
 
     revalidatePath('/');
@@ -136,11 +164,14 @@ export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
         throw new Error('Invalid input for editing vehicle.');
     }
     
-    await mockDbEditVehicle(data.id, {
+    const { firestore } = initializeFirebase();
+    const vehicleRef = doc(firestore, 'vehicles', data.id);
+
+    await setDoc(vehicleRef, {
         plate: data.plate,
         currentKm: data.currentKm,
-        fleetNumber: data.fleetNumber,
-    });
+        fleetNumber: data.fleetNumber || '',
+    }, { merge: true });
 
     revalidatePath('/');
     revalidatePath('/services');
@@ -157,7 +188,9 @@ export async function updateVehicleServiceNotes(vehicleServiceId: string, notes:
         throw new Error('Invalid input for updating notes.');
     }
 
-    await mockDbUpdateVehicleServiceNotes(vehicleServiceId, notes);
+    const { firestore } = initializeFirebase();
+    const vsRef = doc(firestore, 'vehicleServices', vehicleServiceId);
+    await setDoc(vsRef, { notes }, { merge: true });
     
     revalidatePath('/');
     revalidatePath('/services');
@@ -174,7 +207,21 @@ export async function deleteService(serviceId: string) {
         throw new Error('Invalid input for deleting service.');
     }
     
-    await mockDbDeleteService(serviceId);
+    const { firestore } = initializeFirebase();
+    const batch = writeBatch(firestore);
+
+    // 1. Delete the service document itself
+    const serviceRef = doc(firestore, 'services', serviceId);
+    batch.delete(serviceRef);
+
+    // 2. Find and delete all associated vehicleService documents
+    const vsQuery = query(collection(firestore, 'vehicleServices'), where('serviceId', '==', serviceId));
+    const vsSnapshot = await getDocs(vsQuery);
+    vsSnapshot.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+
+    await batch.commit();
 
     revalidatePath('/');
     revalidatePath('/services');
@@ -191,7 +238,16 @@ export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>
         throw new Error('Invalid input for service.');
     }
 
-    await mockDbAddOrUpdateService(data);
+    const { firestore } = initializeFirebase();
+    const serviceRef = data.id 
+        ? doc(firestore, 'services', data.id)
+        : doc(collection(firestore, 'services'));
+    
+    await setDoc(serviceRef, {
+        id: serviceRef.id,
+        ...data,
+    }, { merge: true });
+
     revalidatePath('/services');
     revalidatePath('/');
 }
@@ -200,12 +256,20 @@ export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>
  * Updates the order of services.
  */
 export async function updateServiceOrder(orderedServices: Service[]) {
-    // Basic validation to ensure it's an array
     if (!Array.isArray(orderedServices)) {
         throw new Error('Invalid input for updating service order.');
     }
     
-    await mockDbUpdateServiceOrder(orderedServices);
+    const { firestore } = initializeFirebase();
+    const batch = writeBatch(firestore);
+
+    orderedServices.forEach(service => {
+        const serviceRef = doc(firestore, 'services', service.id);
+        batch.update(serviceRef, { order: service.order });
+    });
+
+    await batch.commit();
+
     revalidatePath('/services');
     revalidatePath('/');
 }
@@ -221,12 +285,17 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
         throw new Error('Invalid input for category.');
     }
 
+    const newCategoryId = data.name.toUpperCase().replace(/\s/g, '_') as CategoryID;
+
     const newCategory: Category = {
-        id: data.name.toUpperCase().replace(/\s/g, '_') as CategoryID,
+        id: newCategoryId,
         name: data.name,
     };
+    
+    const { firestore } = initializeFirebase();
+    const categoryRef = doc(firestore, 'categories', newCategory.id);
+    await setDoc(categoryRef, newCategory);
 
-    await mockDbAddOrUpdateCategory(newCategory);
     revalidatePath('/services');
     revalidatePath('/');
     return newCategory;
