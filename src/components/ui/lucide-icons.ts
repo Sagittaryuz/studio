@@ -24,7 +24,8 @@ import {
   Warehouse,
   CalendarIcon,
   Trash2, 
-  Edit
+  Edit,
+  GripVertical
 } from 'lucide-react';
 
 export {
@@ -53,5 +54,6 @@ export {
   Warehouse,
   CalendarIcon,
   Trash2, 
-  Edit
+  Edit,
+  GripVertical
 };

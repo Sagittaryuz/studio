@@ -64,7 +64,12 @@ const serviceFormSchema = z.object({
 });
 
 const categoryFormSchema = z.object({
+    id: z.string().optional(),
     name: z.string().min(3, 'O nome da categoria deve ter pelo menos 3 caracteres.'),
+});
+
+const deleteCategorySchema = z.object({
+  categoryId: z.string(),
 });
 
 
@@ -284,21 +289,106 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
         console.error(validation.error);
         throw new Error('Invalid input for category.');
     }
-
-    const newCategoryId = data.name.toUpperCase().replace(/\s/g, '_') as CategoryID;
-
-    const newCategory: Category = {
-        id: newCategoryId,
-        name: data.name,
-    };
     
     const { firestore } = initializeFirebaseAdmin();
-    const categoryRef = doc(firestore, 'categories', newCategory.id);
-    await setDoc(categoryRef, newCategory);
+
+    let categoryId = data.id;
+    let newCategory: Omit<Category, 'id'> & { id?: string } = { name: data.name };
+    let categoryRef;
+
+    if (data.id) { // Editing
+        categoryRef = doc(firestore, 'categories', data.id);
+        await setDoc(categoryRef, { name: data.name }, { merge: true });
+    } else { // Adding
+        categoryId = data.name.toUpperCase().replace(/\s/g, '_');
+        categoryRef = doc(firestore, 'categories', categoryId);
+        const maxOrderQuery = query(collection(firestore, 'categories'));
+        const querySnapshot = await getDocs(maxOrderQuery);
+        const maxOrder = Math.max(0, ...querySnapshot.docs.map(doc => doc.data().order || 0));
+
+        newCategory = {
+            id: categoryId,
+            name: data.name,
+            order: maxOrder + 1,
+        };
+        await setDoc(categoryRef, newCategory);
+    }
+    
+    revalidatePath('/services');
+    revalidatePath('/');
+
+    // Return the full category object
+    const savedDoc = await getDocs(query(collection(firestore, 'categories'), where('name', '==', data.name)));
+    return { ...savedDoc.docs[0].data(), id: savedDoc.docs[0].id } as Category;
+}
+
+/**
+ * Updates the order of categories.
+ */
+export async function updateCategoryOrder(orderedCategories: Category[]) {
+    if (!Array.isArray(orderedCategories)) {
+        throw new Error('Invalid input for updating category order.');
+    }
+    
+    const { firestore } = initializeFirebaseAdmin();
+    const batch = writeBatch(firestore);
+
+    orderedCategories.forEach((category, index) => {
+        const categoryRef = doc(firestore, 'categories', category.id);
+        batch.update(categoryRef, { order: index });
+    });
+
+    await batch.commit();
 
     revalidatePath('/services');
     revalidatePath('/');
-    return newCategory;
+}
+
+/**
+ * Deletes a category and all its associated services and vehicle services.
+ */
+export async function deleteCategory(categoryId: string) {
+    const validation = deleteCategorySchema.safeParse({ categoryId });
+
+    if(!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for deleting category.');
+    }
+    
+    const { firestore } = initializeFirebaseAdmin();
+    const batch = writeBatch(firestore);
+
+    // 1. Delete the category document itself
+    const categoryRef = doc(firestore, 'categories', categoryId);
+    batch.delete(categoryRef);
+
+    // 2. Find and delete all services in this category
+    const servicesQuery = query(collection(firestore, 'services'), where('categoryId', '==', categoryId));
+    const servicesSnapshot = await getDocs(servicesQuery);
+    
+    const serviceIdsToDelete = servicesSnapshot.docs.map(d => d.id);
+    servicesSnapshot.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+
+    // 3. Find and delete all vehicleService documents associated with the services being deleted
+    if (serviceIdsToDelete.length > 0) {
+        // Firestore 'in' query can take up to 30 items. If more, we need to batch the queries.
+        const CHUNK_SIZE = 30;
+        for (let i = 0; i < serviceIdsToDelete.length; i += CHUNK_SIZE) {
+            const chunk = serviceIdsToDelete.slice(i, i + CHUNK_SIZE);
+            const vsQuery = query(collection(firestore, 'vehicleServices'), where('serviceId', 'in', chunk));
+            const vsSnapshot = await getDocs(vsQuery);
+            vsSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+        }
+    }
+
+    await batch.commit();
+
+    revalidatePath('/');
+    revalidatePath('/services');
 }
 
 

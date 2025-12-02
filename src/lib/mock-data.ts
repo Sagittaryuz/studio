@@ -12,11 +12,11 @@ import type {
 
 
 export const CATEGORIES: Category[] = [
-  { id: 'LOGISTICO', name: 'Logístico' },
-  { id: 'EMPILHADEIRAS', name: 'Empilhadeiras' },
-  { id: 'PASSEIO', name: 'Passeio' },
-  { id: 'MOTOS', name: 'Motos' },
-  { id: 'GERADORES', name: 'Geradores' },
+  { id: 'LOGISTICO', name: 'Logístico', order: 0 },
+  { id: 'EMPILHADEIRAS', name: 'Empilhadeiras', order: 1 },
+  { id: 'PASSEIO', name: 'Passeio', order: 2 },
+  { id: 'MOTOS', name: 'Motos', order: 3 },
+  { id: 'GERADORES', name: 'Geradores', order: 4 },
 ];
 
 export const VEHICLES: Vehicle[] = [

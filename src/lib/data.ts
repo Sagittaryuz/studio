@@ -1,5 +1,5 @@
 
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { addMonths, differenceInDays, parseISO } from 'date-fns';
 import type {
   Category,
@@ -63,11 +63,13 @@ function getServiceStatus(
 export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
   const { firestore: db } = initializeFirebaseAdmin();
   
+  const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
+
   const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap] = await Promise.all([
     getDocs(collection(db, 'vehicles')),
     getDocs(collection(db, 'services')),
     getDocs(collection(db, 'vehicleServices')),
-    getDocs(collection(db, 'categories')),
+    getDocs(categoriesQuery),
   ]);
 
   const allVehicles: Vehicle[] = vehiclesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Vehicle));

@@ -58,6 +58,7 @@ export type CategoryID = 'LOGISTICO' | 'EMPILHADEIRAS' | 'PASSEIO' | 'MOTOS' | '
 export interface Category {
   id: CategoryID;
   name: string;
+  order: number;
 }
 
 export interface VehicleWithStatus extends Vehicle {
