@@ -18,17 +18,15 @@ import { DatabaseSeeder } from '@/components/dev/database-seeder';
 export function AppHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center gap-4 border-b bg-background px-4 sm:px-6">
-      <Link href="/" className="flex items-center gap-2">
+      {children}
+      <div className="hidden md:flex items-center gap-2">
         <JCIcon className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl">
           Plano de Manutenção de Frota
         </h1>
-      </Link>
+      </div>
       <div className="ml-auto flex items-center gap-4">
         <DatabaseSeeder />
-        <Button variant="ghost" asChild>
-            <Link href="/services">Gerenciar Serviços</Link>
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

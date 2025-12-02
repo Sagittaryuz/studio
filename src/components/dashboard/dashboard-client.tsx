@@ -65,7 +65,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
 
   return (
     <>
-    <div className="flex h-screen w-full flex-col">
+    <div className="flex h-[calc(100vh-3.5rem)] w-full flex-col">
       <main className="flex flex-1 flex-col overflow-hidden p-2 md:p-4">
         
         <Tabs value={selectedCategory} onValueChange={handleSelectCategory} className="mt-1">

@@ -5,6 +5,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { AppHeader } from '@/components/layout/app-header';
 import { AuthHandler } from '@/components/dev/auth-handler';
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { MainSidebar } from '@/components/layout/main-sidebar';
 
 
 export const metadata: Metadata = {
@@ -35,11 +37,18 @@ export default function RootLayout({
       >
         <FirebaseClientProvider>
             <AuthHandler>
-                <AppHeader />
-                <main>
-                    {children}
-                </main>
-                <Toaster />
+              <SidebarProvider>
+                <MainSidebar />
+                <SidebarInset>
+                    <AppHeader>
+                      <SidebarTrigger />
+                    </AppHeader>
+                    <main>
+                        {children}
+                    </main>
+                    <Toaster />
+                </SidebarInset>
+              </SidebarProvider>
             </AuthHandler>
         </FirebaseClientProvider>
       </body>

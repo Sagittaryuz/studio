@@ -1,12 +1,17 @@
 import { getDashboardData } from '@/lib/data';
-import { DashboardClient } from '@/components/dashboard/dashboard-client';
+import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 
 export default async function DashboardPage() {
-  // On a real app, you'd fetch this from your database (e.g., Firestore)
-  // and pass the currently logged-in user's role.
   const initialData = await getDashboardData('admin');
 
   return (
-      <DashboardClient initialData={initialData} />
+      <div className="p-4 md:p-6 lg:p-8">
+        <h1 className="text-2xl font-bold mb-4">Dashboard de Manutenções</h1>
+        <DashboardCalendar 
+          vehicles={initialData.vehicles}
+          services={initialData.services}
+          vehicleServices={initialData.vehicleServices}
+        />
+      </div>
   );
 }

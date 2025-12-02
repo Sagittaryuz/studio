@@ -25,7 +25,9 @@ import {
   CalendarIcon,
   Trash2, 
   Edit,
-  GripVertical
+  GripVertical,
+  LayoutDashboard,
+  Wrench,
 } from 'lucide-react';
 
 export {
@@ -55,5 +57,7 @@ export {
   CalendarIcon,
   Trash2, 
   Edit,
-  GripVertical
+  GripVertical,
+  LayoutDashboard,
+  Wrench,
 };
