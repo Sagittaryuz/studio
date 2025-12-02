@@ -1,7 +1,6 @@
 import { getDashboardData } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AppHeader } from '@/components/layout/app-header';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -25,8 +24,6 @@ export default async function ServiceHistoryPage({ params }: { params: { vehicle
   }
 
   return (
-    <>
-        <AppHeader />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
             <div className="max-w-4xl mx-auto">
                  <Button asChild variant="outline" className="mb-4">
@@ -81,6 +78,5 @@ export default async function ServiceHistoryPage({ params }: { params: { vehicle
                 </Card>
             </div>
         </main>
-    </>
   );
 }

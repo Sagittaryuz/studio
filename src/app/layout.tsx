@@ -3,9 +3,8 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
-import { AppHeader } from '@/components/layout/app-header';
 import { AuthHandler } from '@/components/dev/auth-handler';
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { MainSidebar } from '@/components/layout/main-sidebar';
 
 
@@ -40,9 +39,9 @@ export default function RootLayout({
               <SidebarProvider>
                 <MainSidebar />
                 <SidebarInset>
-                    <AppHeader>
-                      <SidebarTrigger />
-                    </AppHeader>
+                    <div className="flex h-12 items-center border-b px-4 sm:px-6">
+                        <SidebarTrigger />
+                    </div>
                     <main>
                         {children}
                     </main>
