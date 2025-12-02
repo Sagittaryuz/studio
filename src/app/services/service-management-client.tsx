@@ -4,10 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import dynamic from 'next/dynamic';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,17 +18,21 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Edit, Trash2, Loader2, Plus, GripVertical } from 'lucide-react';
+import { PlusCircle, Loader2, Plus } from 'lucide-react';
 import type { Service, Category, CategoryID } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { deleteService, addOrUpdateService, updateServiceOrder, addOrUpdateCategory, updateCategoryOrder, deleteCategory } from '@/app/actions';
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
+import { deleteService, addOrUpdateService, addOrUpdateCategory, deleteCategory } from '@/app/actions';
 import { cn } from '@/lib/utils';
+import type { DragEndEvent } from '@dnd-kit/core';
+
+// Carregamento dinâmico dos componentes de ordenação para evitar erros de hidratação
+const SortableCategoryList = dynamic(() => import('./SortableCategoryList').then(mod => mod.SortableCategoryList), { ssr: false });
+const SortableServiceList = dynamic(() => import('./SortableServiceList').then(mod => mod.SortableServiceList), { ssr: false });
 
 
 const serviceFormSchema = z.object({
@@ -53,90 +55,10 @@ interface ServiceManagementClientProps {
   categories: Category[];
 }
 
-interface SortableRowProps {
-    service: Service;
-    onEdit: (service: Service) => void;
-    onDelete: (serviceId: string) => void;
-    isDeleting: boolean;
-}
-
-const SortableRow = ({ service, onEdit, onDelete, isDeleting }: SortableRowProps) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-    } = useSortable({ id: service.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
-    return (
-        <TableRow ref={setNodeRef} style={style} {...attributes}>
-            <TableCell className="font-medium cursor-grab" {...listeners}>
-                <GripVertical className="inline-block mr-2 h-4 w-4 text-muted-foreground" />
-                {service.name}
-            </TableCell>
-            <TableCell className="text-right">
-                <div className='flex gap-2 justify-end'>
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(service)} disabled={isDeleting}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(service.id)} disabled={isDeleting}>
-                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                    </Button>
-                </div>
-            </TableCell>
-        </TableRow>
-    );
-};
-
-interface SortableCategoryTabProps {
-    category: Category;
-    onEdit: (category: Category) => void;
-    onDelete: (category: Category) => void;
-}
-
-const SortableCategoryTab = ({ category, onEdit, onDelete }: SortableCategoryTabProps) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-    } = useSortable({ id: category.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-    
-    return (
-         <div ref={setNodeRef} style={style} className='relative group' {...attributes} {...listeners}>
-            <TabsTrigger value={category.id} className='w-full pr-12'>
-                {category.name}
-            </TabsTrigger>
-             <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5 bg-muted p-0.5 rounded-md">
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); onEdit(category);}}>
-                    <Edit className="h-3 w-3" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(category); }}>
-                    <Trash2 className="h-3 w-3" />
-                </Button>
-            </div>
-        </div>
-    )
-}
-
-
 export function ServiceManagementClient({ initialServices, categories: initialCategories }: ServiceManagementClientProps) {
   const [services, setServices] = useState<Service[]>(initialServices);
-  const [categories, setCategories] = useState<Category[]>(initialCategories.sort((a,b) => a.order - b.order));
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   // Service Dialog
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -149,13 +71,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
   
   const [activeCategory, setActiveCategory] = useState<CategoryID>(categories[0]?.id);
   const { toast } = useToast();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   const serviceForm = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema),
@@ -187,6 +102,8 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
             setServices(services.map(s => s.id === editingService.id ? { ...s, ...values, id: s.id, categoryId: values.categoryId as CategoryID, order: s.order } : s));
             toast({ title: "Serviço Atualizado", description: `O serviço "${values.name}" foi atualizado.` });
         } else {
+            // Em um app real, o novo serviço deveria ser retornado pela action para ter o ID correto
+            // Por simplicidade, vamos adicionar um temporário e revalidar
             const tempNewService = { ...serviceData, id: `s${Date.now()}`, categoryId: values.categoryId as CategoryID};
             setServices([...services, tempNewService]);
             toast({ title: "Serviço Adicionado", description: `O serviço "${values.name}" foi adicionado.` });
@@ -294,7 +211,6 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
   }
 
   const handleDeleteService = async (serviceId: string) => {
-    setDeletingId(serviceId);
     try {
         await deleteService(serviceId);
         setServices(currentServices => currentServices.filter(s => s.id !== serviceId));
@@ -302,56 +218,8 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     } catch (error) {
         toast({ title: "Erro ao remover serviço", variant: 'destructive' });
         console.error(error);
-    } finally {
-        setDeletingId(null);
     }
   };
-  
-  const handleServiceDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-        const oldIndex = services.findIndex(item => item.id === active.id);
-        const newIndex = services.findIndex(item => item.id === over.id);
-        
-        const reorderedServices = arrayMove(services, oldIndex, newIndex);
-        
-        const updatedServicesWithOrder = reorderedServices.map((service, index) => ({
-            ...service,
-            order: index,
-        }));
-        
-        setServices(updatedServicesWithOrder);
-        
-        try {
-            await updateServiceOrder(updatedServicesWithOrder);
-        } catch (error) {
-            console.error(error);
-            toast({ title: 'Erro ao reordenar serviços', variant: 'destructive' });
-            setServices(services); // Revert on failure
-        }
-    }
-  };
-  
-  const handleCategoryDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-        const oldIndex = categories.findIndex(c => c.id === active.id);
-        const newIndex = categories.findIndex(c => c.id === over.id);
-        
-        const reorderedCategories = arrayMove(categories, oldIndex, newIndex);
-        setCategories(reorderedCategories);
-        
-        try {
-            await updateCategoryOrder(reorderedCategories);
-        } catch(error) {
-            console.error(error);
-            toast({ title: 'Erro ao reordenar categorias', variant: 'destructive' });
-            setCategories(categories); // Revert
-        }
-    }
-  }
-  
-  const servicesForCategory = services.filter(s => s.categoryId === activeCategory).sort((a,b) => a.order - b.order);
 
   return (
     <Card>
@@ -362,20 +230,14 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
       <CardContent>
         <Tabs value={activeCategory} onValueChange={(value) => setActiveCategory(value as CategoryID)} className='flex flex-col md:flex-row gap-6'>
           <div className='flex flex-col gap-2 border-r-0 md:border-r pr-0 md:pr-6 w-full md:w-64'>
-             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
-                <SortableContext items={categories.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                    <TabsList className="flex-col h-auto items-stretch gap-1">
-                        {categories.map(cat => (
-                            <SortableCategoryTab 
-                                key={cat.id} 
-                                category={cat}
-                                onEdit={handleEditCategory}
-                                onDelete={setDeletingCategory}
-                             />
-                        ))}
-                    </TabsList>
-                </SortableContext>
-             </DndContext>
+             <TabsList className="flex-col h-auto items-stretch gap-1">
+                <SortableCategoryList
+                    categories={categories}
+                    setCategories={setCategories}
+                    onEdit={handleEditCategory}
+                    onDelete={setDeletingCategory}
+                />
+             </TabsList>
 
              <Button variant="outline" size="sm" onClick={handleAddNewCategory} className='mt-2'>
                 <Plus className="mr-2 h-4 w-4" />
@@ -391,35 +253,13 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
                     Novo Serviço em {cat.name}
                     </Button>
                 </div>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleServiceDragEnd}>
-                    <SortableContext items={servicesForCategory.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Serviço</TableHead>
-                                    <TableHead className="text-right w-24">Ações</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {servicesForCategory.length > 0 ? servicesForCategory.map(service => (
-                                    <SortableRow 
-                                        key={service.id} 
-                                        service={service} 
-                                        onEdit={handleEditService} 
-                                        onDelete={handleDeleteService}
-                                        isDeleting={deletingId === service.id}
-                                    />
-                                )) : (
-                                    <TableRow>
-                                        <TableCell colSpan={2} className="h-24 text-center text-muted-foreground">
-                                            Nenhum serviço nesta categoria.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </SortableContext>
-                </DndContext>
+                <SortableServiceList
+                    services={services}
+                    setServices={setServices}
+                    activeCategory={activeCategory}
+                    onEdit={handleEditService}
+                    onDelete={handleDeleteService}
+                />
                 </TabsContent>
             ))}
           </div>
@@ -514,5 +354,3 @@ export function ServiceManagementClient({ initialServices, categories: initialCa
     </Card>
   );
 }
-
-    
