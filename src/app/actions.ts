@@ -41,8 +41,8 @@ const editVehicleSchema = z.object({
 });
 
 
-const updateNotesSchema = z.object({
-  vehicleServiceId: z.string(),
+const updateVehicleNotesSchema = z.object({
+  vehicleId: z.string(),
   notes: z.string(),
 });
 
@@ -177,10 +177,10 @@ export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
 }
 
 /**
- * Updates the notes for a specific vehicle service record.
+ * Updates the notes for a specific vehicle.
  */
-export async function updateVehicleServiceNotes(vehicleServiceId: string, notes: string) {
-    const validation = updateNotesSchema.safeParse({ vehicleServiceId, notes });
+export async function updateVehicleNotes(vehicleId: string, notes: string) {
+    const validation = updateVehicleNotesSchema.safeParse({ vehicleId, notes });
 
     if(!validation.success) {
         console.error(validation.error);
@@ -188,7 +188,7 @@ export async function updateVehicleServiceNotes(vehicleServiceId: string, notes:
     }
 
     const { firestore } = initializeFirebaseAdmin();
-    const vsRef = doc(firestore, 'vehicleServices', vehicleServiceId);
+    const vsRef = doc(firestore, 'vehicles', vehicleId);
     await setDoc(vsRef, { notes }, { merge: true });
     
     revalidatePath('/');

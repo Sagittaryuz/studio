@@ -7,11 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { Plus } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { VehicleList } from './vehicle-list';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { VehicleDialog } from '../vehicle/add-vehicle-dialog';
+import { EditVehicleNotesDialog } from '../vehicle/edit-vehicle-notes-dialog';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -23,6 +24,8 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData.categories[0]?.id || '');
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithStatus | null>(null);
   const [isVehicleDialogOpen, setVehicleDialogOpen] = useState(false);
+  const [isNotesDialogOpen, setNotesDialogOpen] = useState(false);
+
 
   const vehiclesByCategory = useMemo(() => {
     const grouped: { [key: string]: VehicleWithStatus[] } = {};
@@ -112,7 +115,13 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
             />
             {selectedVehicle && (
               <div className='flex-shrink-0'>
-                <Label htmlFor='vehicle-notes'>Observações do Veículo</Label>
+                <div className='flex items-center justify-between'>
+                    <Label htmlFor='vehicle-notes'>Observações do Veículo</Label>
+                    <Button variant="ghost" size="sm" onClick={() => setNotesDialogOpen(true)}>
+                        <Edit className='mr-2 h-3 w-3' />
+                        Editar
+                    </Button>
+                </div>
                 <Textarea
                   id='vehicle-notes'
                   readOnly
@@ -131,6 +140,13 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
       categoryId={selectedCategory as CategoryID}
       vehicle={null}
     />
+    {selectedVehicle && (
+        <EditVehicleNotesDialog
+            isOpen={isNotesDialogOpen}
+            setIsOpen={setNotesDialogOpen}
+            vehicle={selectedVehicle}
+        />
+    )}
     </>
   );
 }

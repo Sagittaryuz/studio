@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { updateVehicleServiceNotes } from '@/app/actions';
+import { updateVehicleNotes } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import type { VehicleService } from '@/lib/types';
+import type { Vehicle } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -26,28 +26,28 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface EditNotesModalProps {
+interface EditVehicleNotesDialogProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  vehicleService: VehicleService;
+  vehicle: Vehicle;
 }
 
-export function EditNotesModal({ isOpen, setIsOpen, vehicleService }: EditNotesModalProps) {
+export function EditVehicleNotesDialog({ isOpen, setIsOpen, vehicle }: EditVehicleNotesDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      notes: vehicleService.notes || '',
+      notes: vehicle.notes || '',
     },
   });
   
   useEffect(() => {
     if(isOpen) {
-        form.reset({ notes: vehicleService.notes || '' });
+        form.reset({ notes: vehicle.notes || '' });
     }
-  }, [isOpen, vehicleService, form])
+  }, [isOpen, vehicle, form])
 
   const handleClose = () => {
     setIsOpen(false);
@@ -57,10 +57,10 @@ export function EditNotesModal({ isOpen, setIsOpen, vehicleService }: EditNotesM
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
     try {
-        await updateVehicleServiceNotes(vehicleService.id, values.notes || '');
+        await updateVehicleNotes(vehicle.id, values.notes || '');
         toast({
             title: 'Sucesso!',
-            description: `Observação atualizada.`,
+            description: `Observação do veículo ${vehicle.plate} atualizada.`,
         });
         handleClose();
     } catch (error) {
@@ -79,9 +79,9 @@ export function EditNotesModal({ isOpen, setIsOpen, vehicleService }: EditNotesM
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar Observação</DialogTitle>
+          <DialogTitle>Editar Observação do Veículo</DialogTitle>
           <DialogDescription>
-            Adicione ou edite a observação para este serviço.
+            Altere a observação para o veículo {vehicle.plate}.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -93,7 +93,7 @@ export function EditNotesModal({ isOpen, setIsOpen, vehicleService }: EditNotesM
                 <FormItem>
                   <FormLabel>Observação</FormLabel>
                   <FormControl>
-                    <Textarea {...field} rows={5} placeholder="Detalhes importantes, peças específicas, etc." />
+                    <Textarea {...field} rows={5} placeholder="Detalhes importantes sobre o veículo, histórico, etc." />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

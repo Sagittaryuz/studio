@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, PlusCircle, Monitor, FileText } from 'lucide-react';
+import { MoreVertical, PlusCircle, Monitor } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
-import { EditNotesModal } from '@/components/vehicle/edit-notes-modal';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import {
@@ -36,7 +35,6 @@ const statusClasses: Record<string, string> = {
 
 export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, userRole }: MaintenanceTableProps) {
   const [isAddSheetOpen, setAddSheetOpen] = useState(false);
-  const [isNotesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedServiceData, setSelectedServiceData] = useState<MergedServiceData | null>(null);
   const [localVehicleServices, setLocalVehicleServices] = useState<VehicleService[]>(vehicleServices);
   const { toast } = useToast();
@@ -48,11 +46,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
   const handleOpenAddSheet = (data: MergedServiceData) => {
     setSelectedServiceData(data);
     setAddSheetOpen(true);
-  };
-  
-  const handleOpenNotesModal = (data: MergedServiceData) => {
-    setSelectedServiceData(data);
-    setNotesModalOpen(true);
   };
   
   const canEdit = userRole === 'admin' || userRole === 'operator';
@@ -224,12 +217,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                                     Ver Histórico
                                 </Link>
                               </DropdownMenuItem>
-                              {canEdit && vehicleService && (
-                                <DropdownMenuItem onClick={() => handleOpenNotesModal(data)}>
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Editar Obs.
-                                </DropdownMenuItem>
-                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -256,13 +243,6 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
             serviceInfo={selectedServiceData.serviceInfo}
             vehicleService={selectedServiceData.vehicleService}
           />
-      )}
-      {canEdit && selectedServiceData?.vehicleService && (
-        <EditNotesModal
-            isOpen={isNotesModalOpen}
-            setIsOpen={setNotesModalOpen}
-            vehicleService={selectedServiceData.vehicleService}
-        />
       )}
     </>
   );
