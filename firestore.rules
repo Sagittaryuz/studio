@@ -4,24 +4,13 @@
  * ## Core Philosophy
  * This ruleset enforces a role-based access control model. There are two primary roles:
  * 1.  **Admin**: Can read and write all data across the application, including managing core data like vehicles, services, settings, and user profiles.
- * 2.  **Authenticated User**: Can read shared application data (vehicles, services, service logs) and manage data they are directly responsible for (e.g., vehicle service records).
- *
- * ## Data Structure
- * The data is organized into flat, top-level collections for simplicity and query performance:
- * - `/vehicles/{vehicleId}`: Stores fleet vehicle information.
- * - `/services/{serviceId}`: Stores predefined maintenance service types.
- * - `/vehicleServices/{vehicleServiceId}`: Logs maintenance performed on vehicles.
- * - `/users/{userId}`: Stores user profiles, including their role.
- * - `/settings/{settingsId}`: A singleton collection for global app configuration.
+ * 2.  **Authenticated User**: Can read shared application data and manage data they are directly responsible for (e.g., vehicle service records).
  *
  * ## Key Security Decisions
- * - **Admin Supremacy**: Users with the 'Admin' role in their `/users/{userId}` document have privileged access to create, update, and delete critical shared data.
- * - **Authenticated Read-All**: Any signed-in user can read from the `/vehicles`, `/services`, and `/vehicleServices` collections. This simplifies client-side data fetching for displaying fleet-wide information.
+ * - **Public Read for Core Data**: Core application data like vehicles, services, and categories are publicly readable by anyone (`allow read: if true;`). This is essential for Server-Side Rendering (SSR) where the server fetches data without an authenticated user. Write access remains strictly controlled.
+ * - **Admin Supremacy for Writes**: Users with the 'Admin' role in their `/users/{userId}` document have privileged access to create, update, and delete critical shared data. This check is performed via a `get()` call within the write rule itself to avoid circular dependencies.
  * - **User Data Privacy**: A user's own profile in `/users/{userId}` is only accessible by them or an admin. Listing all users is restricted to admins to prevent user enumeration.
- * - **Default Deny**: Access is denied by default. All permissions must be explicitly granted. Unauthenticated access is forbidden entirely.
- *
- * ## Denormalization for Authorization
- * The security model relies on the `role` field within each user's document at `/users/{userId}`. To determine if a user is an admin, a `get()` call is performed against their own user document. This is a secure and centralized way to manage permissions. All other authorization is based on document ownership (e.g., the `responsible` field in `vehicleServices`).
+ * - **Default Deny**: Access is denied by default. All permissions must be explicitly granted.
  *
  */
 rules_version = '2';
@@ -46,15 +35,7 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
-    /**
-     * Checks if the authenticated user has the 'Admin' role.
-     * This performs a single document read to the user's own profile.
-     */
-    function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
-    }
-
+    
     /**
      * Checks if the user is the owner of a VehicleService record.
      * Authorization is based on the 'responsible' field in the document data.
@@ -85,76 +66,71 @@ service cloud.firestore {
     function isResponsibleFieldImmutable() {
       return request.resource.data.responsible == resource.data.responsible;
     }
+    
+    /**
+     * Checks if the authenticated user has the 'Admin' role.
+     * This performs a single document read to the user's own profile.
+     * This should only be used inside a rule where isSignedIn() is already confirmed.
+     */
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+
 
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
 
     /**
-     * @description Controls access to vehicle data. All signed-in users can read, but only admins can write.
-     * @path /vehicles/{vehicleId}
-     * @allow (get) A signed-in user reads a specific vehicle's details.
-     * @deny (create) A non-admin user attempts to add a new vehicle.
-     * @principle Segregates read access from privileged write access using roles.
+     * @description Publicly readable vehicle data. Only admins can write.
      */
     match /vehicles/{vehicleId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow read: if true;
+      allow write: if isSignedIn() && isAdmin();
     }
 
     /**
-     * @description Controls access to service definitions. All signed-in users can read, but only admins can write.
-     * @path /services/{serviceId}
-     * @allow (list) A signed-in user fetches all available service types.
-     * @deny (update) A non-admin user attempts to change a service's default kilometers.
-     * @principle Segregates read access from privileged write access using roles.
+     * @description Publicly readable service definitions. Only admins can write.
      */
     match /services/{serviceId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow read: if true;
+      allow write: if isSignedIn() && isAdmin();
+    }
+    
+    /**
+     * @description Publicly readable category definitions. Only admins can write.
+     */
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isAdmin();
     }
 
     /**
-     * @description Controls access to vehicle service logs. Signed-in users can read all logs. Users can create logs for themselves.
-     *              Only the responsible user or an admin can modify or delete a log.
-     * @path /vehicleServices/{vehicleServiceId}
-     * @allow (create) A signed-in user creates a service log where they are the 'responsible' person.
-     * @deny (update) A user tries to update a service log for which another user is responsible.
-     * @principle Enforces document ownership for writes, with an admin override for management.
+     * @description Publicly readable vehicle service logs. Writes are restricted.
      */
     match /vehicleServices/{vehicleServiceId} {
-      allow get, list: if isSignedIn();
+      allow read: if true;
       allow create: if isSignedIn() && (isResponsible(request.resource.data) || isAdmin());
-      allow update: if resource != null && (isAdmin() || (isResponsible(resource.data) && isResponsibleFieldImmutable()));
-      allow delete: if resource != null && (isAdmin() || isResponsible(resource.data));
+      allow update: if isSignedIn() && resource != null && (isAdmin() || (isResponsible(resource.data) && isResponsibleFieldImmutable()));
+      allow delete: if isSignedIn() && resource != null && (isAdmin() || isResponsible(resource.data));
     }
 
     /**
-     * @description Controls access to user profiles. Users can manage their own profile. Admins can manage any profile.
-     * @path /users/{userId}
-     * @allow (update) A user updates their own phone number. `auth.uid` == `userId`.
-     * @deny (get) A user attempts to read another user's profile data.
-     * @deny (list) A non-admin user tries to list all users in the system.
-     * @principle Restricts access to a user's own data tree, with an admin override.
+     * @description User profiles. Read/write restricted to owner or admin. List restricted to admin.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if canCreateOwnUserDoc(userId);
-      allow update: if resource != null && (isOwner(userId) || isAdmin()) && isUserIdImmutable();
-      allow delete: if resource != null && (isOwner(userId) || isAdmin());
+      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow list: if isSignedIn() && isAdmin();
+      allow create: if canCreateOwnUserDoc(userId); // Allows a user to create their own doc
+      allow update: if isSignedIn() && resource != null && (isOwner(userId) || isAdmin()) && isUserIdImmutable();
+      allow delete: if isSignedIn() && resource != null && (isOwner(userId) || isAdmin());
     }
 
     /**
-     * @description Controls access to global application settings. Only admins can read or write these settings.
-     * @path /settings/{settingsId}
-     * @allow (get) An admin user reads the webhook configuration.
-     * @deny (update) A non-admin user attempts to change notification settings.
-     * @principle Restricts sensitive configuration data to privileged admin users only.
+     * @description Global app settings. Only accessible by admins.
      */
     match /settings/{settingsId} {
-      allow get, list: if isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow read, write: if isSignedIn() && isAdmin();
     }
   }
 }

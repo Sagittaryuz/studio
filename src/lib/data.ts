@@ -1,3 +1,4 @@
+
 import { collection, getDocs } from 'firebase/firestore';
 import { addMonths, differenceInDays, parseISO } from 'date-fns';
 import type {
@@ -12,7 +13,7 @@ import type {
   CategoryWithStatus,
   RawVehicleService,
 } from './types';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebaseAdmin } from '@/firebase/server-init';
 
 
 /**
@@ -60,7 +61,8 @@ function getServiceStatus(
  * Processes raw data from Firestore to add status and next service info.
  */
 export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
-  const { firestore: db } = initializeFirebase();
+  const { firestore: db } = initializeFirebaseAdmin();
+  
   const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap] = await Promise.all([
     getDocs(collection(db, 'vehicles')),
     getDocs(collection(db, 'services')),

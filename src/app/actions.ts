@@ -4,9 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { suggestMaintenanceSchedule as suggestMaintenanceScheduleFlow } from '@/ai/flows/suggest-maintenance-schedule';
 import type { SuggestMaintenanceScheduleInput, SuggestMaintenanceScheduleOutput } from '@/ai/flows/suggest-maintenance-schedule';
-import { getDashboardData } from '@/lib/data';
-import { doc, setDoc, deleteDoc, writeBatch, collection } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { doc, setDoc, deleteDoc, writeBatch, collection, query, where, getDocs } from 'firebase/firestore';
+import { initializeFirebaseAdmin } from '@/firebase/server-init';
 import type { Category, CategoryID, Service } from '@/lib/types';
 
 
@@ -81,7 +80,7 @@ export async function updateVehicleKm(vehicleId: string, currentKm: number) {
     throw new Error('Invalid input');
   }
 
-  const { firestore } = initializeFirebase();
+  const { firestore } = initializeFirebaseAdmin();
   const vehicleRef = doc(firestore, 'vehicles', vehicleId);
   await setDoc(vehicleRef, { currentKm }, { merge: true });
   
@@ -100,7 +99,7 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
         throw new Error('Invalid input for adding service.');
     }
     
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     
     // Find if a vehicleService for this vehicle and service already exists
     const vsQuery = query(
@@ -115,6 +114,7 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
         : doc(collection(firestore, 'vehicleServices'));
 
     await setDoc(vsDocRef, {
+        id: vsDocRef.id,
         ...data,
         lastDate: data.lastDate.toISOString(), // Store as ISO string
     }, { merge: true });
@@ -136,7 +136,7 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
         throw new Error('Invalid input for adding vehicle.');
     }
 
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const newVehicleRef = doc(collection(firestore, 'vehicles'));
 
     await setDoc(newVehicleRef, {
@@ -164,7 +164,7 @@ export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
         throw new Error('Invalid input for editing vehicle.');
     }
     
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const vehicleRef = doc(firestore, 'vehicles', data.id);
 
     await setDoc(vehicleRef, {
@@ -188,7 +188,7 @@ export async function updateVehicleServiceNotes(vehicleServiceId: string, notes:
         throw new Error('Invalid input for updating notes.');
     }
 
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const vsRef = doc(firestore, 'vehicleServices', vehicleServiceId);
     await setDoc(vsRef, { notes }, { merge: true });
     
@@ -207,7 +207,7 @@ export async function deleteService(serviceId: string) {
         throw new Error('Invalid input for deleting service.');
     }
     
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const batch = writeBatch(firestore);
 
     // 1. Delete the service document itself
@@ -238,7 +238,7 @@ export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>
         throw new Error('Invalid input for service.');
     }
 
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const serviceRef = data.id 
         ? doc(firestore, 'services', data.id)
         : doc(collection(firestore, 'services'));
@@ -260,7 +260,7 @@ export async function updateServiceOrder(orderedServices: Service[]) {
         throw new Error('Invalid input for updating service order.');
     }
     
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const batch = writeBatch(firestore);
 
     orderedServices.forEach(service => {
@@ -292,7 +292,7 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
         name: data.name,
     };
     
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseAdmin();
     const categoryRef = doc(firestore, 'categories', newCategory.id);
     await setDoc(categoryRef, newCategory);
 
