@@ -1,43 +1,90 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useAuth, initiateAnonymousSignIn } from '@/firebase';
-import { useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import type { User } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { useAuth, useFirestore, useUser } from '@/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useRouter, usePathname } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import type { AppUser } from '@/lib/types';
+
+
+const protectedRoutes = ['/dashboard', '/plan', '/services', '/reports', '/profile', '/checklist', '/authorizations', '/users'];
+const authRoutes = ['/login', '/signup', '/forgot-password'];
+
+const roleRedirects: Record<string, string> = {
+    ADMIN: '/dashboard',
+    MASTER: '/dashboard',
+    DRIVER: '/checklist',
+};
 
 export function AuthHandler({ children }: { children: React.ReactNode }) {
-    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
     const db = useFirestore();
-  
-    useEffect(() => {
-        if (!auth || !db) return;
+    const router = useRouter();
+    const pathname = usePathname();
+    const [appUser, setAppUser] = useState<AppUser | null>(null);
+    const [isAppUserLoading, setAppUserLoading] = useState(true);
 
-        const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
-            if (user) {
-                // User is signed in. Create their user document in Firestore.
+    useEffect(() => {
+        if (isUserLoading) return;
+
+        const handleUser = async () => {
+            if (user && db) {
+                // User is logged in, fetch their profile from Firestore
                 const userRef = doc(db, 'users', user.uid);
-                // Use setDoc with merge: true to create the document if it doesn't exist,
-                // or update it without overwriting if it does.
-                try {
-                    await setDoc(userRef, {
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data() as AppUser;
+                    setAppUser(userData);
+
+                    const targetPath = roleRedirects[userData.role] || '/login';
+                    
+                    if (authRoutes.includes(pathname)) {
+                         router.replace(targetPath);
+                    } else if (protectedRoutes.includes(pathname)) {
+                        // User is in a protected route, check if they have access
+                        if (userData.role === 'DRIVER' && !['/checklist', '/profile'].includes(pathname)) {
+                           router.replace('/checklist');
+                        }
+                    }
+
+                } else {
+                    // This case is for first-time sign-ups or inconsistencies.
+                    // We'll create a basic profile.
+                    const newUser: AppUser = {
                         id: user.uid,
-                        email: user.email || 'anonymous',
-                        name: user.displayName || 'Anonymous User',
-                        role: 'admin' // Assign a default role
-                    }, { merge: true });
-                } catch (error) {
-                    console.error("Error creating user document:", error);
+                        email: user.email || 'unknown',
+                        name: user.displayName || 'New User',
+                        role: user.email === 'cleriston.sousa@jcruzeiro.com' ? 'ADMIN' : 'DRIVER', // Default role
+                        createdAt: new Date().toISOString(),
+                    }
+                    await setDoc(userRef, newUser);
+                    setAppUser(newUser);
+                    router.replace(roleRedirects[newUser.role] || '/login');
                 }
             } else {
-                // User is signed out. Initiate anonymous sign-in.
-                initiateAnonymousSignIn(auth);
+                // User is not logged in
+                setAppUser(null);
+                if (protectedRoutes.includes(pathname)) {
+                    router.replace('/login');
+                }
             }
-        });
+            setAppUserLoading(false);
+        };
 
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-    }, [auth, db]);
+        handleUser();
 
+    }, [user, isUserLoading, db, router, pathname]);
+
+    if (isUserLoading || isAppUserLoading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // Pass the appUser to children if needed, or just render children
     return <>{children}</>;
 }

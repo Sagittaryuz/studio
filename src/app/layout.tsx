@@ -4,9 +4,6 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { AuthHandler } from '@/components/dev/auth-handler';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { MainSidebar } from '@/components/layout/main-sidebar';
-
 
 export const metadata: Metadata = {
   title: 'Plano de Manutenção de Frota',
@@ -36,16 +33,9 @@ export default function RootLayout({
       >
         <FirebaseClientProvider>
             <AuthHandler>
-              <SidebarProvider>
-                <MainSidebar />
-                <SidebarInset>
-                    <main>
-                        {children}
-                    </main>
-                    <Toaster />
-                </SidebarInset>
-              </SidebarProvider>
+              {children}
             </AuthHandler>
+            <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>

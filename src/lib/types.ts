@@ -1,4 +1,15 @@
-export type UserRole = 'admin' | 'operator' | 'read-only';
+export type UserRole = 'ADMIN' | 'MASTER' | 'DRIVER';
+
+export interface AppUser {
+  id: string; // Firebase Auth UID
+  role: UserRole;
+  name: string;
+  email: string;
+  phone?: string;
+  photoUrl?: string;
+  createdAt: string;
+}
+
 
 export interface Vehicle {
   id: string;
@@ -109,6 +120,7 @@ export interface DashboardData {
   categories: CategoryWithStatus[];
   correctiveServices: CorrectiveServiceRecord[];
   userRole: UserRole;
+  appUsers: AppUser[];
 }
 
 // Type for the combined data used in the new maintenance table
