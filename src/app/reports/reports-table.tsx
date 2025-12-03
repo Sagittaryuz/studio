@@ -3,7 +3,7 @@ import type { Vehicle, Category, CorrectiveServiceRecord, VehicleService } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 
-type CombinedRecord = (CorrectiveServiceRecord & { type: 'Corretiva', serviceName: string }) | (VehicleService & { type: 'Preventiva', serviceName: string });
+type CombinedRecord = (Omit<CorrectiveServiceRecord, 'date'> & { type: 'Corretiva', serviceName: string, date: Date }) | (Omit<VehicleService, 'lastDate'> & { type: 'Preventiva', serviceName: string, date: Date });
 
 interface ReportsTableProps {
   data: CombinedRecord[];

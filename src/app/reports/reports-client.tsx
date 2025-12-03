@@ -20,7 +20,7 @@ interface ReportsClientProps {
     initialData: DashboardData;
 }
 
-type CombinedRecord = (CorrectiveServiceRecord & { type: 'Corretiva', serviceName: string }) | (VehicleService & { type: 'Preventiva', serviceName: string });
+type CombinedRecord = (Omit<CorrectiveServiceRecord, 'date'> & { type: 'Corretiva', serviceName: string, date: Date }) | (Omit<VehicleService, 'lastDate'> & { type: 'Preventiva', serviceName: string, date: Date });
 
 
 export function ReportsClient({ initialData }: ReportsClientProps) {
@@ -60,7 +60,7 @@ export function ReportsClient({ initialData }: ReportsClientProps) {
                 .filter(vs => vs.lastDate && isWithinInterval(vs.lastDate, interval))
                 .map(vs => {
                     const service = services.find(s => s.id === vs.serviceId);
-                    return { ...vs, type: 'Preventiva' as const, serviceName: service?.name || 'N/A' };
+                    return { ...vs, type: 'Preventiva' as const, serviceName: service?.name || 'N/A', date: vs.lastDate };
                 });
             combined.push(...preventive);
         }
@@ -156,11 +156,11 @@ export function ReportsClient({ initialData }: ReportsClientProps) {
                                     {date?.from ? (
                                     date.to ? (
                                         <>
-                                        {format(date.from, "LLL dd, y")} -{" "}
-                                        {format(date.to, "LLL dd, y")}
+                                        {format(date.from, "LLL dd, y", { locale: ptBR })} -{" "}
+                                        {format(date.to, "LLL dd, y", { locale: ptBR })}
                                         </>
                                     ) : (
-                                        format(date.from, "LLL dd, y")
+                                        format(date.from, "LLL dd, y", { locale: ptBR })
                                     )
                                     ) : (
                                     <span>Escolha uma data</span>
