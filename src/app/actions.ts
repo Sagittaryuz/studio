@@ -74,7 +74,7 @@ const categoryFormSchema = z.object({
 });
 
 const deleteCategorySchema = z.object({
-  categoryId: zstring(),
+  categoryId: z.string(),
 });
 
 
