@@ -1,0 +1,399 @@
+{
+  "entities": {
+    "Vehicle": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Vehicle",
+      "type": "object",
+      "description": "Represents a vehicle in the fleet.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Vehicle entity."
+        },
+        "plate": {
+          "type": "string",
+          "description": "The vehicle's license plate number."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the vehicle (e.g., LOGISTICO, EMPILHADEIRAS)."
+        },
+        "currentKm": {
+          "type": "number",
+          "description": "The current kilometer reading of the vehicle."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the vehicle is currently active in the fleet."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "URL of the vehicle's photo.",
+          "format": "uri"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or observations about the vehicle."
+        }
+      },
+      "required": [
+        "id",
+        "plate",
+        "category",
+        "currentKm",
+        "active"
+      ]
+    },
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
+      "type": "object",
+      "description": "Represents a type of maintenance service.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Service entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the service (e.g., ÓLEO DO MOTOR)."
+        },
+        "defaultMonths": {
+          "type": "number",
+          "description": "The default periodicity of the service in months."
+        },
+        "defaultKm": {
+          "type": "number",
+          "description": "The default periodicity of the service in kilometers."
+        },
+        "defaultSupplier": {
+          "type": "string",
+          "description": "The default supplier for the service."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "defaultMonths",
+        "defaultKm",
+        "defaultSupplier"
+      ]
+    },
+    "VehicleService": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VehicleService",
+      "type": "object",
+      "description": "Represents a specific instance of a service performed on a vehicle.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the VehicleService entity."
+        },
+        "vehicleId": {
+          "type": "string",
+          "description": "Reference to Vehicle. (Relationship: Vehicle 1:N VehicleService)"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Reference to Service. (Relationship: Service 1:N VehicleService)"
+        },
+        "lastDate": {
+          "type": "string",
+          "description": "The date the service was last performed.",
+          "format": "date-time"
+        },
+        "lastKm": {
+          "type": "number",
+          "description": "The kilometer reading when the service was last performed."
+        },
+        "supplier": {
+          "type": "string",
+          "description": "The supplier who performed the service."
+        },
+        "responsible": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N VehicleService) The user responsible for the service."
+        },
+        "nextDate": {
+          "type": "string",
+          "description": "The calculated next date for the service to be performed.",
+          "format": "date-time"
+        },
+        "nextKm": {
+          "type": "number",
+          "description": "The calculated next kilometer reading for the service to be performed."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the service (OK, ALERTA, VENCIDO)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about the service."
+        },
+        "attachments": {
+          "type": "array",
+          "description": "List of URLs for attachments related to the service.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the vehicle service was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of when the vehicle service was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "vehicleId",
+        "serviceId",
+        "lastDate",
+        "lastKm",
+        "supplier",
+        "responsible",
+        "nextDate",
+        "nextKm",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CorrectiveServiceRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CorrectiveServiceRecord",
+      "type": "object",
+      "description": "Represents a record of a corrective maintenance (repair) performed on a vehicle.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the corrective service record."
+        },
+        "vehicleId": {
+          "type": "string",
+          "description": "Reference to the Vehicle that was serviced."
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "The name of the corrective service performed (e.g., Pintura, Troca de Pneu)."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date the corrective service was performed.",
+          "format": "date-time"
+        },
+        "cost": {
+          "type": "number",
+          "description": "The total cost of the corrective service."
+        },
+        "supplier": {
+          "type": "string",
+          "description": "The supplier who performed the corrective service."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or details about the repair."
+        },
+        "attachments": {
+          "type": "array",
+          "description": "List of URLs for attachments (invoices, photos) related to the repair.",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the record was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "vehicleId",
+        "serviceName",
+        "date",
+        "cost",
+        "supplier",
+        "createdAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity. This corresponds to the Firebase Auth UID."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user (e.g., Admin, Operator, Read-only)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The phone number of the user."
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "name",
+        "email"
+      ]
+    },
+    "Setting": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Setting",
+      "type": "object",
+      "description": "Represents application-wide settings, specifically for notifications.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Settings entity.  There should only be one of these documents."
+        },
+        "alertDays": {
+          "type": "number",
+          "description": "The number of days before a service is due to trigger an alert."
+        },
+        "alertKmDelta": {
+          "type": "number",
+          "description": "The kilometer range before a service is due to trigger an alert."
+        },
+        "webhookWhatsApp": {
+          "type": "string",
+          "description": "The webhook URL for sending WhatsApp notifications.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "alertDays",
+        "alertKmDelta"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/vehicles/{vehicleId}",
+        "definition": {
+          "entityName": "Vehicle",
+          "schema": {
+            "$ref": "#/backend/entities/Vehicle"
+          },
+          "description": "Stores vehicle information. Accessible to all authenticated users for reading. Only admins can create, update, or delete vehicles.",
+          "params": [
+            {
+              "name": "vehicleId",
+              "description": "The unique identifier of the vehicle."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores types of services. Accessible to all authenticated users for reading. Only admins can create, update, or delete services.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "The unique identifier of the service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/vehicleServices/{vehicleServiceId}",
+        "definition": {
+          "entityName": "VehicleService",
+          "schema": {
+            "$ref": "#/backend/entities/VehicleService"
+          },
+          "description": "Stores specific instances of services performed on vehicles. Includes denormalized 'responsibleUserRole' for authorization independence.",
+          "params": [
+            {
+              "name": "vehicleServiceId",
+              "description": "The unique identifier of the vehicle service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/correctiveServiceRecords/{recordId}",
+        "definition": {
+          "entityName": "CorrectiveServiceRecord",
+          "schema": {
+            "$ref": "#/backend/entities/CorrectiveServiceRecord"
+          },
+          "description": "Stores records of corrective maintenance (repairs) performed on vehicles.",
+          "params": [
+            {
+              "name": "recordId",
+              "description": "The unique identifier of the corrective service record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Accessible only to the user themselves and admins.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user (Firebase Auth UID)."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/settings/{settingsId}",
+        "definition": {
+          "entityName": "Setting",
+          "schema": {
+            "$ref": "#/backend/entities/Setting"
+          },
+          "description": "Stores application settings. Only accessible to admins. There should only be ONE settings document.",
+          "params": [
+            {
+              "name": "settingsId",
+              "description": "The unique identifier of the settings document (should be a constant value)."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to provide a clear, secure, and scalable data model for the JC Fleet Control application, adhering to the principles of Authorization Independence, Structural Segregation, and Access Modeling. This design facilitates simple, robust, and easily debuggable security rules.\n\nAuthorization Independence is achieved through denormalization. Specifically, the `VehicleService` documents will include a denormalized copy of the `User.role` who is the `responsible` for the service. This eliminates the need for `get()` calls in security rules to verify user roles, enabling atomic operations.\n\nStructural Segregation is implemented by separating data with different access requirements into distinct collections. User profiles and global settings are stored in their own collections (`/users` and `/settings`), separate from vehicle and service data.\n\nAccess Modeling is standardized with path-based ownership for user-related data (e.g., `/users/{userId}`) and membership maps where applicable.\n\nQAPs (Rules are not Filters) are supported by the data structure. The segregation of data based on ownership and role allows for secure list operations. For example, listing vehicle services is secured by checking the responsible user's ID in the `VehicleService` document.\n\nSpecifically, the following denormalization strategy is employed:\n\n*   `VehicleService`: Includes the `responsibleUserRole` field, which is a copy of the `User.role` field for the user who is responsible for the service. This eliminates the need to perform a `get()` operation to retrieve the user's role when enforcing security rules on `VehicleService` documents. This is *critical* for maintaining authorization independence.\n"
+  }
+}

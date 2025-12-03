@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { doc, setDoc, deleteDoc, writeBatch, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, writeBatch, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { initializeFirebaseAdmin } from '@/firebase/server-init';
 import type { Category, CategoryID, Service } from '@/lib/types';
 
@@ -25,6 +25,17 @@ const addServiceSchema = z.object({
     km: z.number().optional(),
     months: z.number().optional(),
 });
+
+const addCorrectiveServiceSchema = z.object({
+  vehicleId: z.string(),
+  serviceName: z.string().min(1, "O nome do serviço é obrigatório."),
+  date: z.date(),
+  cost: z.coerce.number().min(0, "O custo não pode ser negativo."),
+  supplier: z.string().min(1, "O fornecedor é obrigatório."),
+  notes: z.string().optional(),
+  attachments: z.array(z.string()).optional(),
+});
+
 
 const addVehicleSchema = z.object({
     plate: z.string().min(3, 'Placa inválida.'),
@@ -63,7 +74,7 @@ const categoryFormSchema = z.object({
 });
 
 const deleteCategorySchema = z.object({
-  categoryId: z.string(),
+  categoryId: zstring(),
 });
 
 
@@ -85,6 +96,7 @@ export async function updateVehicleKm(vehicleId: string, currentKm: number) {
   
   revalidatePath('/');
   revalidatePath('/services');
+  revalidatePath('/plan');
 }
 
 /**
@@ -122,7 +134,31 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
     revalidatePath('/');
     revalidatePath(`/history/${data.vehicleId}/${data.serviceId}`);
     revalidatePath('/services');
+    revalidatePath('/plan');
 }
+
+/**
+ * Adds a new corrective maintenance record for a vehicle.
+ */
+export async function addCorrectiveService(data: z.infer<typeof addCorrectiveServiceSchema>) {
+    const validation = addCorrectiveServiceSchema.safeParse(data);
+    if (!validation.success) {
+        console.error(validation.error);
+        throw new Error('Invalid input for adding corrective service.');
+    }
+
+    const { firestore } = initializeFirebaseAdmin();
+    const newRecordRef = collection(firestore, 'correctiveServiceRecords');
+
+    await addDoc(newRecordRef, {
+        ...data,
+        date: data.date.toISOString(),
+        createdAt: new Date().toISOString(),
+    });
+
+    revalidatePath('/plan');
+}
+
 
 /**
  * Adds a new vehicle to the fleet.
@@ -150,6 +186,7 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
 
     revalidatePath('/');
     revalidatePath('/services');
+    revalidatePath('/plan');
 }
 
 /**
@@ -174,6 +211,7 @@ export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
 
     revalidatePath('/');
     revalidatePath('/services');
+    revalidatePath('/plan');
 }
 
 /**
@@ -193,6 +231,7 @@ export async function updateVehicleNotes(vehicleId: string, notes: string) {
     
     revalidatePath('/');
     revalidatePath('/services');
+    revalidatePath('/plan');
 }
 
 /**
@@ -224,6 +263,7 @@ export async function deleteService(serviceId: string) {
 
     revalidatePath('/');
     revalidatePath('/services');
+    revalidatePath('/plan');
 }
 
 /**
@@ -249,6 +289,7 @@ export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>
 
     revalidatePath('/services');
     revalidatePath('/');
+    revalidatePath('/plan');
 }
 
 /**
@@ -271,6 +312,7 @@ export async function updateServiceOrder(orderedServices: Service[]) {
 
     revalidatePath('/services');
     revalidatePath('/');
+    revalidatePath('/plan');
 }
 
 /**
@@ -313,6 +355,7 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
     
     revalidatePath('/services');
     revalidatePath('/');
+    revalidatePath('/plan');
 
     // Return the full category object so the client can update its state
     const q = query(collection(firestore, 'categories'), where('name', '==', data.name));
@@ -345,6 +388,7 @@ export async function updateCategoryOrder(orderedCategories: Category[]) {
 
     revalidatePath('/services');
     revalidatePath('/');
+    revalidatePath('/plan');
 }
 
 /**
@@ -392,6 +436,7 @@ export async function deleteCategory(categoryId: string) {
 
     revalidatePath('/');
     revalidatePath('/services');
+    revalidatePath('/plan');
 }
 
 

@@ -53,6 +53,31 @@ export interface VehicleService {
   km?: number;
 }
 
+export interface RawCorrectiveServiceRecord {
+    id: string;
+    vehicleId: string;
+    serviceName: string;
+    date: string; // ISO date string
+    cost: number;
+    supplier: string;
+    notes?: string;
+    attachments?: string[];
+    createdAt: string; // ISO date string
+}
+
+export interface CorrectiveServiceRecord {
+    id: string;
+    vehicleId: string;
+    serviceName: string;
+    date: Date;
+    cost: number;
+    supplier: string;
+    notes?: string;
+    attachments?: string[];
+    createdAt: Date;
+}
+
+
 export type CategoryID = 'LOGISTICO' | 'EMPILHADEIRAS' | 'PASSEIO' | 'MOTOS' | 'GERADORES';
 
 export interface Category {
@@ -76,6 +101,7 @@ export interface DashboardData {
   services: Service[];
   vehicleServices: VehicleService[];
   categories: CategoryWithStatus[];
+  correctiveServices: CorrectiveServiceRecord[];
   userRole: UserRole;
 }
 

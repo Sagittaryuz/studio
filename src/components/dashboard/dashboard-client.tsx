@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService, CategoryID } from '@/lib/types';
+import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService, CategoryID, CorrectiveServiceRecord } from '@/lib/types';
 import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +46,21 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
     });
     return grouped;
   }, [initialData.services, initialData.categories]);
+
+  const correctiveServicesByVehicle = useMemo(() => {
+    const grouped: { [key: string]: CorrectiveServiceRecord[] } = {};
+    initialData.correctiveServices.forEach(cs => {
+        if (!grouped[cs.vehicleId]) {
+            grouped[cs.vehicleId] = [];
+        }
+        grouped[cs.vehicleId].push(cs);
+    });
+    // Sort each vehicle's records by date, descending
+    for (const vehicleId in grouped) {
+        grouped[vehicleId].sort((a, b) => b.date.getTime() - a.date.getTime());
+    }
+    return grouped;
+  }, [initialData.correctiveServices]);
 
 
   // Effect to select vehicle from URL or first in category
@@ -133,6 +148,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
                 vehicle={selectedVehicle}
                 servicesForCategory={servicesByCategory[selectedCategory] || []}
                 vehicleServices={initialData.vehicleServices}
+                correctiveServicesForVehicle={correctiveServicesByVehicle[selectedVehicle?.id ?? ''] || []}
                 userRole={initialData.userRole}
             />
             {selectedVehicle && (

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
-import type { VehicleWithStatus, VehicleService, Service, UserRole, MergedServiceData } from '@/lib/types';
+import type { VehicleWithStatus, VehicleService, Service, UserRole, MergedServiceData, CorrectiveServiceRecord } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -19,11 +19,14 @@ import {
 import { Input } from '../ui/input';
 import { addVehicleService } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { CorrectiveMaintenanceTable } from './corrective-maintenance-table';
 
 interface MaintenanceTableProps {
   vehicle: VehicleWithStatus | null;
   servicesForCategory: Service[];
   vehicleServices: VehicleService[];
+  correctiveServicesForVehicle: CorrectiveServiceRecord[];
   userRole: UserRole;
 }
 
@@ -33,7 +36,7 @@ const statusClasses: Record<string, string> = {
   OK: 'bg-green-600 text-white hover:bg-green-700',
 };
 
-export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, userRole }: MaintenanceTableProps) {
+export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, correctiveServicesForVehicle, userRole }: MaintenanceTableProps) {
   const [isAddSheetOpen, setAddSheetOpen] = useState(false);
   const [selectedServiceData, setSelectedServiceData] = useState<MergedServiceData | null>(null);
   const [localVehicleServices, setLocalVehicleServices] = useState<VehicleService[]>(vehicleServices);
@@ -129,109 +132,124 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
           </div>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-y-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className='bg-muted/40 h-6'>
-                <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
-                <TableHead className="text-center p-1" colSpan={2}>Parâmetros</TableHead>
-                <TableHead className="bg-muted/20 text-center p-1" colSpan={3}>Última Manutenção</TableHead>
-                <TableHead className="bg-muted/60 text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
-                <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
-                <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
-              </TableRow>
-              <TableRow className='bg-muted/40 h-6'>
-                <TableHead className="text-center font-semibold p-1 h-6">Meses</TableHead>
-                <TableHead className="text-center font-semibold p-1 h-6">KM</TableHead>
-                <TableHead className="bg-muted/20 font-semibold p-1 h-6">Fornecedor</TableHead>
-                <TableHead className="bg-muted/20 font-semibold p-1 h-6">Data</TableHead>
-                <TableHead className="bg-muted/20 font-semibold p-1 h-6">KM</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mergedData.length > 0 ? mergedData.map(data => {
-                const { serviceInfo, vehicleService } = data;
-                const hasBeenServiced = vehicleService && vehicleService.lastKm > 0;
-                
-                return (
-                    <TableRow key={serviceInfo.id} className={cn('h-10', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
-                      <TableCell className="font-medium text-left p-1 text-sm">{serviceInfo.name}</TableCell>
-                      
-                      <TableCell className="text-center p-1 w-24">
-                        <Input
-                          type="number"
-                          defaultValue={vehicleService?.months}
-                          onBlur={(e) => handleParamChange(serviceInfo.id, 'months', parseInt(e.target.value, 10))}
-                          className="h-8 text-center text-sm"
-                          disabled={!canEdit}
-                        />
-                      </TableCell>
-                      <TableCell className="text-center p-1 w-32">
-                        <Input
-                          type="number"
-                          defaultValue={vehicleService?.km}
-                          onBlur={(e) => handleParamChange(serviceInfo.id, 'km', parseInt(e.target.value, 10))}
-                          className="h-8 text-center text-sm"
-                          disabled={!canEdit}
-                        />
-                      </TableCell>
-                      
-                      {/* Última Manutenção */}
-                      <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
-                      <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
-                      <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
-                      
-                      {/* Próxima Manutenção */}
-                      <TableCell className="bg-muted/60 text-center font-semibold p-1 text-sm">
-                        {hasBeenServiced ? (
-                             <>
-                                {vehicleService.months && vehicleService.months > 0 ? vehicleService.nextDate.toLocaleDateString('pt-BR') : ''}
-                                {vehicleService.months && vehicleService.months > 0 && vehicleService.km && vehicleService.km > 0 ? <span className='mx-1'>/</span> : ''}
-                                {vehicleService.km && vehicleService.km > 0 ? `${vehicleService.nextKm.toLocaleString('pt-br')} km` : ''}
-                             </>
-                        ) : '-'}
-                      </TableCell>
+          <Tabs defaultValue="preventive" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="preventive">Manutenções Preventivas</TabsTrigger>
+              <TabsTrigger value="corrective">Manutenções Corretivas</TabsTrigger>
+            </TabsList>
+            <TabsContent value="preventive">
+              <Table>
+                <TableHeader>
+                  <TableRow className='bg-muted/40 h-6'>
+                    <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
+                    <TableHead className="text-center p-1" colSpan={2}>Parâmetros</TableHead>
+                    <TableHead className="bg-muted/20 text-center p-1" colSpan={3}>Última Manutenção</TableHead>
+                    <TableHead className="bg-muted/60 text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
+                    <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
+                    <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
+                  </TableRow>
+                  <TableRow className='bg-muted/40 h-6'>
+                    <TableHead className="text-center font-semibold p-1 h-6">Meses</TableHead>
+                    <TableHead className="text-center font-semibold p-1 h-6">KM</TableHead>
+                    <TableHead className="bg-muted/20 font-semibold p-1 h-6">Fornecedor</TableHead>
+                    <TableHead className="bg-muted/20 font-semibold p-1 h-6">Data</TableHead>
+                    <TableHead className="bg-muted/20 font-semibold p-1 h-6">KM</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mergedData.length > 0 ? mergedData.map(data => {
+                    const { serviceInfo, vehicleService } = data;
+                    const hasBeenServiced = vehicleService && vehicleService.lastKm > 0;
+                    
+                    return (
+                        <TableRow key={serviceInfo.id} className={cn('h-10', vehicleService?.status === 'VENCIDO' ? 'bg-destructive/10' : vehicleService?.status === 'ALERTA' ? 'bg-warning/10' : '')}>
+                          <TableCell className="font-medium text-left p-1 text-sm">{serviceInfo.name}</TableCell>
+                          
+                          <TableCell className="text-center p-1 w-24">
+                            <Input
+                              type="number"
+                              defaultValue={vehicleService?.months}
+                              onBlur={(e) => handleParamChange(serviceInfo.id, 'months', parseInt(e.target.value, 10))}
+                              className="h-8 text-center text-sm"
+                              disabled={!canEdit}
+                            />
+                          </TableCell>
+                          <TableCell className="text-center p-1 w-32">
+                            <Input
+                              type="number"
+                              defaultValue={vehicleService?.km}
+                              onBlur={(e) => handleParamChange(serviceInfo.id, 'km', parseInt(e.target.value, 10))}
+                              className="h-8 text-center text-sm"
+                              disabled={!canEdit}
+                            />
+                          </TableCell>
+                          
+                          {/* Última Manutenção */}
+                          <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
+                          <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
+                          <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                          
+                          {/* Próxima Manutenção */}
+                          <TableCell className="bg-muted/60 text-center font-semibold p-1 text-sm">
+                            {hasBeenServiced ? (
+                                <>
+                                  {vehicleService.months && vehicleService.months > 0 ? vehicleService.nextDate.toLocaleDateString('pt-BR') : ''}
+                                  {vehicleService.months && vehicleService.months > 0 && vehicleService.km && vehicleService.km > 0 ? <span className='mx-1'>/</span> : ''}
+                                  {vehicleService.km && vehicleService.km > 0 ? `${vehicleService.nextKm.toLocaleString('pt-br')} km` : ''}
+                                </>
+                            ) : '-'}
+                          </TableCell>
 
-                      {/* Status */}
-                      <TableCell className='text-center p-1'>
-                         <Badge className={cn('font-bold w-[70px] justify-center px-2 py-1 text-xs', statusClasses[vehicleService?.status || 'OK'])}>
-                            {vehicleService?.status || 'OK'}
-                        </Badge>
-                      </TableCell>
-                      
-                      <TableCell className="text-right p-1">
-                        <div className="flex items-center justify-end">
-                          {canEdit && (
-                              <Button onClick={() => handleOpenAddSheet(data)} size="sm" variant="outline" className="h-8 px-2">
-                                  <PlusCircle className="mr-2 h-4 w-4" /> Registrar
-                              </Button>
-                          )}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/history/${vehicle.id}/${serviceInfo.id}`}>
-                                    Ver Histórico
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
+                          {/* Status */}
+                          <TableCell className='text-center p-1'>
+                            <Badge className={cn('font-bold w-[70px] justify-center px-2 py-1 text-xs', statusClasses[vehicleService?.status || 'OK'])}>
+                                {vehicleService?.status || 'OK'}
+                            </Badge>
+                          </TableCell>
+                          
+                          <TableCell className="text-right p-1">
+                            <div className="flex items-center justify-end">
+                              {canEdit && (
+                                  <Button onClick={() => handleOpenAddSheet(data)} size="sm" variant="outline" className="h-8 px-2">
+                                      <PlusCircle className="mr-2 h-4 w-4" /> Registrar
+                                  </Button>
+                              )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/history/${vehicle.id}/${serviceInfo.id}`}>
+                                        Ver Histórico
+                                    </Link>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                    )
+                  }) : (
+                    <TableRow>
+                        <TableCell colSpan={9} className="h-24 text-center">
+                            Nenhum tipo de serviço encontrado para esta categoria de veículo.
+                        </TableCell>
                     </TableRow>
-                )
-              }) : (
-                <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
-                        Nenhum tipo de serviço encontrado para esta categoria de veículo.
-                    </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            <TabsContent value="corrective">
+              <CorrectiveMaintenanceTable 
+                vehicle={vehicle} 
+                records={correctiveServicesForVehicle}
+                canEdit={canEdit}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

@@ -12,6 +12,8 @@ import type {
   UserRole,
   CategoryWithStatus,
   RawVehicleService,
+  RawCorrectiveServiceRecord,
+  CorrectiveServiceRecord,
 } from './types';
 import { initializeFirebaseAdmin } from '@/firebase/server-init';
 
@@ -65,11 +67,12 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
   
   const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
 
-  const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap] = await Promise.all([
+  const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap, correctiveServicesSnap] = await Promise.all([
     getDocs(collection(db, 'vehicles')),
     getDocs(collection(db, 'services')),
     getDocs(collection(db, 'vehicleServices')),
     getDocs(categoriesQuery),
+    getDocs(collection(db, 'correctiveServiceRecords')),
   ]);
 
   const allVehicles: Vehicle[] = vehiclesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Vehicle));
@@ -82,6 +85,12 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
   const allVehicleServices = allRawVehicleServices.map(vs => ({
       ...vs,
       lastDate: vs.lastDate ? parseISO(vs.lastDate) : new Date(2000, 0, 1),
+  }));
+
+  const allRawCorrectiveServices: RawCorrectiveServiceRecord[] = correctiveServicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as RawCorrectiveServiceRecord));
+  const allCorrectiveServices: CorrectiveServiceRecord[] = allRawCorrectiveServices.map(cs => ({
+      ...cs,
+      date: parseISO(cs.date),
   }));
 
 
@@ -153,6 +162,7 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
     services: allServices,
     vehicleServices: processedVehicleServices as VehicleService[],
     categories: categoriesWithStatus,
+    correctiveServices: allCorrectiveServices,
     userRole,
   };
 }
