@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, PlusCircle, Monitor, ShieldCheck } from 'lucide-react';
+import { MoreVertical, PlusCircle, Monitor, ShieldCheck, FileText } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,8 @@ import { Input } from '../ui/input';
 import { addVehicleService } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { CorrectiveMaintenanceTable } from './corrective-maintenance-table';
+import { AddCorrectiveSheet } from './add-corrective-sheet';
+
 
 interface MaintenanceTableProps {
   vehicle: VehicleWithStatus | null;
@@ -36,7 +37,7 @@ const statusClasses: Record<string, string> = {
   OK: 'bg-green-600 text-white hover:bg-green-700',
 };
 
-const formatCurrency = (value: number | undefined) => {
+const formatCurrency = (value: number | undefined | null) => {
     if (value === undefined || value === null) return '-';
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -46,6 +47,7 @@ const formatCurrency = (value: number | undefined) => {
 
 export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, correctiveServicesForVehicle, userRole }: MaintenanceTableProps) {
   const [isAddSheetOpen, setAddSheetOpen] = useState(false);
+  const [isCorrectiveSheetOpen, setIsCorrectiveSheetOpen] = useState(false);
   const [selectedServiceData, setSelectedServiceData] = useState<MergedServiceData | null>(null);
   const [localVehicleServices, setLocalVehicleServices] = useState<VehicleService[]>(vehicleServices);
   const { toast } = useToast();
@@ -198,7 +200,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
-                          <TableCell className="bg-muted/20 text-center p-1 text-sm font-semibold">{hasBeenServiced ? formatCurrency(vehicleService.cost) : '-'}</TableCell>
+                          <TableCell className="bg-muted/20 text-center p-1 text-sm font-semibold">{formatCurrency(vehicleService?.cost)}</TableCell>
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced && vehicleService.warrantyDate ? vehicleService.warrantyDate.toLocaleDateString('pt-BR') : '-'}</TableCell>
                           
                           {/* Próxima Manutenção */}
@@ -255,11 +257,68 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
               </Table>
             </TabsContent>
             <TabsContent value="corrective">
-              <CorrectiveMaintenanceTable 
-                vehicle={vehicle} 
-                records={correctiveServicesForVehicle}
-                canEdit={canEdit}
-              />
+               <div className="p-4">
+                  <div className="flex justify-end mb-4">
+                      <Button onClick={() => setIsCorrectiveSheetOpen(true)} disabled={!canEdit}>
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Adicionar Reparo
+                      </Button>
+                  </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Serviço Realizado</TableHead>
+                      <TableHead>Fornecedor</TableHead>
+                      <TableHead>Custo</TableHead>
+                      <TableHead>Garantia</TableHead>
+                      <TableHead>Anexos</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {correctiveServicesForVehicle.length > 0 ? (
+                      correctiveServicesForVehicle.map(record => (
+                        <TableRow key={record.id}>
+                          <TableCell>{record.date.toLocaleDateString('pt-BR')}</TableCell>
+                          <TableCell>{record.serviceName}</TableCell>
+                          <TableCell>{record.supplier}</TableCell>
+                          <TableCell>{formatCurrency(record.cost)}</TableCell>
+                          <TableCell>
+                              {record.warrantyDate ? (
+                                  <span className='flex items-center gap-1'>
+                                      <ShieldCheck className='h-4 w-4 text-primary'/>
+                                      {record.warrantyDate.toLocaleDateString('pt-BR')}
+                                  </span>
+                              ) : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {record.attachments && record.attachments.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {record.attachments.map((att, index) => (
+                                  <Button key={index} asChild variant="link" size="sm" className="p-0 h-auto justify-start">
+                                    <a href={att} target="_blank" rel="noopener noreferrer">
+                                      <FileText className="mr-2 h-4 w-4" />
+                                      Anexo {index + 1}
+                                    </a>
+                                  </Button>
+                                ))}
+                              </div>
+                            ) : (
+                              'Nenhum'
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                          Nenhum registro de manutenção corretiva para este veículo.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -272,6 +331,13 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
             vehicle={vehicle}
             serviceInfo={selectedServiceData.serviceInfo}
             vehicleService={selectedServiceData.vehicleService}
+          />
+      )}
+       {canEdit && (
+          <AddCorrectiveSheet 
+            isOpen={isCorrectiveSheetOpen}
+            setIsOpen={setIsCorrectiveSheetOpen}
+            vehicle={vehicle}
           />
       )}
     </>
