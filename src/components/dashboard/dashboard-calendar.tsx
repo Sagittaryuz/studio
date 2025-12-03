@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Vehicle, Service, VehicleService } from '@/lib/types';
-import { isSameDay, parseISO, format, isAfter } from 'date-fns';
+import { isSameDay, format, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -33,7 +33,11 @@ type CalendarEvent = {
 }
 
 export function DashboardCalendar({ vehicles, services, vehicleServices }: DashboardCalendarProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+
+  useEffect(() => {
+    setSelectedDate(new Date());
+  }, []);
 
   const events = useMemo(() => {
     const maintenanceEvents: CalendarEvent[] = vehicleServices
@@ -106,6 +110,14 @@ export function DashboardCalendar({ vehicles, services, vehicleServices }: Dashb
                 onSelect={setSelectedDate}
                 className="p-4 self-center"
                 locale={ptBR}
+                modifiers={{
+                  saturday: { dayOfWeek: [6] },
+                  sunday: { dayOfWeek: [0] },
+                }}
+                modifiersClassNames={{
+                  saturday: 'day-saturday',
+                  sunday: 'day-sunday'
+                }}
                 components={{
                     Day: ({ date, ...props }) => <DayWithDot date={date}>{props.children || date.getDate()}</DayWithDot>,
                 }}
