@@ -20,6 +20,8 @@ const addServiceSchema = z.object({
     lastDate: z.date(),
     supplier: z.string(),
     responsible: z.string(),
+    cost: z.coerce.number().min(0).optional(),
+    warrantyDate: z.date().optional(),
     notes: z.string().optional(),
     attachments: z.array(z.string()).optional(),
     km: z.number().optional(),
@@ -32,6 +34,7 @@ const addCorrectiveServiceSchema = z.object({
   date: z.date(),
   cost: z.coerce.number().min(0, "O custo não pode ser negativo."),
   supplier: z.string().min(1, "O fornecedor é obrigatório."),
+  warrantyDate: z.date().optional(),
   notes: z.string().optional(),
   attachments: z.array(z.string()).optional(),
 });
@@ -123,12 +126,16 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
     const vsDocRef = querySnapshot.docs.length > 0
         ? querySnapshot.docs[0].ref
         : doc(collection(firestore, 'vehicleServices'));
-
-    await setDoc(vsDocRef, {
-        id: vsDocRef.id,
+    
+    const dataToSave = {
         ...data,
+        id: vsDocRef.id,
         lastDate: data.lastDate.toISOString(), // Store as ISO string
-    }, { merge: true });
+        warrantyDate: data.warrantyDate ? data.warrantyDate.toISOString() : null,
+    };
+
+
+    await setDoc(vsDocRef, dataToSave, { merge: true });
 
 
     revalidatePath('/');
@@ -153,6 +160,7 @@ export async function addCorrectiveService(data: z.infer<typeof addCorrectiveSer
     await addDoc(newRecordRef, {
         ...data,
         date: data.date.toISOString(),
+        warrantyDate: data.warrantyDate ? data.warrantyDate.toISOString() : null,
         createdAt: new Date().toISOString(),
     });
 

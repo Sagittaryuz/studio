@@ -11,7 +11,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { JCIcon } from '@/components/icons';
-import { LayoutDashboard, Wrench, Settings } from 'lucide-react';
+import { LayoutDashboard, Wrench, Settings, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 
 export function MainSidebar() {
@@ -20,6 +20,7 @@ export function MainSidebar() {
     const menuItems = [
         { href: '/', label: 'Início', icon: LayoutDashboard },
         { href: '/plan', label: 'Plano de Manutenção', icon: Wrench },
+        { href: '/reports', label: 'Relatórios', icon: ClipboardList },
         { href: '/services', label: 'Gerenciar Serviços', icon: Settings },
     ];
 

@@ -3,8 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { notFound } from 'next/navigation';
+
+const formatCurrency = (value: number | undefined) => {
+    if (value === undefined || value === null) return '-';
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(value);
+}
 
 export default async function ServiceHistoryPage({ params }: { params: { vehicleId: string; serviceId: string } }) {
   const { vehicleId, serviceId } = params;
@@ -25,11 +33,11 @@ export default async function ServiceHistoryPage({ params }: { params: { vehicle
 
   return (
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                  <Button asChild variant="outline" className="mb-4">
-                    <Link href="/">
+                    <Link href={`/plan?vehicleId=${vehicleId}`}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Voltar ao Painel
+                        Voltar ao Plano
                     </Link>
                 </Button>
                 <Card>
@@ -47,6 +55,8 @@ export default async function ServiceHistoryPage({ params }: { params: { vehicle
                                 <TableHead>Quilometragem</TableHead>
                                 <TableHead>Fornecedor</TableHead>
                                 <TableHead>Responsável</TableHead>
+                                <TableHead>Custo</TableHead>
+                                <TableHead>Garantia</TableHead>
                                 <TableHead>Anexos</TableHead>
                             </TableRow>
                             </TableHeader>
@@ -57,6 +67,15 @@ export default async function ServiceHistoryPage({ params }: { params: { vehicle
                                 <TableCell>{entry.lastKm.toLocaleString('pt-BR')} km</TableCell>
                                 <TableCell>{entry.supplier}</TableCell>
                                 <TableCell>{entry.responsible}</TableCell>
+                                <TableCell>{formatCurrency(entry.cost)}</TableCell>
+                                <TableCell>
+                                    {entry.warrantyDate ? (
+                                        <span className='flex items-center gap-1'>
+                                            <ShieldCheck className='h-4 w-4 text-primary' />
+                                            {entry.warrantyDate.toLocaleDateString('pt-BR')}
+                                        </span>
+                                    ) : 'N/A'}
+                                </TableCell>
                                 <TableCell>
                                     {entry.attachments && entry.attachments.length > 0 ? (
                                         <div className='flex flex-col gap-1'>

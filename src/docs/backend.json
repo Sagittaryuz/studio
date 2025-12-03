@@ -114,6 +114,15 @@
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N VehicleService) The user responsible for the service."
         },
+        "cost": {
+          "type": "number",
+          "description": "The cost of the service."
+        },
+        "warrantyDate": {
+            "type": "string",
+            "description": "The date the service warranty expires.",
+            "format": "date-time"
+        },
         "nextDate": {
           "type": "string",
           "description": "The calculated next date for the service to be performed.",
@@ -194,6 +203,11 @@
         "supplier": {
           "type": "string",
           "description": "The supplier who performed the corrective service."
+        },
+        "warrantyDate": {
+            "type": "string",
+            "description": "The date the service warranty expires.",
+            "format": "date-time"
         },
         "notes": {
           "type": "string",

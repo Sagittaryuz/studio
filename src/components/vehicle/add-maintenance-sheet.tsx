@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useStorage } from '@/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
-
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -34,6 +33,8 @@ import { ptBR } from 'date-fns/locale';
 const formSchema = z.object({
   lastKm: z.coerce.number().min(0, 'Quilometragem inválida.'),
   lastDate: z.date({ required_error: 'Selecione a data.' }),
+  cost: z.coerce.number().min(0, 'O custo não pode ser negativo.').optional(),
+  warrantyDate: z.date().optional(),
   supplier: z.string().min(1, 'Fornecedor é obrigatório.'),
   responsible: z.string().min(1, 'Responsável é obrigatório.'),
   notes: z.string().optional(),
@@ -64,6 +65,7 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, serviceInfo, v
       supplier: vehicleService?.supplier || '',
       responsible: '',
       notes: vehicleService?.notes || '',
+      cost: vehicleService?.cost || 0,
     },
   });
 
@@ -185,6 +187,61 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, serviceInfo, v
                                 disabled={(date) =>
                                     date > new Date() || date < new Date("1900-01-01")
                                 }
+                                initialFocus
+                                locale={ptBR}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Custo (R$)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} placeholder="0,00" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="warrantyDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className='mb-1'>Garantia até</FormLabel>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                )}
+                                >
+                                {field.value ? (
+                                    format(field.value, "PPP", { locale: ptBR })
+                                ) : (
+                                    <span>Sem garantia</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
                                 initialFocus
                                 locale={ptBR}
                             />

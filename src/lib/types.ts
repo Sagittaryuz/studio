@@ -29,6 +29,8 @@ export interface RawVehicleService {
   lastKm: number;
   supplier: string;
   responsible: string;
+  cost?: number;
+  warrantyDate?: string; // ISO date string
   notes?: string;
   attachments?: string[];
   months?: number;
@@ -46,6 +48,8 @@ export interface VehicleService {
   nextDate: Date;
   nextKm: number;
   status: ServiceStatus;
+  cost?: number;
+  warrantyDate?: Date;
   notes?: string;
   attachments?: string[];
   // Parameters are now per vehicle-service instance
@@ -60,6 +64,7 @@ export interface RawCorrectiveServiceRecord {
     date: string; // ISO date string
     cost: number;
     supplier: string;
+    warrantyDate?: string; // ISO date string
     notes?: string;
     attachments?: string[];
     createdAt: string; // ISO date string
@@ -72,6 +77,7 @@ export interface CorrectiveServiceRecord {
     date: Date;
     cost: number;
     supplier: string;
+    warrantyDate?: Date;
     notes?: string;
     attachments?: string[];
     createdAt: Date;

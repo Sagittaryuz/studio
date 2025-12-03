@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { Vehicle, CorrectiveServiceRecord } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, FileText } from 'lucide-react';
+import { PlusCircle, FileText, ShieldCheck } from 'lucide-react';
 import { AddCorrectiveSheet } from './add-corrective-sheet';
 
 interface CorrectiveMaintenanceTableProps {
@@ -37,6 +37,7 @@ export function CorrectiveMaintenanceTable({ vehicle, records, canEdit }: Correc
             <TableHead>Serviço Realizado</TableHead>
             <TableHead>Fornecedor</TableHead>
             <TableHead>Custo</TableHead>
+            <TableHead>Garantia</TableHead>
             <TableHead>Anexos</TableHead>
           </TableRow>
         </TableHeader>
@@ -48,6 +49,14 @@ export function CorrectiveMaintenanceTable({ vehicle, records, canEdit }: Correc
                 <TableCell>{record.serviceName}</TableCell>
                 <TableCell>{record.supplier}</TableCell>
                 <TableCell>{formatCurrency(record.cost)}</TableCell>
+                <TableCell>
+                    {record.warrantyDate ? (
+                        <span className='flex items-center gap-1'>
+                            <ShieldCheck className='h-4 w-4 text-primary'/>
+                            {record.warrantyDate.toLocaleDateString('pt-BR')}
+                        </span>
+                    ) : 'N/A'}
+                </TableCell>
                 <TableCell>
                   {record.attachments && record.attachments.length > 0 ? (
                     <div className="flex flex-col gap-1">
@@ -68,7 +77,7 @@ export function CorrectiveMaintenanceTable({ vehicle, records, canEdit }: Correc
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                 Nenhum registro de manutenção corretiva para este veículo.
               </TableCell>
             </TableRow>

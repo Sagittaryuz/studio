@@ -85,12 +85,14 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
   const allVehicleServices = allRawVehicleServices.map(vs => ({
       ...vs,
       lastDate: vs.lastDate ? parseISO(vs.lastDate) : new Date(2000, 0, 1),
+      warrantyDate: vs.warrantyDate ? parseISO(vs.warrantyDate) : undefined,
   }));
 
   const allRawCorrectiveServices: RawCorrectiveServiceRecord[] = correctiveServicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as RawCorrectiveServiceRecord));
   const allCorrectiveServices: CorrectiveServiceRecord[] = allRawCorrectiveServices.map(cs => ({
       ...cs,
       date: parseISO(cs.date),
+      warrantyDate: cs.warrantyDate ? parseISO(cs.warrantyDate) : undefined,
   }));
 
 

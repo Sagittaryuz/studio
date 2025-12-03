@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, PlusCircle, Monitor } from 'lucide-react';
+import { MoreVertical, PlusCircle, Monitor, ShieldCheck } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
 import { cn } from '@/lib/utils';
@@ -19,7 +19,7 @@ import {
 import { Input } from '../ui/input';
 import { addVehicleService } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Tabs, TabsContent, TabsList } from '../ui/tabs';
 import { CorrectiveMaintenanceTable } from './corrective-maintenance-table';
 
 interface MaintenanceTableProps {
@@ -35,6 +35,14 @@ const statusClasses: Record<string, string> = {
   ALERTA: 'bg-warning text-warning-foreground hover:bg-warning/90',
   OK: 'bg-green-600 text-white hover:bg-green-700',
 };
+
+const formatCurrency = (value: number | undefined) => {
+    if (value === undefined || value === null) return '-';
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(value);
+}
 
 export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices, correctiveServicesForVehicle, userRole }: MaintenanceTableProps) {
   const [isAddSheetOpen, setAddSheetOpen] = useState(false);
@@ -143,7 +151,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                   <TableRow className='bg-muted/40 h-6'>
                     <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
                     <TableHead className="text-center p-1" colSpan={2}>Parâmetros</TableHead>
-                    <TableHead className="bg-muted/20 text-center p-1" colSpan={3}>Última Manutenção</TableHead>
+                    <TableHead className="bg-muted/20 text-center p-1" colSpan={5}>Última Manutenção</TableHead>
                     <TableHead className="bg-muted/60 text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
                     <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
                     <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
@@ -154,6 +162,8 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                     <TableHead className="bg-muted/20 font-semibold p-1 h-6">Fornecedor</TableHead>
                     <TableHead className="bg-muted/20 font-semibold p-1 h-6">Data</TableHead>
                     <TableHead className="bg-muted/20 font-semibold p-1 h-6">KM</TableHead>
+                    <TableHead className="bg-muted/20 font-semibold p-1 h-6">Custo</TableHead>
+                    <TableHead className="bg-muted/20 font-semibold p-1 h-6">Garantia</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -188,6 +198,8 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.supplier : '-'}</TableCell>
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastDate.toLocaleDateString('pt-BR') : 'Nunca realizado'}</TableCell>
                           <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced ? vehicleService.lastKm.toLocaleString('pt-BR') : '-'}</TableCell>
+                          <TableCell className="bg-muted/20 text-center p-1 text-sm font-semibold">{hasBeenServiced ? formatCurrency(vehicleService.cost) : '-'}</TableCell>
+                          <TableCell className="bg-muted/20 text-center p-1 text-sm">{hasBeenServiced && vehicleService.warrantyDate ? vehicleService.warrantyDate.toLocaleDateString('pt-BR') : '-'}</TableCell>
                           
                           {/* Próxima Manutenção */}
                           <TableCell className="bg-muted/60 text-center font-semibold p-1 text-sm">
@@ -234,7 +246,7 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                     )
                   }) : (
                     <TableRow>
-                        <TableCell colSpan={9} className="h-24 text-center">
+                        <TableCell colSpan={11} className="h-24 text-center">
                             Nenhum tipo de serviço encontrado para esta categoria de veículo.
                         </TableCell>
                     </TableRow>
