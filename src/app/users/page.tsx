@@ -4,7 +4,7 @@ import { UsersClient } from "./users-client";
 
 export default async function UsersPage() {
     // We fetch all data, which includes users
-    const data = await getDashboardData('admin');
+    const data = await getDashboardData('ADMIN');
 
     return (
         <AppLayout>

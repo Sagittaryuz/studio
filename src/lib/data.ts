@@ -1,4 +1,5 @@
 
+
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { addMonths, differenceInDays, parseISO } from 'date-fns';
 import type {
@@ -14,6 +15,7 @@ import type {
   RawVehicleService,
   RawCorrectiveServiceRecord,
   CorrectiveServiceRecord,
+  AppUser,
 } from './types';
 import { initializeFirebaseAdmin } from '@/firebase/server-init';
 
@@ -67,17 +69,19 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
   
   const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
 
-  const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap, correctiveServicesSnap] = await Promise.all([
+  const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap, correctiveServicesSnap, usersSnap] = await Promise.all([
     getDocs(collection(db, 'vehicles')),
     getDocs(collection(db, 'services')),
     getDocs(collection(db, 'vehicleServices')),
     getDocs(categoriesQuery),
     getDocs(collection(db, 'correctiveServiceRecords')),
+    getDocs(collection(db, 'users')),
   ]);
 
   const allVehicles: Vehicle[] = vehiclesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Vehicle));
   const allServices: Service[] = servicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
   const allCategories: Category[] = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+  const allAppUsers: AppUser[] = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppUser));
   
   const allRawVehicleServices: RawVehicleService[] = vehicleServicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as RawVehicleService));
 
@@ -166,5 +170,6 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
     categories: categoriesWithStatus,
     correctiveServices: allCorrectiveServices,
     userRole,
+    appUsers: allAppUsers,
   };
 }
