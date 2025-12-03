@@ -19,7 +19,7 @@ import {
 import { Input } from '../ui/input';
 import { addVehicleService } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList } from '../ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { CorrectiveMaintenanceTable } from './corrective-maintenance-table';
 
 interface MaintenanceTableProps {
