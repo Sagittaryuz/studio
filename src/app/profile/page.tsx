@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, useFirestore, useStorage, useUser } from '@/firebase';
+import { useAuth, useFirestore, useUser } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
 import { AppLayout } from '@/components/layout/app-layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff, Camera } from 'lucide-react';
+import { getSignedUploadUrl } from '@/app/actions';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -30,7 +30,6 @@ export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
-  const storage = useStorage();
   const { toast } = useToast();
 
   const [isProfileSubmitting, setProfileSubmitting] = useState(false);
@@ -64,7 +63,7 @@ export default function ProfilePage() {
   };
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
-    if (!user || !auth || !firestore || !storage) return;
+    if (!user || !auth || !firestore) return;
 
     setProfileSubmitting(true);
     try {
@@ -72,9 +71,22 @@ export default function ProfilePage() {
       
       // Upload new photo if one is selected
       if (photo) {
-        const storageRef = ref(storage, `profile-pictures/${user.uid}`);
-        await uploadBytes(storageRef, photo);
-        photoURL = await getDownloadURL(storageRef);
+        const filePath = `profile-pictures/${user.uid}`;
+        const response = await getSignedUploadUrl(filePath, photo.type);
+
+        if (!response.success || !response.uploadUrl || !response.publicUrl) {
+            throw new Error(response.error || 'Failed to get signed URL');
+        }
+
+        await fetch(response.uploadUrl, {
+            method: 'PUT',
+            body: photo,
+            headers: {
+                'Content-Type': photo.type,
+            },
+        });
+        
+        photoURL = response.publicUrl;
       }
 
       // Update Firebase Auth profile
@@ -88,9 +100,11 @@ export default function ProfilePage() {
       await setDoc(userRef, { name: data.name, photoUrl: photoURL }, { merge: true });
 
       toast({ title: 'Perfil atualizado com sucesso!' });
+      setPhoto(null);
+      setPhotoPreview(null);
     } catch (error) {
       console.error(error);
-      toast({ variant: 'destructive', title: 'Erro ao atualizar perfil' });
+      toast({ variant: 'destructive', title: 'Erro ao atualizar perfil', description: 'O upload da foto falhou.' });
     } finally {
       setProfileSubmitting(false);
     }

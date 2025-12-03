@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { getStorage } from 'firebase-admin/storage';
 import { doc, setDoc, deleteDoc, writeBatch, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
-import { initializeFirebaseAdmin } from '@/firebase/server-init';
+import { initializeFirebaseAdmin } from '@/firebase/admin';
 import type { Category, CategoryID, Service } from '@/lib/types';
 
 
@@ -84,6 +85,33 @@ const deleteCategorySchema = z.object({
 // --- SERVER ACTIONS ---
 
 /**
+ * Generates a signed URL for uploading a file to Firebase Storage.
+ */
+export async function getSignedUploadUrl(filePath: string, contentType: string) {
+    const { app } = await initializeFirebaseAdmin();
+    const bucket = getStorage(app).bucket();
+    const file = bucket.file(filePath);
+
+    try {
+        const [url] = await file.getSignedUrl({
+            version: 'v4',
+            action: 'write',
+            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+            contentType,
+        });
+        
+        // Return a URL that can be used directly for viewing the file after upload
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        
+        return { success: true, uploadUrl: url, publicUrl: publicUrl };
+    } catch (error) {
+        console.error('Error getting signed URL', error);
+        return { success: false, error: 'Could not get signed URL.' };
+    }
+}
+
+
+/**
  * Updates the current mileage of a vehicle.
  */
 export async function updateVehicleKm(vehicleId: string, currentKm: number) {
@@ -93,7 +121,7 @@ export async function updateVehicleKm(vehicleId: string, currentKm: number) {
     throw new Error('Invalid input');
   }
 
-  const { firestore } = initializeFirebaseAdmin();
+  const { firestore } = await initializeFirebaseAdmin();
   const vehicleRef = doc(firestore, 'vehicles', vehicleId);
   await setDoc(vehicleRef, { currentKm }, { merge: true });
   
@@ -113,7 +141,7 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
         throw new Error('Invalid input for adding service.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     
     // Find if a vehicleService for this vehicle and service already exists
     const vsQuery = query(
@@ -154,7 +182,7 @@ export async function addCorrectiveService(data: z.infer<typeof addCorrectiveSer
         throw new Error('Invalid input for adding corrective service.');
     }
 
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const newRecordRef = collection(firestore, 'correctiveServiceRecords');
 
     await addDoc(newRecordRef, {
@@ -179,7 +207,7 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
         throw new Error('Invalid input for adding vehicle.');
     }
 
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const newVehicleRef = doc(collection(firestore, 'vehicles'));
 
     await setDoc(newVehicleRef, {
@@ -208,7 +236,7 @@ export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
         throw new Error('Invalid input for editing vehicle.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const vehicleRef = doc(firestore, 'vehicles', data.id);
 
     await setDoc(vehicleRef, {
@@ -233,7 +261,7 @@ export async function updateVehicleNotes(vehicleId: string, notes: string) {
         throw new Error('Invalid input for updating notes.');
     }
 
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const vsRef = doc(firestore, 'vehicles', vehicleId);
     await setDoc(vsRef, { notes }, { merge: true });
     
@@ -253,7 +281,7 @@ export async function deleteService(serviceId: string) {
         throw new Error('Invalid input for deleting service.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const batch = writeBatch(firestore);
 
     // 1. Delete the service document itself
@@ -285,7 +313,7 @@ export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>
         throw new Error('Invalid input for service.');
     }
 
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const serviceRef = data.id 
         ? doc(firestore, 'services', data.id)
         : doc(collection(firestore, 'services'));
@@ -308,7 +336,7 @@ export async function updateServiceOrder(orderedServices: Service[]) {
         throw new Error('Invalid input for updating service order.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const batch = writeBatch(firestore);
 
     orderedServices.forEach(service => {
@@ -334,7 +362,7 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
         throw new Error('Invalid input for category.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
 
     let categoryId = data.id;
     let newCategory: Omit<Category, 'id'> & { id?: string };
@@ -384,7 +412,7 @@ export async function updateCategoryOrder(orderedCategories: Category[]) {
         throw new Error('Invalid input for updating category order.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const batch = writeBatch(firestore);
 
     orderedCategories.forEach((category, index) => {
@@ -410,7 +438,7 @@ export async function deleteCategory(categoryId: string) {
         throw new Error('Invalid input for deleting category.');
     }
     
-    const { firestore } = initializeFirebaseAdmin();
+    const { firestore } = await initializeFirebaseAdmin();
     const batch = writeBatch(firestore);
 
     // 1. Delete the category document itself
@@ -445,13 +473,4 @@ export async function deleteCategory(categoryId: string) {
     revalidatePath('/');
     revalidatePath('/services');
     revalidatePath('/plan');
-}
-
-
-export async function getSignedUploadUrl(fileName: string, contentType: string, size: number, checksum: string) {
-  // In a real app, you'd use the Firebase Admin SDK here to create a signed URL.
-  // This is a placeholder.
-  console.log(`[Server Action] Generating signed URL for: ${fileName}, Type: ${contentType}, Size: ${size}, Checksum: ${checksum}`);
-  const url = `https://fake-upload.url/for/${fileName}`;
-  return { success: true, url };
 }
