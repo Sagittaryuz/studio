@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, PlusCircle, Monitor, ShieldCheck, FileText } from 'lucide-react';
+import { MoreVertical, PlusCircle, Monitor, ShieldCheck, FileText, Wrench, Package } from 'lucide-react';
 import { UpdateKmForm } from '@/components/vehicle/update-km-form';
 import { AddMaintenanceSheet } from '@/components/vehicle/add-maintenance-sheet';
 import { cn } from '@/lib/utils';
@@ -151,16 +151,16 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
               <Table>
                 <TableHeader>
                   <TableRow className='bg-muted/40 h-6'>
-                    <TableHead className='align-middle p-1' rowSpan={2}>Serviço</TableHead>
+                    <TableHead className='align-middle p-1 w-[250px]' rowSpan={2}>Serviço</TableHead>
                     <TableHead className="text-center p-1" colSpan={2}>Parâmetros</TableHead>
                     <TableHead className="bg-muted/20 text-center p-1" colSpan={5}>Última Manutenção</TableHead>
                     <TableHead className="bg-muted/60 text-center align-middle p-1" rowSpan={2}>Próxima Manutenção</TableHead>
-                    <TableHead className='text-center align-middle p-1' rowSpan={2}>Status</TableHead>
-                    <TableHead className="text-right align-middle p-1" rowSpan={2}>Ações</TableHead>
+                    <TableHead className='text-center align-middle p-1 w-24' rowSpan={2}>Status</TableHead>
+                    <TableHead className="text-right align-middle p-1 w-[150px]" rowSpan={2}>Ações</TableHead>
                   </TableRow>
                   <TableRow className='bg-muted/40 h-6'>
-                    <TableHead className="text-center font-semibold p-1 h-6">Meses</TableHead>
-                    <TableHead className="text-center font-semibold p-1 h-6">KM</TableHead>
+                    <TableHead className="text-center font-semibold p-1 h-6 w-24">Meses</TableHead>
+                    <TableHead className="text-center font-semibold p-1 h-6 w-32">KM</TableHead>
                     <TableHead className="bg-muted/20 font-semibold p-1 h-6">Fornecedor</TableHead>
                     <TableHead className="bg-muted/20 font-semibold p-1 h-6">Data</TableHead>
                     <TableHead className="bg-muted/20 font-semibold p-1 h-6">KM</TableHead>
@@ -267,12 +267,13 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Data</TableHead>
+                      <TableHead className='w-[100px]'>Data</TableHead>
                       <TableHead>Serviço Realizado</TableHead>
                       <TableHead>Fornecedor</TableHead>
                       <TableHead>Custo</TableHead>
                       <TableHead>Garantia</TableHead>
                       <TableHead>Anexos</TableHead>
+                      <TableHead className='w-[50px]'></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -307,11 +308,27 @@ export function MaintenanceTable({ vehicle, servicesForCategory, vehicleServices
                               'Nenhum'
                             )}
                           </TableCell>
+                           <TableCell className="text-right p-1">
+                            <div className="flex items-center justify-end">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem disabled>
+                                    Editar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                           Nenhum registro de manutenção corretiva para este veículo.
                         </TableCell>
                       </TableRow>
