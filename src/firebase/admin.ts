@@ -2,7 +2,6 @@
 
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
-import { getStorage } from 'firebase-admin/storage';
 import { firebaseConfig } from './config';
 
 // Interface para os serviços do Firebase Admin para garantir a tipagem.
