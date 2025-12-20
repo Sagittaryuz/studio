@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getStorage } from 'firebase-admin/storage';
-import { doc, setDoc, deleteDoc, writeBatch, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { initializeFirebaseAdmin } from '@/firebase/admin';
 import type { Category, CategoryID, Service } from '@/lib/types';
 
@@ -100,7 +99,6 @@ export async function getSignedUploadUrl(filePath: string, contentType: string) 
             contentType,
         });
         
-        // Return a URL that can be used directly for viewing the file after upload
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
         
         return { success: true, uploadUrl: url, publicUrl: publicUrl };
@@ -122,8 +120,8 @@ export async function updateVehicleKm(vehicleId: string, currentKm: number) {
   }
 
   const { firestore } = await initializeFirebaseAdmin();
-  const vehicleRef = doc(firestore, 'vehicles', vehicleId);
-  await setDoc(vehicleRef, { currentKm }, { merge: true });
+  const vehicleRef = firestore.doc(`vehicles/${vehicleId}`);
+  await vehicleRef.set({ currentKm }, { merge: true });
   
   revalidatePath('/');
   revalidatePath('/services');
@@ -143,28 +141,24 @@ export async function addVehicleService(data: z.infer<typeof addServiceSchema>) 
     
     const { firestore } = await initializeFirebaseAdmin();
     
-    // Find if a vehicleService for this vehicle and service already exists
-    const vsQuery = query(
-        collection(firestore, 'vehicleServices'),
-        where('vehicleId', '==', data.vehicleId),
-        where('serviceId', '==', data.serviceId)
-    );
-    const querySnapshot = await getDocs(vsQuery);
+    const vsQuery = firestore.collection('vehicleServices')
+        .where('vehicleId', '==', data.vehicleId)
+        .where('serviceId', '==', data.serviceId);
+    
+    const querySnapshot = await vsQuery.get();
     
     const vsDocRef = querySnapshot.docs.length > 0
         ? querySnapshot.docs[0].ref
-        : doc(collection(firestore, 'vehicleServices'));
+        : firestore.collection('vehicleServices').doc();
     
     const dataToSave = {
         ...data,
         id: vsDocRef.id,
-        lastDate: data.lastDate.toISOString(), // Store as ISO string
+        lastDate: data.lastDate.toISOString(),
         warrantyDate: data.warrantyDate ? data.warrantyDate.toISOString() : null,
     };
 
-
-    await setDoc(vsDocRef, dataToSave, { merge: true });
-
+    await vsDocRef.set(dataToSave, { merge: true });
 
     revalidatePath('/');
     revalidatePath(`/history/${data.vehicleId}/${data.serviceId}`);
@@ -183,9 +177,9 @@ export async function addCorrectiveService(data: z.infer<typeof addCorrectiveSer
     }
 
     const { firestore } = await initializeFirebaseAdmin();
-    const newRecordRef = collection(firestore, 'correctiveServiceRecords');
+    const newRecordRef = firestore.collection('correctiveServiceRecords');
 
-    await addDoc(newRecordRef, {
+    await newRecordRef.add({
         ...data,
         date: data.date.toISOString(),
         warrantyDate: data.warrantyDate ? data.warrantyDate.toISOString() : null,
@@ -208,9 +202,9 @@ export async function addVehicle(data: z.infer<typeof addVehicleSchema>) {
     }
 
     const { firestore } = await initializeFirebaseAdmin();
-    const newVehicleRef = doc(collection(firestore, 'vehicles'));
+    const newVehicleRef = firestore.collection('vehicles').doc();
 
-    await setDoc(newVehicleRef, {
+    await newVehicleRef.set({
         id: newVehicleRef.id,
         plate: data.plate,
         currentKm: data.currentKm,
@@ -237,9 +231,9 @@ export async function editVehicle(data: z.infer<typeof editVehicleSchema>) {
     }
     
     const { firestore } = await initializeFirebaseAdmin();
-    const vehicleRef = doc(firestore, 'vehicles', data.id);
+    const vehicleRef = firestore.doc(`vehicles/${data.id}`);
 
-    await setDoc(vehicleRef, {
+    await vehicleRef.set({
         plate: data.plate,
         currentKm: data.currentKm,
         fleetNumber: data.fleetNumber || '',
@@ -262,8 +256,8 @@ export async function updateVehicleNotes(vehicleId: string, notes: string) {
     }
 
     const { firestore } = await initializeFirebaseAdmin();
-    const vsRef = doc(firestore, 'vehicles', vehicleId);
-    await setDoc(vsRef, { notes }, { merge: true });
+    const vsRef = firestore.doc(`vehicles/${vehicleId}`);
+    await vsRef.set({ notes }, { merge: true });
     
     revalidatePath('/');
     revalidatePath('/services');
@@ -282,15 +276,13 @@ export async function deleteService(serviceId: string) {
     }
     
     const { firestore } = await initializeFirebaseAdmin();
-    const batch = writeBatch(firestore);
+    const batch = firestore.batch();
 
-    // 1. Delete the service document itself
-    const serviceRef = doc(firestore, 'services', serviceId);
+    const serviceRef = firestore.doc(`services/${serviceId}`);
     batch.delete(serviceRef);
 
-    // 2. Find and delete all associated vehicleService documents
-    const vsQuery = query(collection(firestore, 'vehicleServices'), where('serviceId', '==', serviceId));
-    const vsSnapshot = await getDocs(vsQuery);
+    const vsQuery = firestore.collection('vehicleServices').where('serviceId', '==', serviceId);
+    const vsSnapshot = await vsQuery.get();
     vsSnapshot.forEach(doc => {
         batch.delete(doc.ref);
     });
@@ -315,10 +307,10 @@ export async function addOrUpdateService(data: z.infer<typeof serviceFormSchema>
 
     const { firestore } = await initializeFirebaseAdmin();
     const serviceRef = data.id 
-        ? doc(firestore, 'services', data.id)
-        : doc(collection(firestore, 'services'));
+        ? firestore.doc(`services/${data.id}`)
+        : firestore.collection('services').doc();
     
-    await setDoc(serviceRef, {
+    await serviceRef.set({
         id: serviceRef.id,
         ...data,
     }, { merge: true });
@@ -337,10 +329,10 @@ export async function updateServiceOrder(orderedServices: Service[]) {
     }
     
     const { firestore } = await initializeFirebaseAdmin();
-    const batch = writeBatch(firestore);
+    const batch = firestore.batch();
 
     orderedServices.forEach(service => {
-        const serviceRef = doc(firestore, 'services', service.id);
+        const serviceRef = firestore.doc(`services/${service.id}`);
         batch.update(serviceRef, { order: service.order });
     });
 
@@ -369,16 +361,15 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
     let categoryRef;
 
     if (data.id) { // Editing
-        categoryRef = doc(firestore, 'categories', data.id);
-        await setDoc(categoryRef, { name: data.name }, { merge: true });
-        newCategory = { name: data.name }; // To get full object back
+        categoryRef = firestore.doc(`categories/${data.id}`);
+        await categoryRef.set({ name: data.name }, { merge: true });
+        newCategory = { name: data.name };
     } else { // Adding
         categoryId = data.name.toUpperCase().replace(/\s/g, '_');
-        categoryRef = doc(firestore, 'categories', categoryId);
+        categoryRef = firestore.doc(`categories/${categoryId}`);
         
-        // Get max order to append the new one
-        const q = query(collection(firestore, 'categories'));
-        const querySnapshot = await getDocs(q);
+        const q = firestore.collection('categories');
+        const querySnapshot = await q.get();
         const maxOrder = Math.max(-1, ...querySnapshot.docs.map(doc => doc.data().order ?? -1));
 
         newCategory = {
@@ -386,22 +377,18 @@ export async function addOrUpdateCategory(data: z.infer<typeof categoryFormSchem
             name: data.name,
             order: maxOrder + 1,
         };
-        await setDoc(categoryRef, newCategory);
+        await categoryRef.set(newCategory);
     }
     
     revalidatePath('/services');
     revalidatePath('/');
     revalidatePath('/plan');
 
-    // Return the full category object so the client can update its state
-    const q = query(collection(firestore, 'categories'), where('name', '==', data.name));
-    const savedDocSnapshot = await getDocs(q);
-    if (savedDocSnapshot.empty) {
-        // This case is for an edit where we don't have the full object yet.
-        // We just return what we know, client must merge.
+    const savedDoc = await firestore.collection('categories').where('name', '==', data.name).get();
+    if (savedDoc.empty) {
         return { ...newCategory, id: categoryId } as Category;
     }
-    return { ...savedDocSnapshot.docs[0].data(), id: savedDocSnapshot.docs[0].id } as Category;
+    return { ...savedDoc.docs[0].data(), id: savedDoc.docs[0].id } as Category;
 }
 
 /**
@@ -413,10 +400,10 @@ export async function updateCategoryOrder(orderedCategories: Category[]) {
     }
     
     const { firestore } = await initializeFirebaseAdmin();
-    const batch = writeBatch(firestore);
+    const batch = firestore.batch();
 
     orderedCategories.forEach((category, index) => {
-        const categoryRef = doc(firestore, 'categories', category.id);
+        const categoryRef = firestore.doc(`categories/${category.id}`);
         batch.update(categoryRef, { order: index });
     });
 
@@ -439,29 +426,25 @@ export async function deleteCategory(categoryId: string) {
     }
     
     const { firestore } = await initializeFirebaseAdmin();
-    const batch = writeBatch(firestore);
+    const batch = firestore.batch();
 
-    // 1. Delete the category document itself
-    const categoryRef = doc(firestore, 'categories', categoryId);
+    const categoryRef = firestore.doc(`categories/${categoryId}`);
     batch.delete(categoryRef);
 
-    // 2. Find and delete all services in this category
-    const servicesQuery = query(collection(firestore, 'services'), where('categoryId', '==', categoryId));
-    const servicesSnapshot = await getDocs(servicesQuery);
+    const servicesQuery = firestore.collection('services').where('categoryId', '==', categoryId);
+    const servicesSnapshot = await servicesQuery.get();
     
     const serviceIdsToDelete = servicesSnapshot.docs.map(d => d.id);
     servicesSnapshot.forEach(doc => {
         batch.delete(doc.ref);
     });
 
-    // 3. Find and delete all vehicleService documents associated with the services being deleted
     if (serviceIdsToDelete.length > 0) {
-        // Firestore 'in' query can take up to 30 items. If more, we need to batch the queries.
         const CHUNK_SIZE = 30;
         for (let i = 0; i < serviceIdsToDelete.length; i += CHUNK_SIZE) {
             const chunk = serviceIdsToDelete.slice(i, i + CHUNK_SIZE);
-            const vsQuery = query(collection(firestore, 'vehicleServices'), where('serviceId', 'in', chunk));
-            const vsSnapshot = await getDocs(vsQuery);
+            const vsQuery = firestore.collection('vehicleServices').where('serviceId', 'in', chunk);
+            const vsSnapshot = await vsQuery.get();
             vsSnapshot.forEach(doc => {
                 batch.delete(doc.ref);
             });
