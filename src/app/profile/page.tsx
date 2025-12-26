@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { auth, firestore, useUser } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -28,8 +29,6 @@ const passwordSchema = z.object({
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
-  const auth = useAuth();
-  const firestore = useFirestore();
   const { toast } = useToast();
 
   const [isProfileSubmitting, setProfileSubmitting] = useState(false);
@@ -63,7 +62,7 @@ export default function ProfilePage() {
   };
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
-    if (!user || !auth || !firestore) return;
+    if (!user || !auth) return;
 
     setProfileSubmitting(true);
     try {

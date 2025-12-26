@@ -1,3 +1,4 @@
+
 'use client';
 import { usePathname } from 'next/navigation';
 import {
@@ -13,7 +14,7 @@ import {
 import { JCIcon } from '@/components/icons';
 import { LayoutDashboard, Wrench, Settings, ClipboardList, User, Shield, Users, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/firebase';
+import { auth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -43,7 +44,6 @@ const allMenuItems = [
 
 export function MainSidebar() {
     const pathname = usePathname();
-    const auth = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const { user } = useUser(); // Using the hook to get user info

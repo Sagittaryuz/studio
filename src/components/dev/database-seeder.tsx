@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { doc, writeBatch } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { firestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Loader2, UploadCloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +12,6 @@ import { CATEGORIES, VEHICLES, SERVICES, VEHICLE_SERVICES_RAW } from '@/lib/mock
 
 export function DatabaseSeeder() {
   const [isLoading, setIsLoading] = useState(false);
-  const db = useFirestore();
   const { toast } = useToast();
 
   const handleSeed = async () => {
@@ -22,29 +22,29 @@ export function DatabaseSeeder() {
     });
 
     try {
-      const batch = writeBatch(db);
+      const batch = writeBatch(firestore);
 
       // Seed Categories
       CATEGORIES.forEach((category) => {
-        const docRef = doc(db, 'categories', category.id);
+        const docRef = doc(firestore, 'categories', category.id);
         batch.set(docRef, category);
       });
 
       // Seed Services
       SERVICES.forEach((service) => {
-        const docRef = doc(db, 'services', service.id);
+        const docRef = doc(firestore, 'services', service.id);
         batch.set(docRef, service);
       });
 
       // Seed Vehicles
       VEHICLES.forEach((vehicle) => {
-        const docRef = doc(db, 'vehicles', vehicle.id);
+        const docRef = doc(firestore, 'vehicles', vehicle.id);
         batch.set(docRef, vehicle);
       });
       
       // Seed VehicleServices
       VEHICLE_SERVICES_RAW.forEach((vs) => {
-        const docRef = doc(db, 'vehicleServices', vs.id);
+        const docRef = doc(firestore, 'vehicleServices', vs.id);
         // Firestore works best with its own Timestamp object or ISO strings.
         // We'll convert our mock dates to ISO strings for seeding.
         const dataToSave = {

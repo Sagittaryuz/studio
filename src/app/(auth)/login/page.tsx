@@ -1,9 +1,10 @@
+
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { initiateEmailSignIn, useAuth } from '@/firebase';
+import { auth } from '@/firebase';
 import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
@@ -38,7 +39,6 @@ type FormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const auth = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -51,7 +51,6 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: FormValues) => {
-    if (!auth) return;
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);

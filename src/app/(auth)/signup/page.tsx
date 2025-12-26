@@ -1,9 +1,10 @@
+
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, useFirestore } from '@/firebase';
+import { auth, firestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -34,8 +35,6 @@ type FormValues = z.infer<typeof formSchema>;
 export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const auth = useAuth();
-  const firestore = useFirestore();
   const { toast } = useToast();
 
   const {
@@ -47,7 +46,6 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (data: FormValues) => {
-    if (!auth || !firestore) return;
     setIsSubmitting(true);
 
     try {

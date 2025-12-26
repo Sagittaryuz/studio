@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useUser, firestore, auth } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
@@ -19,7 +20,6 @@ const roleRedirects: Record<string, string> = {
 
 export function AuthHandler({ children }: { children: React.ReactNode }) {
     const { user, isUserLoading } = useUser();
-    const db = useFirestore();
     const router = useRouter();
     const pathname = usePathname();
     const [appUser, setAppUser] = useState<AppUser | null>(null);
@@ -29,9 +29,9 @@ export function AuthHandler({ children }: { children: React.ReactNode }) {
         if (isUserLoading) return;
 
         const handleUser = async () => {
-            if (user && db) {
+            if (user && firestore) {
                 // User is logged in, fetch their profile from Firestore
-                const userRef = doc(db, 'users', user.uid);
+                const userRef = doc(firestore, 'users', user.uid);
                 const userDoc = await getDoc(userRef);
 
                 if (userDoc.exists()) {
@@ -75,7 +75,7 @@ export function AuthHandler({ children }: { children: React.ReactNode }) {
 
         handleUser();
 
-    }, [user, isUserLoading, db, router, pathname]);
+    }, [user, isUserLoading, router, pathname]);
 
     if (isUserLoading || isAppUserLoading) {
         return (

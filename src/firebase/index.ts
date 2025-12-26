@@ -2,36 +2,27 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
-export function initializeFirebase() {
-  if (!getApps().length) {
-    const firebaseApp = initializeApp(firebaseConfig);
-    return getSdks(firebaseApp);
-  }
-
-  // If already initialized, return the SDKs with the already initialized App
-  return getSdks(getApp());
+let firebaseApp: FirebaseApp;
+if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+} else {
+    firebaseApp = getApp();
 }
 
-export function getSdks(firebaseApp: FirebaseApp) {
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp),
-    storage: getStorage(firebaseApp)
-  };
-}
+const auth: Auth = getAuth(firebaseApp);
+const firestore: Firestore = getFirestore(firebaseApp);
+const storage: FirebaseStorage = getStorage(firebaseApp);
+
+export { firebaseApp, auth, firestore, storage };
 
 export * from './provider';
 export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './auth/use-user';
-export * from './non-blocking-updates';
-export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';

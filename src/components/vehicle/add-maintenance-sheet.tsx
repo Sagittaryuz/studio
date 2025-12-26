@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -5,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { addVehicleService } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useStorage } from '@/firebase';
+import { storage } from '@/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 import { Button } from '@/components/ui/button';
@@ -55,8 +56,6 @@ export function AddMaintenanceSheet({ isOpen, setIsOpen, vehicle, serviceInfo, v
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { toast } = useToast();
-  const storage = useStorage();
-
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth } from '@/firebase';
+import { auth } from '@/firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,6 @@ type FormValues = z.infer<typeof formSchema>;
 export default function ForgotPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const auth = useAuth();
   const { toast } = useToast();
 
   const {
@@ -44,7 +44,6 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = async (data: FormValues) => {
-    if (!auth) return;
     setIsSubmitting(true);
     try {
       await sendPasswordResetEmail(auth, data.email);
