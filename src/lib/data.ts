@@ -1,5 +1,4 @@
 
-
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { addMonths, differenceInDays, parseISO } from 'date-fns';
 import type {
@@ -17,7 +16,7 @@ import type {
   CorrectiveServiceRecord,
   AppUser,
 } from './types';
-import { initializeFirebaseAdmin } from '@/firebase/server-init';
+import { initializeFirebaseAdmin } from '@/firebase/admin';
 
 
 /**
@@ -65,7 +64,7 @@ function getServiceStatus(
  * Processes raw data from Firestore to add status and next service info.
  */
 export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
-  const { firestore: db } = initializeFirebaseAdmin();
+  const { firestore: db } = await initializeFirebaseAdmin();
   
   const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
 
