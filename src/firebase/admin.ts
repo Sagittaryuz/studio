@@ -1,40 +1,41 @@
+
 'use server';
 
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { firebaseConfig } from './config';
 
-// Interface para os serviços do Firebase Admin para garantir a tipagem.
+// Interface for the services do Firebase Admin to guarantee the typing
 interface FirebaseAdminServices {
   app: admin.app.App;
   firestore: admin.firestore.Firestore;
 }
 
-// Armazena a instância em cache para evitar reinicialização.
+// Stores the instance in cache to avoid reinitialization.
 let adminServices: FirebaseAdminServices | null = null;
 
 /**
- * Inicializa de forma segura e retorna os serviços do Firebase Admin para uso no servidor.
- * Utiliza um padrão singleton para garantir que a inicialização ocorra apenas uma vez.
+ * Initializes in a safe way and returns the Firebase Admin services for use on the server.
+ * Uses a singleton pattern to ensure that initialization occurs only once.
  */
 export async function initializeFirebaseAdmin(): Promise<FirebaseAdminServices> {
-  // Se a instância já existe no cache, retorna-a imediatamente.
+  // If the instance already exists in the cache, returns it immediately.
   if (adminServices) {
     return adminServices;
   }
 
-  // Se nenhuma aplicação 'admin' foi inicializada ainda, faz a inicialização.
+  // If no 'admin' application has been initialized yet, it does the initialization.
   if (!getApps().some(app => app.name === 'admin')) {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
-      storageBucket: firebaseConfig.storageBucket, // Garante que o storageBucket seja fornecido.
+      storageBucket: firebaseConfig.storageBucket, // Ensures that the storageBucket is provided.
     }, 'admin');
   }
 
   const adminApp = admin.app('admin');
   const firestore = admin.firestore(adminApp);
   
-  // Armazena a instância inicializada no cache.
+  // Stores the initialized instance in the cache.
   adminServices = {
     app: adminApp,
     firestore,
@@ -42,3 +43,5 @@ export async function initializeFirebaseAdmin(): Promise<FirebaseAdminServices> 
 
   return adminServices;
 }
+
+    
