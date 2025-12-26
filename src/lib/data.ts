@@ -172,5 +172,3 @@ export async function getDashboardData(userRole: UserRole): Promise<DashboardDat
     appUsers: allAppUsers,
   };
 }
-
-    
