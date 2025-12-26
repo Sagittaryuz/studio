@@ -66,6 +66,10 @@ function getServiceStatus(
 export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
   const { firestore: db } = await initializeFirebaseAdmin();
   
+  if (!db) {
+    throw new Error("A inicialização do Firestore falhou.");
+  }
+  
   const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
 
   const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap, correctiveServicesSnap, usersSnap] = await Promise.all([
