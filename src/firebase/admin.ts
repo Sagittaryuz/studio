@@ -5,7 +5,6 @@ import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { firebaseConfig } from './config';
 
-// Interface para os serviços do Firebase Admin para garantir a tipagem
 interface FirebaseAdminServices {
   app: admin.app.App;
   firestore: admin.firestore.Firestore;
@@ -28,7 +27,7 @@ export async function initializeFirebaseAdmin(): Promise<FirebaseAdminServices> 
   if (!getApps().some(app => app.name === 'admin')) {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
-      storageBucket: firebaseConfig.storageBucket, // Garante que o storageBucket seja fornecido.
+      storageBucket: firebaseConfig.storageBucket,
     }, 'admin');
   }
 
@@ -43,5 +42,3 @@ export async function initializeFirebaseAdmin(): Promise<FirebaseAdminServices> 
 
   return adminServices;
 }
-
-    

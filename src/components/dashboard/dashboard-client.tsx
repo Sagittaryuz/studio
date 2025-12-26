@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { DashboardData, VehicleWithStatus, CategoryWithStatus, Service, VehicleService, CategoryID, CorrectiveServiceRecord } from '@/lib/types';
+import type { VehicleWithStatus, Service, VehicleService, CategoryID, CorrectiveServiceRecord, DashboardData } from '@/lib/types';
 import { MaintenanceTable } from '@/components/dashboard/maintenance-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ import { Label } from '../ui/label';
 import { VehicleDialog } from '../vehicle/add-vehicle-dialog';
 import { EditVehicleNotesDialog } from '../vehicle/edit-vehicle-notes-dialog';
 import { SidebarTrigger } from '../ui/sidebar';
+import { useDashboard } from './dashboard-provider';
 
 
 const badgeStatusClasses: Record<string, string> = {
@@ -22,32 +24,42 @@ const badgeStatusClasses: Record<string, string> = {
   ALERTA: 'bg-warning text-warning-foreground',
 };
 
-export function DashboardClient({ initialData }: { initialData: DashboardData }) {
+export function DashboardClient() {
   const searchParams = useSearchParams();
+  const { data: initialData, isLoading } = useDashboard();
   const vehicleIdFromUrl = searchParams.get('vehicleId');
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialData.categories[0]?.id || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithStatus | null>(null);
   const [isVehicleDialogOpen, setVehicleDialogOpen] = useState(false);
   const [isNotesDialogOpen, setNotesDialogOpen] = useState(false);
+  
+  useEffect(() => {
+    if (initialData?.categories?.length && !selectedCategory) {
+      setSelectedCategory(initialData.categories[0].id);
+    }
+  }, [initialData, selectedCategory]);
 
   const vehiclesByCategory = useMemo(() => {
+    if (!initialData) return {};
     const grouped: { [key: string]: VehicleWithStatus[] } = {};
     initialData.categories.forEach(category => {
         grouped[category.id] = initialData.vehicles.filter(v => v.category === category.id && v.active);
     });
     return grouped;
-  }, [initialData.vehicles, initialData.categories]);
+  }, [initialData]);
   
   const servicesByCategory = useMemo(() => {
+    if (!initialData) return {};
     const grouped: { [key: string]: Service[] } = {};
     initialData.categories.forEach(category => {
         grouped[category.id] = initialData.services.filter(s => s.categoryId === category.id);
     });
     return grouped;
-  }, [initialData.services, initialData.categories]);
+  }, [initialData]);
 
   const correctiveServicesByVehicle = useMemo(() => {
+    if (!initialData) return {};
     const grouped: { [key: string]: CorrectiveServiceRecord[] } = {};
     initialData.correctiveServices.forEach(cs => {
         if (!grouped[cs.vehicleId]) {
@@ -60,11 +72,13 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
         grouped[vehicleId].sort((a, b) => b.date.getTime() - a.date.getTime());
     }
     return grouped;
-  }, [initialData.correctiveServices]);
+  }, [initialData]);
 
 
   // Effect to select vehicle from URL or first in category
   useEffect(() => {
+      if (!initialData || !selectedCategory) return;
+
       let vehicleToSelect: VehicleWithStatus | undefined;
       if (vehicleIdFromUrl) {
           vehicleToSelect = initialData.vehicles.find(v => v.id === vehicleIdFromUrl);
@@ -81,7 +95,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
       
       setSelectedVehicle(vehicleToSelect || null);
 
-  }, [vehicleIdFromUrl, selectedCategory, vehiclesByCategory, initialData.vehicles]);
+  }, [vehicleIdFromUrl, selectedCategory, vehiclesByCategory, initialData]);
 
 
   const handleSelectCategory = (categoryId: string) => {
@@ -95,6 +109,12 @@ export function DashboardClient({ initialData }: { initialData: DashboardData })
   const handleOpenDialog = () => {
     setVehicleDialogOpen(true);
   };
+
+  if (isLoading || !initialData) {
+      // You can return a full-page skeleton here if you want.
+      // For now, the fallback in PlanPage handles it.
+      return null;
+  }
 
   return (
     <>

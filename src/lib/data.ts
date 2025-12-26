@@ -1,28 +1,22 @@
 
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { addMonths, differenceInDays, parseISO } from 'date-fns';
 import type {
   Category,
-  DashboardData,
   Service,
   Vehicle,
   VehicleService,
   VehicleWithStatus,
   ServiceStatus,
-  UserRole,
   CategoryWithStatus,
   RawVehicleService,
-  RawCorrectiveServiceRecord,
   CorrectiveServiceRecord,
-  AppUser,
 } from './types';
-import { initializeFirebaseAdmin } from '@/firebase/admin';
 
 
 /**
  * Calculates the status of a single service for a vehicle.
  */
-function getServiceStatus(
+export function getServiceStatus(
   vehicle: Vehicle,
   service: VehicleService,
 ): { status: ServiceStatus; nextDate: Date; nextKm: number } {
@@ -60,119 +54,106 @@ function getServiceStatus(
 }
 
 
-/**
- * Processes raw data from Firestore to add status and next service info.
- */
-export async function getDashboardData(userRole: UserRole): Promise<DashboardData> {
-  const { firestore: db } = await initializeFirebaseAdmin();
-  
-  if (!db) {
-    throw new Error("A inicialização do Firestore falhou.");
-  }
-  
-  const categoriesQuery = query(collection(db, 'categories'), orderBy('order'));
+export function processDashboardData(
+    vehicles: Vehicle[],
+    services: Service[],
+    rawVehicleServices: RawVehicleService[],
+    categories: Category[],
+    correctiveServices: CorrectiveServiceRecord[]
+): Omit<DashboardData, 'userRole' | 'appUsers'> {
 
-  const [vehiclesSnap, servicesSnap, vehicleServicesSnap, categoriesSnap, correctiveServicesSnap, usersSnap] = await Promise.all([
-    getDocs(collection(db, 'vehicles')),
-    getDocs(collection(db, 'services')),
-    getDocs(collection(db, 'vehicleServices')),
-    getDocs(categoriesQuery),
-    getDocs(collection(db, 'correctiveServiceRecords')),
-    getDocs(collection(db, 'users')),
-  ]);
-
-  const allVehicles: Vehicle[] = vehiclesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Vehicle));
-  const allServices: Service[] = servicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
-  const allCategories: Category[] = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-  const allAppUsers: AppUser[] = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppUser));
-  
-  const allRawVehicleServices: RawVehicleService[] = vehicleServicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as RawVehicleService));
-
-  // Convert raw string dates from Firestore into Date objects
-  const allVehicleServices = allRawVehicleServices.map(vs => ({
-      ...vs,
-      lastDate: vs.lastDate ? parseISO(vs.lastDate) : new Date(2000, 0, 1),
-      warrantyDate: vs.warrantyDate ? parseISO(vs.warrantyDate) : undefined,
-  }));
-
-  const allRawCorrectiveServices: RawCorrectiveServiceRecord[] = correctiveServicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as RawCorrectiveServiceRecord));
-  const allCorrectiveServices: CorrectiveServiceRecord[] = allRawCorrectiveServices.map(cs => ({
-      ...cs,
-      date: parseISO(cs.date),
-      warrantyDate: cs.warrantyDate ? parseISO(cs.warrantyDate) : undefined,
-  }));
-
-
-  const processedVehicleServices = allVehicleServices.map((vs) => {
-    const vehicle = allVehicles.find(v => v.id === vs.vehicleId);
-    if (!vehicle) {
-      return {
+    const allVehicleServices = rawVehicleServices.map(vs => ({
         ...vs,
-        status: 'OK',
-        nextDate: new Date('2999-12-31'),
-        nextKm: Infinity,
-      } as VehicleService;
-    }
-    const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs as VehicleService);
-    return { ...vs, status, nextDate, nextKm };
-  });
+        lastDate: vs.lastDate ? parseISO(vs.lastDate) : new Date(2000, 0, 1),
+        warrantyDate: vs.warrantyDate ? parseISO(vs.warrantyDate) : undefined,
+    }));
 
-  const vehiclesWithStatus: VehicleWithStatus[] = allVehicles.filter(v => v.active).map((v) => {
-    const servicesForVehicle = processedVehicleServices.filter(vs => vs.vehicleId === v.id);
-    let overallStatus: ServiceStatus = 'OK';
-    let nextServiceSummary = 'Nenhum serviço pendente';
+    const processedVehicleServices = allVehicleServices.map((vs) => {
+        const vehicle = vehicles.find(v => v.id === vs.vehicleId);
+        if (!vehicle) {
+        return {
+            ...vs,
+            status: 'OK',
+            nextDate: new Date('2999-12-31'),
+            nextKm: Infinity,
+        } as VehicleService;
+        }
+        const { status, nextDate, nextKm } = getServiceStatus(vehicle, vs as VehicleService);
+        return { ...vs, status, nextDate, nextKm };
+    });
 
-    if (servicesForVehicle.some(s => s.status === 'VENCIDO')) {
-      overallStatus = 'VENCIDO';
-    } else if (servicesForVehicle.some(s => s.status === 'ALERTA')) {
-      overallStatus = 'ALERTA';
-    }
-    
-    const nextDueService = servicesForVehicle
-      .filter(s => s.status !== 'OK')
-      .sort((a, b) => {
-        if (!a.nextDate || !b.nextDate) return 0;
-        const aDays = differenceInDays(a.nextDate, new Date());
-        const bDays = differenceInDays(b.nextDate, new Date());
-        return aDays - bDays;
-      })[0];
+    const vehiclesWithStatus: VehicleWithStatus[] = vehicles.filter(v => v.active).map((v) => {
+        const servicesForVehicle = processedVehicleServices.filter(vs => vs.vehicleId === v.id);
+        let overallStatus: ServiceStatus = 'OK';
+        let nextServiceSummary = 'Nenhum serviço pendente';
 
-    if (nextDueService) {
-        const serviceInfo = allServices.find(s => s.id === nextDueService.serviceId);
-        const byKm = nextDueService.nextKm !== Infinity ? `${nextDueService.nextKm.toLocaleString('pt-BR')} km` : '';
-        const byDate = nextDueService.nextDate < new Date('2999-01-01') ? `${nextDueService.nextDate.toLocaleDateString('pt-BR')}` : '';
-        const separator = byKm && byDate ? ' ou ' : '';
-        nextServiceSummary = `${serviceInfo?.name || 'Serviço'} em ${byKm}${separator}${byDate}`;
-    }
+        if (servicesForVehicle.some(s => s.status === 'VENCIDO')) {
+        overallStatus = 'VENCIDO';
+        } else if (servicesForVehicle.some(s => s.status === 'ALERTA')) {
+        overallStatus = 'ALERTA';
+        }
+        
+        const nextDueService = servicesForVehicle
+        .filter(s => s.status !== 'OK')
+        .sort((a, b) => {
+            if (!a.nextDate || !b.nextDate) return 0;
+            const aDays = differenceInDays(a.nextDate, new Date());
+            const bDays = differenceInDays(b.nextDate, new Date());
+            return aDays - bDays;
+        })[0];
 
-
-    return { ...v, status: overallStatus, nextServiceSummary };
-  });
-
-  const categoriesWithStatus: CategoryWithStatus[] = allCategories.map(cat => {
-    const vehiclesInCategory = vehiclesWithStatus.filter(v => v.category === cat.id);
-    let categoryStatus: ServiceStatus = 'OK';
-    let pendingCount = 0;
-
-    if (vehiclesInCategory.some(v => v.status === 'VENCIDO')) {
-        categoryStatus = 'VENCIDO';
-    } else if (vehiclesInCategory.some(v => v.status === 'ALERTA')) {
-        categoryStatus = 'ALERTA';
-    }
-
-    pendingCount = vehiclesInCategory.filter(v => v.status === 'VENCIDO' || v.status === 'ALERTA').length;
-
-    return { ...cat, status: categoryStatus, pendingCount };
-  });
+        if (nextDueService) {
+            const serviceInfo = services.find(s => s.id === nextDueService.serviceId);
+            const byKm = nextDueService.nextKm !== Infinity ? `${nextDueService.nextKm.toLocaleString('pt-BR')} km` : '';
+            const byDate = nextDueService.nextDate < new Date('2999-01-01') ? `${nextDueService.nextDate.toLocaleDateString('pt-BR')}` : '';
+            const separator = byKm && byDate ? ' ou ' : '';
+            nextServiceSummary = `${serviceInfo?.name || 'Serviço'} em ${byKm}${separator}${byDate}`;
+        }
 
 
-  return {
-    vehicles: vehiclesWithStatus,
-    services: allServices,
-    vehicleServices: processedVehicleServices as VehicleService[],
-    categories: categoriesWithStatus,
-    correctiveServices: allCorrectiveServices,
-    userRole,
-    appUsers: allAppUsers,
-  };
+        return { ...v, status: overallStatus, nextServiceSummary };
+    });
+
+    const categoriesWithStatus: CategoryWithStatus[] = categories.map(cat => {
+        const vehiclesInCategory = vehiclesWithStatus.filter(v => v.category === cat.id);
+        let categoryStatus: ServiceStatus = 'OK';
+        let pendingCount = 0;
+
+        if (vehiclesInCategory.some(v => v.status === 'VENCIDO')) {
+            categoryStatus = 'VENCIDO';
+        } else if (vehiclesInCategory.some(v => v.status === 'ALERTA')) {
+            categoryStatus = 'ALERTA';
+        }
+
+        pendingCount = vehiclesInCategory.filter(v => v.status === 'VENCIDO' || v.status === 'ALERTA').length;
+
+        return { ...cat, status: categoryStatus, pendingCount };
+    });
+
+    const allCorrectiveServicesWithDate = correctiveServices.map(cs => ({
+        ...cs,
+        date: parseISO(cs.date as unknown as string),
+        createdAt: parseISO(cs.createdAt as unknown as string),
+        warrantyDate: cs.warrantyDate ? parseISO(cs.warrantyDate as unknown as string) : undefined
+    }));
+
+
+    return {
+        vehicles: vehiclesWithStatus,
+        services: services,
+        vehicleServices: processedVehicleServices as VehicleService[],
+        categories: categoriesWithStatus,
+        correctiveServices: allCorrectiveServicesWithDate,
+    };
+}
+
+
+export interface DashboardData {
+    vehicles: VehicleWithStatus[];
+    services: Service[];
+    vehicleServices: VehicleService[];
+    categories: CategoryWithStatus[];
+    correctiveServices: CorrectiveServiceRecord[];
+    userRole: UserRole;
+    appUsers: any[];
 }

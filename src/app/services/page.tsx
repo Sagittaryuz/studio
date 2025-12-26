@@ -1,14 +1,25 @@
 
-import { getDashboardData } from '@/lib/data';
+'use client';
 import { ServiceManagementClient } from './service-management-client';
 import { AppLayout } from '@/components/layout/app-layout';
+import { DashboardProvider, useDashboard } from '@/components/dashboard/dashboard-provider';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
-export default async function ServiceManagementPage() {
-  const data = await getDashboardData('admin'); // Assuming admin role for now
+function ServiceManagementContent() {
+  const { data, isLoading } = useDashboard();
+
+  if (isLoading || !data) {
+    return (
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <div className="max-w-6xl mx-auto">
+                <Skeleton className='h-[600px] w-full' />
+            </div>
+        </main>
+    )
+  }
 
   return (
-    <AppLayout>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
             <div className="max-w-6xl mx-auto">
                 <ServiceManagementClient
@@ -17,6 +28,15 @@ export default async function ServiceManagementPage() {
                 />
             </div>
         </main>
+  );
+}
+
+export default function ServiceManagementPage() {
+  return (
+    <AppLayout>
+        <DashboardProvider>
+            <ServiceManagementContent />
+        </DashboardProvider>
     </AppLayout>
   );
 }

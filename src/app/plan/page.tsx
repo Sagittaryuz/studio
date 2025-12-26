@@ -1,8 +1,9 @@
+
 import { Suspense } from 'react';
-import { getDashboardData } from '@/lib/data';
 import { DashboardClient } from '@/components/dashboard/dashboard-client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppLayout } from '@/components/layout/app-layout';
+import { DashboardProvider } from '@/components/dashboard/dashboard-provider';
 
 function DashboardFallback() {
     return (
@@ -19,14 +20,13 @@ function DashboardFallback() {
 }
 
 
-export default async function PlanPage() {
-  // Em uma app real, o userRole viria da sessão do usuário
-  const initialData = await getDashboardData('admin');
-
+export default function PlanPage() {
   return (
     <AppLayout>
       <Suspense fallback={<DashboardFallback />}>
-        <DashboardClient initialData={initialData} />
+        <DashboardProvider>
+            <DashboardClient />
+        </DashboardProvider>
       </Suspense>
     </AppLayout>
   );
