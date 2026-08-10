@@ -19,6 +19,7 @@
 
 # production
 /build
+/nosso-treino/dist/
 
 # misc
 .DS_Store
