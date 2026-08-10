@@ -158,6 +158,7 @@ async function handleGoogleLogin() {
     const user = await window.ntGoogleSignIn();
     loginWithGoogle(user);
   } catch (error) {
+    message.dataset.authError = error?.code || 'auth/unknown';
     if (error?.code !== 'auth/popup-closed-by-user') {
       message.textContent = error?.code === 'auth/unauthorized-domain'
         ? 'Este endereço ainda precisa ser autorizado no Firebase.'
