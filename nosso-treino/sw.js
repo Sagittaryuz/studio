@@ -1,4 +1,4 @@
-const CACHE = 'nosso-treino-v7';
+const CACHE = 'nosso-treino-v8';
 const APP_SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/firebase-auth.js', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', (event) => {
