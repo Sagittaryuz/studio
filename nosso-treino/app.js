@@ -519,7 +519,6 @@ function setupInstall() {
 
 function setup() {
   $('#form').addEventListener('submit', handleAuth);
-  $('#google-login').addEventListener('click', handleGoogleLogin);
   window.addEventListener('nt-google-auth-changed', (event) => {
     if (event.detail && !state.user) loginWithGoogle(event.detail);
   });

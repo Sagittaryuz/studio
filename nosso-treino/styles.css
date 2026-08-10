@@ -67,6 +67,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(116, 231, 16
 .button.google:hover { filter: brightness(.96); }
 .button.google:disabled { cursor: wait; opacity: .7; }
 .button.google svg { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
+.google-button-wrap { min-height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: .8rem; }
 .auth-divider { display: flex; align-items: center; gap: .8rem; margin: 1rem 0; color: #82978c; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
 .auth-divider::before, .auth-divider::after { content: ''; height: 1px; flex: 1; background: var(--line); }
 .privacy-note { margin: .4rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.5; text-align: center; }
