@@ -20,4 +20,4 @@ Há duas configurações válidas:
 1. Projeto apontando para a raiz do repositório: usa `/vercel.json`.
 2. Projeto com Root Directory `nosso-treino`: usa `/nosso-treino/vercel.json`.
 
-As duas executam `build.mjs` e publicam apenas os seis arquivos necessários da pasta `dist`.
+As duas executam `build.mjs` e publicam apenas os sete arquivos necessários da pasta `dist`.

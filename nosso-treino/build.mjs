@@ -4,10 +4,18 @@ import { dirname, join } from 'node:path';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const output = join(root, 'dist');
-const files = ['index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'sw.js', 'icon.svg'];
+const files = [
+  ['index.html', 'index.html'],
+  ['styles.css', 'styles.css'],
+  ['app.js', 'app.js'],
+  ['manifest.webmanifest', 'manifest.webmanifest'],
+  ['sw.js', 'sw.js'],
+  ['icon.svg', 'icon.svg'],
+  ['vercel.static.json', 'vercel.json']
+];
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
-await Promise.all(files.map((file) => cp(join(root, file), join(output, file))));
+await Promise.all(files.map(([source, destination]) => cp(join(root, source), join(output, destination))));
 
 console.log(`Nosso Treino pronto: ${files.length} arquivos em dist.`);
