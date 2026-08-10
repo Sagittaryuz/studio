@@ -523,6 +523,11 @@ function setup() {
   window.addEventListener('nt-google-auth-changed', (event) => {
     if (event.detail && !state.user) loginWithGoogle(event.detail);
   });
+  window.addEventListener('nt-google-auth-error', (event) => {
+    const message = $('#msg');
+    message.dataset.authError = event.detail || 'auth/unknown';
+    message.textContent = 'Não foi possível concluir o acesso pelo Google. Tente novamente.';
+  });
   $('#mode').addEventListener('click', () => {
     state.authMode = state.authMode === 'login' ? 'create' : 'login';
     const creating = state.authMode === 'create';
