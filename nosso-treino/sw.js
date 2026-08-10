@@ -1,5 +1,5 @@
-const CACHE = 'nosso-treino-v3';
-const APP_SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest', '/icon.svg'];
+const CACHE = 'nosso-treino-v4';
+const APP_SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/firebase-auth.js', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));

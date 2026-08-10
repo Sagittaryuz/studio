@@ -45,7 +45,7 @@ const WORKOUTS = {
 const state = {
   authMode: 'login', user: null, data: null, route: 'home',
   location: 'unknown', distance: null, timer: null, modal: null,
-  installPrompt: null
+  installPrompt: null, accountName: null, accountEmail: null, authProvider: 'local'
 };
 
 const defaultData = () => ({
@@ -58,6 +58,11 @@ const defaultData = () => ({
 });
 
 function dataKey(user) { return `nt_${user}`; }
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  })[character]);
+}
 function getUsers() {
   try { return JSON.parse(localStorage.getItem('nt_users') || '{}'); }
   catch { return {}; }
@@ -110,19 +115,58 @@ async function handleAuth(event) {
   login(user);
 }
 
-function login(user) {
+function login(user, { name = user, email = null, provider = 'local' } = {}) {
   state.user = user;
+  state.accountName = name;
+  state.accountEmail = email;
+  state.authProvider = provider;
   state.data = loadData(user);
   $('#auth').classList.add('hidden');
   $('#shell').classList.remove('hidden');
-  $('#profile').textContent = user[0].toUpperCase();
+  $('#profile').textContent = name[0].toUpperCase();
   render();
   if (state.data.gym.lat !== null) checkLocation(false);
 }
 
-function logout() {
+function loginWithGoogle(user) {
+  if (!user?.uid) return;
+  login(`google_${user.uid}`, {
+    name: user.displayName || user.email?.split('@')[0] || 'Atleta',
+    email: user.email || null,
+    provider: 'google'
+  });
+}
+
+async function logout() {
   localStorage.removeItem('nt_session');
+  await window.ntGoogleSignOut?.();
   location.reload();
+}
+
+async function handleGoogleLogin() {
+  const button = $('#google-login');
+  const message = $('#msg');
+  if (!window.ntGoogleSignIn) {
+    message.textContent = 'O acesso pelo Google ainda está carregando. Tente novamente.';
+    return;
+  }
+
+  button.disabled = true;
+  button.lastChild.textContent = ' Conectando…';
+  message.textContent = '';
+  try {
+    const user = await window.ntGoogleSignIn();
+    loginWithGoogle(user);
+  } catch (error) {
+    if (error?.code !== 'auth/popup-closed-by-user') {
+      message.textContent = error?.code === 'auth/unauthorized-domain'
+        ? 'Este endereço ainda precisa ser autorizado no Firebase.'
+        : 'Não foi possível entrar com o Google. Tente novamente.';
+    }
+  } finally {
+    button.disabled = false;
+    button.lastChild.textContent = ' Continuar com Google';
+  }
 }
 
 function navigate(route) {
@@ -250,7 +294,10 @@ function renderControl() {
 }
 
 function renderProfile() {
-  return `<div class="page-heading"><small>CONTA DESTE APARELHO</small><h2>Perfil</h2></div><article class="card"><strong>Usuário</strong><p class="muted">${state.user}</p><p class="privacy-note left">Os dados desta versão não são enviados para um servidor.</p><button class="button secondary full" id="logout" type="button">Sair</button></article>`;
+  const account = state.authProvider === 'google'
+    ? `<strong>Conta Google</strong><p class="muted">${escapeHtml(state.accountName)}${state.accountEmail ? `<br>${escapeHtml(state.accountEmail)}` : ''}</p>`
+    : `<strong>Usuário</strong><p class="muted">${escapeHtml(state.accountName)}</p>`;
+  return `<div class="page-heading"><small>CONTA DESTE APARELHO</small><h2>Perfil</h2></div><article class="card">${account}<p class="privacy-note left">Os treinos continuam salvos somente neste aparelho.</p><button class="button secondary full" id="logout" type="button">Sair</button></article>`;
 }
 
 function bindPageEvents() {
@@ -471,6 +518,10 @@ function setupInstall() {
 
 function setup() {
   $('#form').addEventListener('submit', handleAuth);
+  $('#google-login').addEventListener('click', handleGoogleLogin);
+  window.addEventListener('nt-google-auth-changed', (event) => {
+    if (event.detail && !state.user) loginWithGoogle(event.detail);
+  });
   $('#mode').addEventListener('click', () => {
     state.authMode = state.authMode === 'login' ? 'create' : 'login';
     const creating = state.authMode === 'create';
@@ -494,6 +545,7 @@ function setup() {
 
   const session = localStorage.getItem('nt_session');
   if (session && getUsers()[session]) login(session);
+  else if (window.ntGoogleCurrentUser) loginWithGoogle(window.ntGoogleCurrentUser);
 }
 
 setup();

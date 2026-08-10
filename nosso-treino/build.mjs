@@ -8,6 +8,7 @@ const files = [
   ['index.html', 'index.html'],
   ['styles.css', 'styles.css'],
   ['app.js', 'app.js'],
+  ['firebase-auth.js', 'firebase-auth.js'],
   ['manifest.webmanifest', 'manifest.webmanifest'],
   ['sw.js', 'sw.js'],
   ['icon.svg', 'icon.svg'],

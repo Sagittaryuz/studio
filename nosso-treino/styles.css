@@ -63,6 +63,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(116, 231, 16
 .button.secondary { border: 1px solid var(--line); background: rgba(255,255,255,.07); }
 .button.danger { border: 1px solid rgba(255, 117, 117, .3); color: #ffb1b1; background: rgba(255, 75, 75, .08); }
 .button.ghost { width: 100%; margin-top: .6rem; color: var(--primary-soft); background: transparent; }
+.button.google { width: 100%; display: flex; align-items: center; justify-content: center; gap: .7rem; color: #17221c; background: #fff; }
+.button.google:hover { filter: brightness(.96); }
+.button.google:disabled { cursor: wait; opacity: .7; }
+.button.google svg { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
+.auth-divider { display: flex; align-items: center; gap: .8rem; margin: 1rem 0; color: #82978c; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+.auth-divider::before, .auth-divider::after { content: ''; height: 1px; flex: 1; background: var(--line); }
 .privacy-note { margin: .4rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.5; text-align: center; }
 .privacy-note.left { text-align: left; }
 .form-message { min-height: 1.25rem; margin-top: .45rem; color: var(--warning); font-size: .75rem; text-align: center; }

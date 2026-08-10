@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "providers": {
+      "anonymous": true,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Nosso Treino",
+        "supportEmail": "rodriguespiresmarcos@gmail.com",
+        "authorizedRedirectUris": [
+          "https://nosso-treino.vercel.app",
+          "http://localhost"
+        ]
+      }
+    }
+  }
+}
